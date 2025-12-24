@@ -19,6 +19,7 @@ interface PostCardProps {
   onTopUpRequest?: () => void;
   onPromoteRequest?: (postId: string) => void;
   bottomAd?: Advertisement | null;
+  viewRate?: number;
 }
 
 export const PostCard: React.FC<PostCardProps> = ({
@@ -26,7 +27,8 @@ export const PostCard: React.FC<PostCardProps> = ({
   onAddComment, onGift, onNotify, onView, onDelete, currentUserId,
   userGiftBalance = 0, onTopUpRequest = () => { },
   onPromoteRequest = (_id: string) => { },
-  bottomAd
+  bottomAd,
+  viewRate
 }) => {
   const author = post.author || { name: 'Sistem VOꓘE', avatar: 'https://picsum.photos/seed/me/200', username: '@voke_official' };
   console.log(`[PostCard ${post.id}] gifts:`, post.gifts);
@@ -168,6 +170,11 @@ export const PostCard: React.FC<PostCardProps> = ({
             <div className="hidden sm:flex items-center px-4 py-2 bg-slate-50 text-slate-400 rounded-2xl">
               <i className="far fa-eye text-sm mr-2.5"></i>
               <span className="text-xs font-black">{post.views.toLocaleString('id-ID')}</span>
+              {viewRate !== undefined && (
+                <span className="ml-1 text-[9px] text-slate-300 font-bold bg-slate-100 px-1.5 py-0.5 rounded-md">
+                  {(post.views * viewRate).toFixed(4)}
+                </span>
+              )}
             </div>
           </div>
           <div className="flex space-x-2">
@@ -175,8 +182,8 @@ export const PostCard: React.FC<PostCardProps> = ({
             <button
               onClick={() => !isOwnPost && setIsGiftOpen(true)}
               className={`h-11 px-4 rounded-2xl flex items-center justify-center space-x-2 transition-all shadow-sm border ${isOwnPost
-                  ? 'bg-gradient-to-r from-amber-100 to-amber-50 text-amber-700 border-amber-200 cursor-default'
-                  : 'bg-gradient-to-r from-amber-50 to-yellow-50 text-amber-700 border-amber-200 hover:from-amber-100 hover:to-yellow-100'
+                ? 'bg-gradient-to-r from-amber-100 to-amber-50 text-amber-700 border-amber-200 cursor-default'
+                : 'bg-gradient-to-r from-amber-50 to-yellow-50 text-amber-700 border-amber-200 hover:from-amber-100 hover:to-yellow-100'
                 }`}
               title={isOwnPost ? `Total hadiah: Rp ${(post.gifts || 0).toLocaleString('id-ID')}` : 'Kirim hadiah'}
             >

@@ -1399,21 +1399,42 @@ const App: React.FC = () => {
             )}
 
             <div className="space-y-10">
-              {posts.map((post) => (
-                <PostCard
-                  key={post.id}
-                  post={post} isFollowing={following.has(post.userId)} isSaved={savedPosts.has(post.id)}
-                  onFollowToggle={id => setFollowing(prev => { const n = new Set(prev); n.has(id) ? n.delete(id) : n.add(id); return n; })}
-                  onLike={handleLike}
-                  onSaveToggle={handleSaveToggle}
-                  onAddComment={handleAddComment}
-                  onGift={handleGift} onNotify={handleNotify} userGiftBalance={totalBalance} onTopUpRequest={() => setIsTopUpOpen(true)}
-                  onPromoteRequest={handlePromoteRequest}
-                  onDelete={handleDeletePost}
-                  currentUserId={user?.id}
-                  bottomAd={activeBottomAd}
-                />
-              ))}
+              <div className="space-y-10">
+                {posts.map((post) => (
+                  <PostCard
+                    key={post.id}
+                    post={post} isFollowing={following.has(post.userId)} isSaved={savedPosts.has(post.id)}
+                    onFollowToggle={id => setFollowing(prev => { const n = new Set(prev); n.has(id) ? n.delete(id) : n.add(id); return n; })}
+                    onLike={handleLike}
+                    onSaveToggle={handleSaveToggle}
+                    onAddComment={handleAddComment}
+                    onGift={handleGift} onNotify={handleNotify} userGiftBalance={totalBalance} onTopUpRequest={() => setIsTopUpOpen(true)}
+                    onPromoteRequest={handlePromoteRequest}
+                    onDelete={handleDeletePost}
+                    currentUserId={user?.id}
+                    bottomAd={activeBottomAd}
+                    viewRate={viewRate}
+                    onView={(postId) => {
+                      const viewedKey = `voke_view_${postId}`;
+                      if (!localStorage.getItem(viewedKey)) {
+                        localStorage.setItem(viewedKey, 'true');
+                        // Update local state
+                        setPosts(prev => prev.map(p => p.id === postId ? { ...p, views: p.views + 1 } : p));
+                        // Update DB
+                        supabase.rpc('increment_view', { post_id: postId }).then(({ error }) => {
+                          if (error) {
+                            // Fallback if RPC doesn't exist
+                            console.warn('RPC increment_view failed, trying update...', error);
+                            // Note: This is racy, but basic fallback
+                            const p = posts.find(x => x.id === postId);
+                            if (p) supabase.from('posts').update({ views_count: p.views + 1 }).eq('id', postId);
+                          }
+                        });
+                      }
+                    }}
+                  />
+                ))}
+              </div>
             </div>
           </div>
         )}
