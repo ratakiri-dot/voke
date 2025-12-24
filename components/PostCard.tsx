@@ -170,15 +170,16 @@ export const PostCard: React.FC<PostCardProps> = ({
             </div>
           </div>
           <div className="flex space-x-2">
-            {!isOwnPost && (
-              <button
-                onClick={() => setIsGiftOpen(true)}
-                className="h-11 px-4 bg-amber-50 text-amber-600 rounded-2xl flex items-center justify-center space-x-2 hover:bg-amber-100 transition-all shadow-sm border border-amber-100/50"
-              >
-                <i className="fas fa-gift text-sm"></i>
-                <span className="text-xs font-black">{post.gifts >= 1000 ? (post.gifts / 1000).toFixed(1) + 'k' : (post.gifts || '0')}</span>
-              </button>
-            )}
+            <button
+              onClick={() => !isOwnPost && setIsGiftOpen(true)}
+              className={`h-11 px-4 rounded-2xl flex items-center justify-center space-x-2 transition-all shadow-sm border ${isOwnPost
+                  ? 'bg-amber-100/30 text-amber-500 border-amber-100/30 cursor-default'
+                  : 'bg-amber-50 text-amber-600 border-amber-100/50 hover:bg-amber-100'
+                }`}
+            >
+              <i className="fas fa-gift text-sm"></i>
+              <span className="text-xs font-black">{post.gifts >= 1000 ? (post.gifts / 1000).toFixed(1) + 'k' : (post.gifts || '0')}</span>
+            </button>
             <button
               onClick={async () => {
                 // Strip HTML tags for clean text share

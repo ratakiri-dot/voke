@@ -597,22 +597,31 @@ const App: React.FC = () => {
     // 3. Increment Post Gifts
     const post = posts.find(p => p.id === postId);
     if (post) {
+      console.log('Attemping to increment Post gifts for:', postId);
       const { error: postUpdateErr } = await supabase.from('posts').update({ gifts_received: (post.gifts || 0) + gift.price }).eq('id', postId);
       if (postUpdateErr) {
-        console.error('Error updating post gifts:', postUpdateErr);
-        handleNotify('Catatan hadiah di postingan gagal diperbarui (RLS?).', 'info');
+        console.error('FAILED Post Update:', postUpdateErr.message, postUpdateErr.details);
+        handleNotify('Gagal update post (RLS?): ' + postUpdateErr.message, 'info');
+      } else {
+        console.log('SUCCESS Post Update');
       }
 
       // 4. Add to receiver balance 
+      console.log('Fetching author balance for profile:', post.userId);
       const { data: authorData, error: fetchErr } = await supabase.from('profiles').select('gift_balance').eq('id', post.userId).single();
       if (fetchErr) {
-        console.error('Error fetching receiver balance:', fetchErr);
+        console.error('FAILED Fetch Receiver Profile:', fetchErr.message);
       } else if (authorData) {
         const currentAuthorBalance = parseFloat(authorData.gift_balance.toString()) || 0;
+        console.log('Current receiver balance:', currentAuthorBalance);
+        console.log('Adding:', gift.price);
+
         const { error: receiveErr } = await supabase.from('profiles').update({ gift_balance: currentAuthorBalance + gift.price }).eq('id', post.userId);
         if (receiveErr) {
-          console.error('Error updating receiver balance:', receiveErr);
-          handleNotify('Poin gagal Masuk ke penerima. Pastikan kebijakan keamanan Supabase (RLS) mengizinkan update.', 'error');
+          console.error('FAILED Receiver Balance Update:', receiveErr.message, receiveErr.details);
+          handleNotify('Poin gagal Masuk ke penerima. Ini biasanya karena kebijakan keamanan Supabase (RLS).', 'error');
+        } else {
+          console.log('SUCCESS Receiver Balance Update. New Total:', currentAuthorBalance + gift.price);
         }
       }
     }
