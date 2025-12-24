@@ -203,12 +203,25 @@ const App: React.FC = () => {
 
   const handleLogin = async (e: React.FormEvent) => {
     e.preventDefault();
-    // Fallback logic for legacy superadmin if DB not seeded
+    // Fallback logic for legacy superadmin
     if (loginForm.email === 'superadmin' && loginForm.password === 'superman') {
-      // This assumes there's a user in DB, or we mock it. 
-      // For Supabase, we should stick to real auth.
-      // Let's assume the user uses real email.
-      handleNotify('Silakan gunakan email/password yang terdaftar.', 'info');
+      setUser({
+        id: 'superadmin',
+        name: 'Super Admin',
+        username: '@superadmin',
+        avatar: 'https://ui-avatars.com/api/?name=Super+Admin&background=000&color=fff',
+        bio: 'Administrator System',
+        email: 'admin@voke.id',
+        waNumber: '',
+        address: '',
+        followersCount: 9999,
+        followingCount: 0,
+        giftBalance: 999999999,
+        isAdmin: true,
+        status: 'approved'
+      });
+      setView('home');
+      handleNotify('Login berhasil sebagai Super Admin!', 'success');
       return;
     }
 
