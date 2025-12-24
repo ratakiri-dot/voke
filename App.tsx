@@ -556,31 +556,46 @@ const App: React.FC = () => {
   // --- Admin Data Fetching ---
   const fetchAdminData = async () => {
     if (!user?.isAdmin) return;
+    console.log('Fetching admin data...');
 
     // Fetch TopUps
-    const { data: topUps } = await supabase.from('transactions').select('*, profiles(name)').eq('type', 'topup').eq('status', 'pending');
+    const { data: topUps, error: topUpError } = await supabase
+      .from('transactions')
+      .select('*, profiles(name)')
+      .eq('type', 'topup')
+      .eq('status', 'pending');
+
+    if (topUpError) console.error('Error fetching TopUps:', topUpError);
     if (topUps) {
+      console.log('TopUps found:', topUps.length);
       setTopUpRequests(topUps.map((t: any) => ({
         id: t.id,
         userId: t.user_id,
         userName: t.profiles?.name || 'User',
         points: t.amount,
-        price: t.amount,
+        price: t.metadata?.price || t.amount,
         status: t.status,
         timestamp: new Date(t.created_at)
       })));
     }
 
     // Fetch Withdraws
-    const { data: withdraws } = await supabase.from('transactions').select('*, profiles(name)').eq('type', 'withdraw').eq('status', 'pending');
+    const { data: withdraws, error: withdrawError } = await supabase
+      .from('transactions')
+      .select('*, profiles(name)')
+      .eq('type', 'withdraw')
+      .eq('status', 'pending');
+
+    if (withdrawError) console.error('Error fetching Withdraws:', withdrawError);
     if (withdraws) {
+      console.log('Withdraws found:', withdraws.length);
       setWithdrawRequests(withdraws.map((t: any) => ({
         id: t.id,
         userId: t.user_id,
         userName: t.profiles?.name || 'User',
         amount: t.amount,
-        method: 'Bank Transfer',
-        account: 'N/A',
+        method: t.metadata?.method || 'Bank Transfer',
+        account: t.metadata?.account || 'N/A',
         status: t.status,
         timestamp: new Date(t.created_at)
       })));
@@ -1033,7 +1048,7 @@ const App: React.FC = () => {
             if (error) {
               handleNotify('Gagal membuat permintaan Top Up: ' + error.message, 'error');
             } else {
-              handleNotify('Permintaan Top Up berhasil dikirim ke Admin. Tunggu persetujuan.', 'success');
+              handleNotify('Permintaan dikirim! Mohon transfer & konfirmasi bukti ke email loudvoke@gmail.com atau WA 085163612553', 'success');
               setIsTopUpOpen(false);
             }
           }
@@ -1057,7 +1072,7 @@ const App: React.FC = () => {
           if (error) {
             handleNotify('Gagal membuat permintaan penarikan: ' + error.message, 'error');
           } else {
-            handleNotify('Permintaan penarikan dikirim ke Admin.', 'success');
+            handleNotify('Permintaan cair dana dikirim! Konfirmasi ke loudvoke@gmail.com / WA 085163612553', 'success');
             setIsWithdrawOpen(false);
           }
         }}

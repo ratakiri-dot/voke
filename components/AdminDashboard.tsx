@@ -270,7 +270,7 @@ export const AdminDashboard: React.FC<AdminDashboardProps> = ({
                   <div key={w.id} className="p-6 bg-white border border-slate-100 rounded-2xl flex items-center justify-between shadow-sm">
                     <div>
                       <p className="font-black text-slate-800 text-sm leading-none">{w.userName}</p>
-                      <p className="text-[10px] text-rose-500 font-black uppercase mt-2">{w.amount.toLocaleString()} Poin • {w.method}</p>
+                      <p className="text-[10px] text-rose-500 font-black uppercase mt-2">{w.amount.toLocaleString()} Poin • {w.method} ({w.account})</p>
                     </div>
                     <button onClick={() => onApproveWithdraw(w.id)} className="px-5 py-2.5 bg-slate-900 text-white rounded-xl text-[9px] font-black uppercase tracking-widest">Cairkan</button>
                   </div>
