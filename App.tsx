@@ -42,6 +42,14 @@ const App: React.FC = () => {
   const [drafts, setDrafts] = useState<Post[]>([]);
 
   const [isLoading, setIsLoading] = useState(false);
+  const [activeNotification, setActiveNotification] = useState<NotificationType | null>(null);
+
+  const [isTopUpOpen, setIsTopUpOpen] = useState(false);
+  const [isWithdrawOpen, setIsWithdrawOpen] = useState(false);
+
+  const [authMode, setAuthMode] = useState<'login' | 'signup'>('login');
+  const [loginForm, setLoginForm] = useState({ email: '', password: '' });
+  const [signupForm, setSignupForm] = useState({ name: '', username: '', email: '', password: '', bio: '', waNumber: '', address: '', avatar: '' });
 
   const handleNotify = (message: string, type: 'success' | 'error' | 'info') => {
     const newNotif: NotificationType = { id: Date.now().toString(), message, type, timestamp: new Date() };
