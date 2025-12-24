@@ -71,15 +71,28 @@ export const AdminDashboard: React.FC<AdminDashboardProps> = ({
       </div>
 
       <div className="flex border-b border-slate-100 bg-slate-50/50 p-2 overflow-x-auto no-scrollbar">
-        {(['users', 'finance', 'promo', 'reports', 'ads'] as const).map(tab => (
-          <button
-            key={tab}
-            onClick={() => { setActiveTab(tab); setSelectedUser(null); }}
-            className={`flex-none px-8 py-4 text-[10px] font-black uppercase tracking-widest rounded-2xl transition-all ${activeTab === tab ? 'bg-white text-indigo-600 shadow-sm' : 'text-slate-400 hover:text-slate-600'}`}
-          >
-            {tab === 'users' ? 'Pengguna' : tab === 'finance' ? 'Keuangan' : tab === 'promo' ? 'Promosi' : tab === 'reports' ? 'Laporan' : 'Iklan'}
-          </button>
-        ))}
+        {(['users', 'finance', 'promo', 'reports', 'ads'] as const).map(tab => {
+          let count = 0;
+          if (tab === 'users') count = signupRequests.length;
+          if (tab === 'finance') count = topUps.length + withdraws.length;
+          if (tab === 'promo') count = pendingPromos.length;
+          if (tab === 'reports') count = reports.length;
+
+          return (
+            <button
+              key={tab}
+              onClick={() => { setActiveTab(tab); setSelectedUser(null); }}
+              className={`flex-none px-6 py-4 text-[10px] font-black uppercase tracking-widest rounded-2xl transition-all flex items-center space-x-2 ${activeTab === tab ? 'bg-white text-indigo-600 shadow-sm' : 'text-slate-400 hover:text-slate-600'}`}
+            >
+              <span>{tab === 'users' ? 'Pengguna' : tab === 'finance' ? 'Keuangan' : tab === 'promo' ? 'Promosi' : tab === 'reports' ? 'Laporan' : 'Iklan'}</span>
+              {count > 0 && (
+                <span className={`w-5 h-5 rounded-full flex items-center justify-center text-[9px] text-white ${activeTab === tab ? 'bg-indigo-600' : 'bg-slate-300'}`}>
+                  {count}
+                </span>
+              )}
+            </button>
+          );
+        })}
       </div>
 
       <div className="p-8 max-h-[65vh] overflow-y-auto custom-scrollbar">
