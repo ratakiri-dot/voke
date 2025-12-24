@@ -21,20 +21,20 @@ export const Notification: React.FC<NotificationProps> = ({ notification, onClos
     }
     : notification.type === 'success'
       ? {
-        bg: 'bg-[#F0FFF4]/90',
-        border: 'border-emerald-200',
-        iconBg: 'bg-emerald-500',
+        bg: 'bg-blue-50/90',
+        border: 'border-blue-200',
+        iconBg: 'bg-blue-600',
         icon: 'fa-circle-check',
-        text: 'text-emerald-900',
-        progress: 'bg-emerald-500'
+        text: 'text-blue-900',
+        progress: 'bg-blue-600'
       }
       : {
-        bg: 'bg-[#EEF2FF]/90',
-        border: 'border-indigo-200',
-        iconBg: 'bg-indigo-500',
+        bg: 'bg-[#ECFEFF]/90',
+        border: 'border-cyan-200',
+        iconBg: 'bg-cyan-500',
         icon: 'fa-circle-info',
-        text: 'text-indigo-900',
-        progress: 'bg-indigo-500'
+        text: 'text-cyan-900',
+        progress: 'bg-cyan-500'
       };
 
   React.useEffect(() => {
@@ -43,8 +43,8 @@ export const Notification: React.FC<NotificationProps> = ({ notification, onClos
   }, [onClose]);
 
   return (
-    <div className="fixed top-6 left-1/2 -translate-x-1/2 z-[1000] w-[calc(100%-3rem)] max-w-md animate-in fade-in slide-in-from-top-6 zoom-in-95 duration-500">
-      <div className={`relative overflow-hidden backdrop-blur-xl ${styles.bg} ${styles.border} border-2 p-6 rounded-[2.5rem] shadow-[0_20px_50px_rgba(0,0,0,0.1)] flex items-start space-x-5`}>
+    <div className="fixed top-4 md:top-6 left-1/2 -translate-x-1/2 z-[1000] w-[calc(100%-2rem)] md:w-[calc(100%-3rem)] max-w-md animate-in fade-in slide-in-from-top-6 zoom-in-95 duration-500">
+      <div className={`relative overflow-hidden backdrop-blur-xl ${styles.bg} ${styles.border} border-2 p-4 md:p-6 rounded-[1.5rem] md:rounded-[2.5rem] shadow-[0_20px_50px_rgba(0,0,0,0.1)] flex items-start space-x-3 md:space-x-5`}>
 
         {/* Progress Bar Background */}
         <div className="absolute bottom-0 left-0 w-full h-1.5 bg-slate-200/30">
@@ -57,8 +57,8 @@ export const Notification: React.FC<NotificationProps> = ({ notification, onClos
           />
         </div>
 
-        <div className={`w-12 h-12 ${styles.iconBg} text-white rounded-[1.25rem] flex items-center justify-center shrink-0 shadow-lg shadow-current/20`}>
-          <i className={`fas ${styles.icon} text-xl`}></i>
+        <div className={`w-10 h-10 md:w-12 md:h-12 ${styles.iconBg} text-white rounded-[1rem] md:rounded-[1.25rem] flex items-center justify-center shrink-0 shadow-lg shadow-current/20`}>
+          <i className={`fas ${styles.icon} text-lg md:text-xl`}></i>
         </div>
 
         <div className="flex-1 pt-1">
