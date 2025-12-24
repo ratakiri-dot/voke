@@ -244,40 +244,67 @@ const App: React.FC = () => {
 
   const handleSignUp = async (e: React.FormEvent) => {
     e.preventDefault();
-    const { data, error } = await supabase.auth.signUp({
-      email: signupForm.email,
-      password: signupForm.password,
-      options: {
-        data: {
-          full_name: signupForm.name,
-          username: signupForm.username.startsWith('@') ? signupForm.username : `@${signupForm.username}`,
-          avatar_url: signupForm.avatar
+    console.log('Signup initiated', signupForm);
+    setIsLoading(true);
+
+    try {
+      const formattedUsername = signupForm.username.startsWith('@') ? signupForm.username : `@${signupForm.username}`;
+      console.log('Formatted User:', formattedUsername);
+
+      const { data, error } = await supabase.auth.signUp({
+        email: signupForm.email,
+        password: signupForm.password,
+        options: {
+          data: {
+            full_name: signupForm.name,
+            username: formattedUsername,
+            avatar_url: signupForm.avatar
+          }
+        }
+      });
+
+      console.log('Supabase Response:', { data, error });
+
+      if (error) {
+        console.error('Signup Error:', error);
+        handleNotify(error.message, 'error');
+        setIsLoading(false);
+      } else {
+        if (data.user) {
+          console.log('User created, updating profile...');
+          // Update profile with extra fields, using upsert to be safe if trigger failed
+          const { error: profileError } = await supabase.from('profiles').upsert({
+            id: data.user.id,
+            name: signupForm.name,
+            username: formattedUsername,
+            avatar_url: signupForm.avatar,
+            email: signupForm.email,
+            bio: signupForm.bio,
+            wa_number: signupForm.waNumber,
+            address: signupForm.address,
+            status: 'pending',
+            role: 'user',
+            gift_balance: 0
+          });
+
+          if (profileError) {
+            console.error('Profile update error:', profileError);
+            // handleNotify('Profile update failed: ' + profileError.message, 'error'); // Optional: show to user
+          }
+
+          handleNotify('Pendaftaran berhasil! Silakan login.', 'success');
+          setAuthMode('login');
+          setIsLoading(false);
+        } else {
+          console.warn('No user data returned from Supabase');
+          handleNotify('Warning: No user data returned', 'info');
+          setIsLoading(false);
         }
       }
-    });
-
-    if (error) {
-      handleNotify(error.message, 'error');
-    } else {
-      if (data.user) {
-        // Update profile with extra fields, using upsert to be safe if trigger failed
-        await supabase.from('profiles').upsert({
-          id: data.user.id,
-          name: signupForm.name,
-          username: signupForm.username.startsWith('@') ? signupForm.username : `@${signupForm.username}`,
-          avatar_url: signupForm.avatar,
-          email: signupForm.email,
-          bio: signupForm.bio,
-          wa_number: signupForm.waNumber,
-          address: signupForm.address,
-          status: 'pending',
-          role: 'user',
-          gift_balance: 0
-        });
-
-        handleNotify('Pendaftaran berhasil! Silakan login.', 'success');
-        setAuthMode('login');
-      }
+    } catch (err: any) {
+      console.error('Unexpected Signup Exception:', err);
+      handleNotify('Terjadi kesalahan tidak terduga: ' + (err.message || err), 'error');
+      setIsLoading(false);
     }
   };
 
