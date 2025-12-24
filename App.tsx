@@ -97,6 +97,23 @@ const App: React.FC = () => {
     }
 
     if (data) {
+      // Check if user is approved
+      if (data.status === 'pending') {
+        handleNotify('Akun Anda menunggu persetujuan admin. Silakan hubungi admin.', 'info');
+        await supabase.auth.signOut();
+        setUser(null);
+        setView('landing');
+        return;
+      }
+
+      if (data.status === 'rejected') {
+        handleNotify('Akun Anda ditolak oleh admin.', 'error');
+        await supabase.auth.signOut();
+        setUser(null);
+        setView('landing');
+        return;
+      }
+
       setUser({
         id: data.id,
         name: data.name || 'User',
@@ -287,7 +304,10 @@ const App: React.FC = () => {
             // handleNotify('Profile update failed: ' + profileError.message, 'error'); // Optional: show to user
           }
 
-          handleNotify('Pendaftaran berhasil! Silakan login.', 'success');
+          // Logout user immediately after signup (they need admin approval first)
+          await supabase.auth.signOut();
+
+          handleNotify('Pendaftaran berhasil! Tunggu persetujuan admin untuk login.', 'success');
           setAuthMode('login');
           setIsLoading(false);
         } else {
