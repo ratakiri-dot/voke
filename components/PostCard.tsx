@@ -1,7 +1,5 @@
-
 import React, { useState } from 'react';
 import { Post, User, Advertisement } from '../types';
-import { MOCK_USERS_DATA } from '../constants';
 import { GiftModal, ReportModal, PromoteModal, GiftItem } from './Modals';
 
 interface PostCardProps {
@@ -15,21 +13,21 @@ interface PostCardProps {
   onGift: (postId: string, gift: GiftItem) => void;
   onNotify: (msg: string, type: 'success' | 'error' | 'info') => void;
   onView?: (postId: string) => void;
-  userGiftBalance?: number; 
+  userGiftBalance?: number;
   onTopUpRequest?: () => void;
   onPromoteRequest?: (postId: string) => void;
   bottomAd?: Advertisement | null;
 }
 
-export const PostCard: React.FC<PostCardProps> = ({ 
-  post, isFollowing, isSaved, onFollowToggle, onLike, onSaveToggle, 
-  onAddComment, onGift, onNotify, onView, 
-  userGiftBalance = 0, onTopUpRequest = () => {},
-  onPromoteRequest = (_id: string) => {},
+export const PostCard: React.FC<PostCardProps> = ({
+  post, isFollowing, isSaved, onFollowToggle, onLike, onSaveToggle,
+  onAddComment, onGift, onNotify, onView,
+  userGiftBalance = 0, onTopUpRequest = () => { },
+  onPromoteRequest = (_id: string) => { },
   bottomAd
 }) => {
-  const author = MOCK_USERS_DATA[post.userId] || { name: 'Sistem VOꓘE', avatar: 'https://picsum.photos/seed/me/200', username: '@voke_official' };
-  
+  const author = post.author || { name: 'Sistem VOꓘE', avatar: 'https://picsum.photos/seed/me/200', username: '@voke_official' };
+
   const [isGiftOpen, setIsGiftOpen] = useState(false);
   const [isReportOpen, setIsReportOpen] = useState(false);
   const [isPromoteOpen, setIsPromoteOpen] = useState(false);
@@ -72,17 +70,16 @@ export const PostCard: React.FC<PostCardProps> = ({
           </div>
           {!isOwnPost ? (
             <div className="flex space-x-2">
-              <button 
+              <button
                 onClick={() => setIsReportOpen(true)}
                 className="w-10 h-10 bg-slate-50 text-slate-300 hover:text-rose-500 rounded-xl flex items-center justify-center transition-all"
               >
                 <i className="fas fa-flag text-xs"></i>
               </button>
-              <button 
+              <button
                 onClick={() => onFollowToggle(post.userId)}
-                className={`px-6 py-2.5 rounded-xl text-[11px] font-black uppercase tracking-widest transition-all ${
-                  isFollowing ? 'bg-slate-100 text-slate-500' : 'bg-slate-900 text-white hover:bg-black shadow-lg shadow-slate-900/10'
-                }`}
+                className={`px-6 py-2.5 rounded-xl text-[11px] font-black uppercase tracking-widest transition-all ${isFollowing ? 'bg-slate-100 text-slate-500' : 'bg-slate-900 text-white hover:bg-black shadow-lg shadow-slate-900/10'
+                  }`}
               >
                 {isFollowing ? 'Mengikuti' : 'Ikuti'}
               </button>
@@ -96,14 +93,14 @@ export const PostCard: React.FC<PostCardProps> = ({
 
         <div className="mb-6">
           <h3 className="text-3xl font-[800] mb-4 text-slate-800 leading-[1.15] tracking-tight group-hover:text-indigo-600 transition-colors">{post.title}</h3>
-          
+
           <div className="flex flex-wrap items-center gap-3">
             {post.caption && (
               <span className="text-[10px] bg-slate-100 text-slate-500 px-4 py-2 rounded-xl font-black uppercase tracking-wider">
                 #{post.caption.replace(/#/g, '')}
               </span>
             )}
-            
+
             {post.giftStats && Object.entries(post.giftStats).length > 0 && (
               <div className="flex flex-wrap gap-2">
                 {Object.entries(post.giftStats).map(([name, stat]) => {
@@ -119,14 +116,14 @@ export const PostCard: React.FC<PostCardProps> = ({
             )}
           </div>
         </div>
-        
+
         <div className="relative mb-10">
-          <div 
+          <div
             className={`text-slate-600 leading-[1.8] text-lg transition-all duration-700 ${!isExpanded ? 'line-clamp-3 overflow-hidden' : ''}`}
             dangerouslySetInnerHTML={{ __html: post.content }}
           />
           {!isExpanded && (
-            <button 
+            <button
               onClick={handleExpand}
               className="mt-6 text-indigo-600 font-black text-[11px] uppercase tracking-[0.25em] hover:text-indigo-700 flex items-center space-x-2"
             >
@@ -207,15 +204,15 @@ export const PostCard: React.FC<PostCardProps> = ({
             {post.comments.length === 0 && <p className="text-center text-slate-300 text-[10px] font-black uppercase tracking-widest">Belum ada tanggapan.</p>}
           </div>
           <div className="relative">
-            <input 
-              type="text" 
+            <input
+              type="text"
               placeholder="Berikan apresiasi Anda..."
               value={commentText}
               onChange={(e) => setCommentText(e.target.value)}
               onKeyDown={(e) => e.key === 'Enter' && handleSendComment()}
               className="w-full pl-6 pr-16 py-4 bg-white border border-slate-200 rounded-2xl text-sm focus:ring-4 focus:ring-indigo-500/10 outline-none transition-all font-medium"
             />
-            <button 
+            <button
               onClick={handleSendComment}
               disabled={!commentText.trim()}
               className="absolute right-2 top-2 w-12 h-12 bg-slate-900 text-white rounded-xl flex items-center justify-center hover:bg-black transition-all disabled:opacity-20 active:scale-90"

@@ -40,7 +40,12 @@ export interface Post {
   isLiked?: boolean;
   isPromoted?: boolean;
   promotedUntil?: Date;
-  isPendingPromotion?: boolean; 
+  isPendingPromotion?: boolean;
+  author?: {
+    name: string;
+    username: string;
+    avatar: string;
+  };
 }
 
 export interface TopUpRequest {
