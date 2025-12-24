@@ -557,18 +557,15 @@ const App: React.FC = () => {
   // --- Admin Data Fetching ---
   const fetchAdminData = async () => {
     if (!user?.isAdmin) return;
-    console.log('Fetching admin data...');
 
     // Fetch TopUps
-    const { data: topUps, error: topUpError } = await supabase
+    const { data: topUps } = await supabase
       .from('transactions')
       .select('*, profiles(name)')
       .eq('type', 'topup')
       .eq('status', 'pending');
 
-    if (topUpError) console.error('Error fetching TopUps:', topUpError);
     if (topUps) {
-      console.log('TopUps found:', topUps.length);
       setTopUpRequests(topUps.map((t: any) => ({
         id: t.id,
         userId: t.user_id,
@@ -581,15 +578,13 @@ const App: React.FC = () => {
     }
 
     // Fetch Withdraws
-    const { data: withdraws, error: withdrawError } = await supabase
+    const { data: withdraws } = await supabase
       .from('transactions')
       .select('*, profiles(name)')
       .eq('type', 'withdraw')
       .eq('status', 'pending');
 
-    if (withdrawError) console.error('Error fetching Withdraws:', withdrawError);
     if (withdraws) {
-      console.log('Withdraws found:', withdraws.length);
       setWithdrawRequests(withdraws.map((t: any) => ({
         id: t.id,
         userId: t.user_id,
@@ -1049,10 +1044,9 @@ const App: React.FC = () => {
 
             setIsProcessingTx(false);
             if (error) {
-              console.error('TOPUP_ERROR_DETAIL:', error);
-              handleNotify(`Gagal (v1.2): ${error.message} [Code: ${error.code || 'None'}]`, 'error');
+              handleNotify(`Gagal: ${error.message}`, 'error');
             } else {
-              handleNotify('Permintaan dikirim (v1.2)! Mohon transfer & konfirmasi bukti ke email loudvoke@gmail.com atau WA 085163612553', 'success');
+              handleNotify('Permintaan dikirim! Mohon transfer & konfirmasi bukti ke email loudvoke@gmail.com atau WA 085163612553', 'success');
               setIsTopUpOpen(false);
             }
           }
@@ -1076,10 +1070,9 @@ const App: React.FC = () => {
 
           setIsProcessingTx(false);
           if (error) {
-            console.error('WITHDRAW_ERROR_DETAIL:', error);
-            handleNotify(`Gagal (v1.2): ${error.message} [Code: ${error.code || 'None'}]`, 'error');
+            handleNotify(`Gagal: ${error.message}`, 'error');
           } else {
-            handleNotify('Permintaan cair dana dikirim (v1.2)! Konfirmasi ke loudvoke@gmail.com / WA 085163612553', 'success');
+            handleNotify('Permintaan cair dana dikirim! Konfirmasi ke loudvoke@gmail.com / WA 085163612553', 'success');
             setIsWithdrawOpen(false);
           }
         }}
