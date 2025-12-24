@@ -175,9 +175,14 @@ export const PostCard: React.FC<PostCardProps> = ({
             )}
             <button
               onClick={async () => {
+                // Strip HTML tags for clean text share
+                const tempDiv = document.createElement('div');
+                tempDiv.innerHTML = post.content;
+                const cleanText = tempDiv.textContent || tempDiv.innerText || '';
+
                 const shareData = {
                   title: post.title,
-                  text: post.content.substring(0, 100) + '...',
+                  text: cleanText.substring(0, 100) + '...',
                   url: window.location.href
                 };
 

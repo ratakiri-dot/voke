@@ -477,6 +477,18 @@ const App: React.FC = () => {
     const post = posts.find(p => p.id === postId);
     if (!post) return;
 
+    // Optimistic Update
+    setPosts(prevPosts => prevPosts.map(p => {
+      if (p.id === postId) {
+        return {
+          ...p,
+          isLiked: !p.isLiked,
+          likes: p.isLiked ? p.likes - 1 : p.likes + 1
+        };
+      }
+      return p;
+    }));
+
     if (post.isLiked) {
       // Unlike
       await supabase.from('likes').delete().match({ post_id: postId, user_id: user.id });
