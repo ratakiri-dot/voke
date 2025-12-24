@@ -610,13 +610,17 @@ const App: React.FC = () => {
     }
 
     // 3. Record transaction
-    await supabase.from('transactions').insert({
+    const { error: txErr } = await supabase.from('transactions').insert({
       user_id: user.id,
       type: 'promotion_request',
       amount: PROMOTE_COST,
       related_entity_id: postId,
       status: 'completed'
     });
+
+    if (txErr) {
+      console.warn('Transaction record failed but points deducted:', txErr.message);
+    }
 
     fetchUserProfile(user.id);
     fetchPosts();
