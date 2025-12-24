@@ -158,6 +158,7 @@ const App: React.FC = () => {
   };
 
   const fetchPosts = async () => {
+    console.log('Fetching posts...');
     const { data, error } = await supabase
       .from('posts')
       .select(`
@@ -168,7 +169,13 @@ const App: React.FC = () => {
       `)
       .order('created_at', { ascending: false });
 
-    if (error) { console.error(error); return; }
+    if (error) {
+      console.error('Error fetching posts:', error);
+      handleNotify('Gagal memuat posts: ' + error.message, 'error');
+      return;
+    }
+
+    console.log('Posts fetched:', data?.length || 0, 'posts');
 
     if (data) {
       const mappedPosts: Post[] = data.map((p: any) => ({
@@ -198,6 +205,7 @@ const App: React.FC = () => {
           avatar: p.profiles?.avatar_url || ''
         }
       }));
+      console.log('Mapped posts:', mappedPosts.length);
       setPosts(mappedPosts);
     }
   };
