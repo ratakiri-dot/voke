@@ -310,6 +310,26 @@ const App: React.FC = () => {
     try {
       const formattedUsername = signupForm.username.startsWith('@') ? signupForm.username : `@${signupForm.username}`;
 
+      // Check if username already exists
+      const { data: existingUser, error: checkError } = await supabase
+        .from('profiles')
+        .select('username')
+        .eq('username', formattedUsername)
+        .maybeSingle();
+
+      if (checkError) {
+        console.error('Error checking username:', checkError);
+        handleNotify('Gagal memeriksa username: ' + checkError.message, 'error');
+        setIsLoading(false);
+        return;
+      }
+
+      if (existingUser) {
+        handleNotify('Username sudah digunakan. Silakan pilih username lain.', 'error');
+        setIsLoading(false);
+        return;
+      }
+
       const { data, error } = await supabase.auth.signUp({
         email: signupForm.email,
         password: signupForm.password,
@@ -770,6 +790,14 @@ const App: React.FC = () => {
                 <div className="space-y-1">
                   <label className="text-[10px] font-black text-slate-400 uppercase tracking-widest ml-1">Email</label>
                   <input required type="email" value={signupForm.email} onChange={e => setSignupForm({ ...signupForm, email: e.target.value })} className="w-full p-4 bg-slate-50 border-slate-100 border rounded-2xl font-bold text-sm" placeholder="mail@voke.id" disabled={isLoading} />
+                </div>
+                <div className="space-y-1">
+                  <label className="text-[10px] font-black text-slate-400 uppercase tracking-widest ml-1">Nomor WhatsApp</label>
+                  <input required type="tel" value={signupForm.waNumber} onChange={e => setSignupForm({ ...signupForm, waNumber: e.target.value })} className="w-full p-4 bg-slate-50 border-slate-100 border rounded-2xl font-bold text-sm" placeholder="08123456789" disabled={isLoading} />
+                </div>
+                <div className="space-y-1">
+                  <label className="text-[10px] font-black text-slate-400 uppercase tracking-widest ml-1">Alamat</label>
+                  <input required type="text" value={signupForm.address} onChange={e => setSignupForm({ ...signupForm, address: e.target.value })} className="w-full p-4 bg-slate-50 border-slate-100 border rounded-2xl font-bold text-sm" placeholder="Alamat lengkap" disabled={isLoading} />
                 </div>
                 <div className="space-y-1">
                   <label className="text-[10px] font-black text-slate-400 uppercase tracking-widest ml-1">Password</label>
