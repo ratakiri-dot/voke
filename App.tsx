@@ -206,6 +206,7 @@ const App: React.FC = () => {
         timestamp: new Date(p.created_at),
         isPromoted: p.is_promoted,
         promotedUntil: p.promoted_until ? new Date(p.promoted_until) : undefined,
+        isPendingPromotion: p.is_pending_promotion,
         author: p.profiles ? {
           name: p.profiles.name,
           username: p.profiles.username,
@@ -586,6 +587,42 @@ const App: React.FC = () => {
     handleNotify(`Apresiasi ${gift.name} terkirim!`, 'success');
   };
 
+  const handlePromoteRequest = async (postId: string) => {
+    if (!user) return;
+    const PROMOTE_COST = 10000;
+    if (user.giftBalance < PROMOTE_COST) {
+      handleNotify('Saldo tidak mencukupi untuk Spotlight.', 'error');
+      return;
+    }
+
+    // 1. Deduct points
+    const { error: deductErr } = await supabase.from('profiles').update({ gift_balance: user.giftBalance - PROMOTE_COST }).eq('id', user.id);
+    if (deductErr) {
+      handleNotify('Gagal memproses poin: ' + deductErr.message, 'error');
+      return;
+    }
+
+    // 2. Set pending promotion
+    const { error: updateErr } = await supabase.from('posts').update({ is_pending_promotion: true }).eq('id', postId);
+    if (updateErr) {
+      handleNotify('Gagal mengajukan Spotlight: ' + updateErr.message, 'error');
+      return;
+    }
+
+    // 3. Record transaction
+    await supabase.from('transactions').insert({
+      user_id: user.id,
+      type: 'promotion_request',
+      amount: PROMOTE_COST,
+      related_entity_id: postId,
+      status: 'completed'
+    });
+
+    fetchUserProfile(user.id);
+    fetchPosts();
+    handleNotify('Pengajuan Spotlight terkirim! Menunggu persetujuan admin.', 'success');
+  };
+
   // --- Admin Actions Mock/Impl ---
   // Note: Implementing full Admin actions with Supabase would require RLS policies and more handlers.
   // We will basic implementations.
@@ -664,6 +701,12 @@ const App: React.FC = () => {
         timestamp: new Date(r.created_at)
       })));
     }
+
+    // Explicitly fetch pending promos if any (though fetchPosts already gets them, 
+    // we need to make sure they are mapped and available for the AdminDashboard)
+    // Actually, AdminDashboard uses `posts.filter(p => p.isPendingPromotion)` in the render props,
+    // so we just need to make sure fetchPosts includes is_pending_promotion.
+    // I already added is_pending_promotion to fetchPosts mapping.
   };
 
   useEffect(() => {
@@ -744,6 +787,46 @@ const App: React.FC = () => {
     fetchAdminData();
     fetchPosts();
     handleNotify('Post dihapus.', 'success');
+  };
+
+  const handleApprovePromo = async (postId: string) => {
+    const until = new Date();
+    until.setDate(until.getDate() + 7);
+
+    const { error } = await supabase.from('posts').update({
+      is_pending_promotion: false,
+      is_promoted: true,
+      promoted_until: until.toISOString()
+    }).eq('id', postId);
+
+    if (error) {
+      handleNotify('Gagal menyetujui Spotlight: ' + error.message, 'error');
+    } else {
+      fetchAdminData();
+      fetchPosts();
+      handleNotify('Spotlight diaktifkan selama 7 hari.', 'success');
+    }
+  };
+
+  const handleRejectPromo = async (postId: string) => {
+    // 1. Mark as not pending
+    const { error } = await supabase.from('posts').update({ is_pending_promotion: false }).eq('id', postId);
+
+    if (error) {
+      handleNotify('Gagal menolak Spotlight: ' + error.message, 'error');
+    } else {
+      // 2. Refund points (Optional but fair)
+      const post = posts.find(p => p.id === postId);
+      if (post) {
+        const { data: userData } = await supabase.from('profiles').select('gift_balance').eq('id', post.userId).single();
+        if (userData) {
+          await supabase.from('profiles').update({ gift_balance: userData.gift_balance + 10000 }).eq('id', post.userId);
+        }
+      }
+      fetchAdminData();
+      fetchPosts();
+      handleNotify('Spotlight ditolak & poin dikembalikan.', 'info');
+    }
   };
 
   // --- Render ---
@@ -898,8 +981,8 @@ const App: React.FC = () => {
             onRejectTopUp={() => { }}
             onApproveWithdraw={handleApproveWithdraw}
             onRejectWithdraw={() => { }}
-            onApprovePromo={() => { }}
-            onRejectPromo={() => { }}
+            onApprovePromo={handleApprovePromo}
+            onRejectPromo={handleRejectPromo}
             onDismissReport={onDismissReport}
             onDeletePost={onDeletePost}
             onApproveUser={handleApproveUser}
@@ -1090,7 +1173,7 @@ const App: React.FC = () => {
                   onSaveToggle={id => setSavedPosts(prev => { const n = new Set(prev); n.has(id) ? n.delete(id) : n.add(id); return n; })}
                   onAddComment={handleAddComment}
                   onGift={handleGift} onNotify={handleNotify} userGiftBalance={totalBalance} onTopUpRequest={() => setIsTopUpOpen(true)}
-                  onPromoteRequest={id => handleNotify('Feature coming soon with DB', 'info')}
+                  onPromoteRequest={handlePromoteRequest}
                   onDelete={handleDeletePost}
                   currentUserId={user?.id}
                   bottomAd={activeBottomAd}
