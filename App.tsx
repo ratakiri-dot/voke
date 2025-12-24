@@ -328,6 +328,30 @@ const App: React.FC = () => {
     setView('landing');
   };
 
+  const handleUpdateProfile = async (updatedUser: User) => {
+    if (!user) return;
+
+    const { error } = await supabase
+      .from('profiles')
+      .update({
+        name: updatedUser.name,
+        username: updatedUser.username,
+        bio: updatedUser.bio,
+        avatar_url: updatedUser.avatar,
+        wa_number: updatedUser.waNumber,
+        address: updatedUser.address
+      })
+      .eq('id', user.id);
+
+    if (error) {
+      handleNotify('Gagal memperbarui profil: ' + error.message, 'error');
+    } else {
+      handleNotify('Profil berhasil diperbarui!', 'success');
+      fetchUserProfile(user.id); // Refresh user data
+      setView('profile');
+    }
+  };
+
   // --- Actions ---
 
   const handlePublish = async (title: string, content: string, caption: string) => {
@@ -527,6 +551,22 @@ const App: React.FC = () => {
     handleNotify('User ditolak.', 'info');
   };
 
+  const handleDeleteUser = async (id: string) => {
+    // Delete from profiles (this will cascade delete from auth.users if configured)
+    const { error: profileError } = await supabase.from('profiles').delete().eq('id', id);
+
+    // Also delete from auth.users (requires admin API or service role)
+    const { error: authError } = await supabase.auth.admin.deleteUser(id);
+
+    if (profileError || authError) {
+      handleNotify('Gagal menghapus user: ' + (profileError?.message || authError?.message), 'error');
+    } else {
+      fetchAdminData();
+      fetchAllUsers();
+      handleNotify('User berhasil dihapus.', 'success');
+    }
+  };
+
   const onDismissReport = async (id: string) => {
     await supabase.from('reports').update({ status: 'resolved' }).eq('id', id);
     fetchAdminData();
@@ -679,6 +719,7 @@ const App: React.FC = () => {
             onDeletePost={onDeletePost}
             onApproveUser={handleApproveUser}
             onRejectUser={handleRejectUser}
+            onDeleteUser={handleDeleteUser}
             onSaveAd={() => { }}
             onDeleteAd={() => { }}
             onToggleAd={() => { }}
@@ -712,6 +753,12 @@ const App: React.FC = () => {
               {posts.filter(p => p.userId === user?.id).map(p => <PostCard key={p.id} post={p} isFollowing={false} isSaved={savedPosts.has(p.id)} onFollowToggle={() => { }} onLike={handleLike} onSaveToggle={id => setSavedPosts(prev => { const n = new Set(prev); n.has(id) ? n.delete(id) : n.add(id); return n; })} onAddComment={handleAddComment} onGift={handleGift} onNotify={handleNotify} userGiftBalance={totalBalance} />)}
             </div>
           </div>
+        ) : view === 'edit-profile' ? (
+          <ProfileEditor
+            user={user!}
+            onSave={handleUpdateProfile}
+            onCancel={() => setView('profile')}
+          />
         ) : view === 'wallet' ? (
           <div className="space-y-8 animate-in fade-in slide-in-from-bottom-4">
             <div className="bg-slate-900 rounded-[3rem] p-12 text-white relative overflow-hidden shadow-2xl">
