@@ -244,12 +244,10 @@ const App: React.FC = () => {
 
   const handleSignUp = async (e: React.FormEvent) => {
     e.preventDefault();
-    console.log('Signup initiated', signupForm);
     setIsLoading(true);
 
     try {
       const formattedUsername = signupForm.username.startsWith('@') ? signupForm.username : `@${signupForm.username}`;
-      console.log('Formatted User:', formattedUsername);
 
       const { data, error } = await supabase.auth.signUp({
         email: signupForm.email,
@@ -263,15 +261,12 @@ const App: React.FC = () => {
         }
       });
 
-      console.log('Supabase Response:', { data, error });
-
       if (error) {
         console.error('Signup Error:', error);
         handleNotify(error.message, 'error');
         setIsLoading(false);
       } else {
         if (data.user) {
-          console.log('User created, updating profile...');
           // Update profile with extra fields, using upsert to be safe if trigger failed
           const { error: profileError } = await supabase.from('profiles').upsert({
             id: data.user.id,
@@ -296,7 +291,6 @@ const App: React.FC = () => {
           setAuthMode('login');
           setIsLoading(false);
         } else {
-          console.warn('No user data returned from Supabase');
           handleNotify('Warning: No user data returned', 'info');
           setIsLoading(false);
         }
@@ -439,6 +433,7 @@ const App: React.FC = () => {
 
     // Fetch Registration Requests (Pending Users)
     const { data: pendingUsers } = await supabase.from('profiles').select('*').eq('status', 'pending');
+
     if (pendingUsers) {
       setSignupRequests(pendingUsers.map((p: any) => ({
         id: p.id,
