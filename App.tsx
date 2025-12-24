@@ -196,6 +196,7 @@ const App: React.FC = () => {
       .from('posts')
       .select(`
         *,
+        gifts_received,
         profiles!user_id (name, username, avatar_url),
         likes (user_id),
         comments (id, text, user_id, created_at, profiles(name))
@@ -223,7 +224,7 @@ const App: React.FC = () => {
         likes: p.likes_count,
         shares: p.shares_count,
         views: p.views_count,
-        gifts: p.gifts_received,
+        gifts: p.gifts_received || 0,
         timestamp: new Date(p.created_at),
         isPromoted: p.is_promoted,
         promotedUntil: p.promoted_until ? new Date(p.promoted_until) : undefined,
@@ -243,6 +244,7 @@ const App: React.FC = () => {
         isLiked: p.likes.some((l: any) => l.user_id === user?.id),
       }));
       console.log('Mapped posts:', mappedPosts.length);
+      console.log('Gift values in posts:', mappedPosts.map(p => ({ id: p.id, gifts: p.gifts })));
       setPosts(mappedPosts);
     }
   };

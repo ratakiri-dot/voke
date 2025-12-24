@@ -171,18 +171,18 @@ export const PostCard: React.FC<PostCardProps> = ({
             </div>
           </div>
           <div className="flex space-x-2">
+            {/* GIFT BUTTON - Always Visible */}
             <button
               onClick={() => !isOwnPost && setIsGiftOpen(true)}
               className={`h-11 px-4 rounded-2xl flex items-center justify-center space-x-2 transition-all shadow-sm border ${isOwnPost
-                ? 'bg-amber-100/30 text-amber-600 border-amber-100/30 cursor-default'
-                : 'bg-amber-50 text-amber-600 border-amber-100/50 hover:bg-amber-100'
+                  ? 'bg-gradient-to-r from-amber-100 to-amber-50 text-amber-700 border-amber-200 cursor-default'
+                  : 'bg-gradient-to-r from-amber-50 to-yellow-50 text-amber-700 border-amber-200 hover:from-amber-100 hover:to-yellow-100'
                 }`}
+              title={isOwnPost ? `Total hadiah: Rp ${(post.gifts || 0).toLocaleString('id-ID')}` : 'Kirim hadiah'}
             >
-              <i className="fas fa-gift text-sm"></i>
-              <span className="text-xs font-black">
-                {typeof post.gifts === 'number' && !isNaN(post.gifts)
-                  ? (post.gifts >= 1000 ? (post.gifts / 1000).toFixed(1) + 'k' : post.gifts)
-                  : '0'}
+              <i className="fas fa-gift text-base text-amber-600"></i>
+              <span className="text-sm font-extrabold text-amber-800">
+                {post.gifts >= 1000 ? `${(post.gifts / 1000).toFixed(1)}k` : (post.gifts || 0)}
               </span>
             </button>
             <button
