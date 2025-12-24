@@ -70,7 +70,7 @@ export const RichEditor: React.FC<RichEditorProps> = ({ onPublish, onSaveDraft, 
             <div className="w-10 h-10 bg-indigo-50 text-indigo-600 rounded-xl flex items-center justify-center">
               <i className="fas fa-pen-nib"></i>
             </div>
-            <h2 className="text-2xl font-black text-gray-800 tracking-tight">Ruang Kreatif</h2>
+            <h2 className="text-2xl font-black text-gray-800 tracking-tight">Ruang Kreatif (v1.1)</h2>
           </div>
           <button onClick={onCancel} className="w-10 h-10 rounded-full hover:bg-gray-100 flex items-center justify-center text-gray-400 transition-colors">
             <i className="fas fa-times"></i>
@@ -137,7 +137,8 @@ export const RichEditor: React.FC<RichEditorProps> = ({ onPublish, onSaveDraft, 
             </button>
             <button
               onClick={handleSaveDraft}
-              className="px-6 py-3 bg-indigo-50 text-indigo-600 rounded-2xl font-black text-sm hover:bg-indigo-100 transition-colors w-full md:w-auto"
+              className="px-6 py-3 bg-emerald-100 text-emerald-700 border-2 border-emerald-200 rounded-2xl font-black text-sm hover:bg-emerald-200 transition-colors w-full md:w-auto shadow-sm"
+              style={{ display: 'block' }}
             >
               Simpan Draf
             </button>
