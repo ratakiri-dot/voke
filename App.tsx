@@ -46,6 +46,7 @@ const App: React.FC = () => {
 
   const [isTopUpOpen, setIsTopUpOpen] = useState(false);
   const [isWithdrawOpen, setIsWithdrawOpen] = useState(false);
+  const [isProcessingTx, setIsProcessingTx] = useState(false);
 
   const [authMode, setAuthMode] = useState<'login' | 'signup'>('login');
   const [loginForm, setLoginForm] = useState({ email: '', password: '' });
@@ -1036,19 +1037,22 @@ const App: React.FC = () => {
         onSelect={async (pkg) => {
           if (!user) return;
           if (confirm(`Beli paket ${pkg.name} seharga Rp ${pkg.price.toLocaleString('id-ID')}?`)) {
+            setIsProcessingTx(true);
             // Create pending transaction
             const { error } = await supabase.from('transactions').insert({
               user_id: user.id,
               type: 'topup',
               amount: pkg.points, // Points to add
               status: 'pending',
-              metadata: { package_name: pkg.name, price: pkg.price }
+              metadata: { package_name: pkg.name, price: pkg.price, version: '1.2' }
             });
 
+            setIsProcessingTx(false);
             if (error) {
-              handleNotify('Gagal membuat permintaan Top Up: ' + error.message, 'error');
+              console.error('TOPUP_ERROR_DETAIL:', error);
+              handleNotify(`Gagal (v1.2): ${error.message} [Code: ${error.code || 'None'}]`, 'error');
             } else {
-              handleNotify('Permintaan dikirim! Mohon transfer & konfirmasi bukti ke email loudvoke@gmail.com atau WA 085163612553', 'success');
+              handleNotify('Permintaan dikirim (v1.2)! Mohon transfer & konfirmasi bukti ke email loudvoke@gmail.com atau WA 085163612553', 'success');
               setIsTopUpOpen(false);
             }
           }
@@ -1060,23 +1064,35 @@ const App: React.FC = () => {
         balance={totalBalance}
         onWithdraw={async (amount, method, account) => {
           if (!user) return;
+          setIsProcessingTx(true);
           // Create pending transaction
           const { error } = await supabase.from('transactions').insert({
             user_id: user.id,
             type: 'withdraw',
             amount: amount,
             status: 'pending',
-            metadata: { method, account }
+            metadata: { method, account, version: '1.2' }
           });
 
+          setIsProcessingTx(false);
           if (error) {
-            handleNotify('Gagal membuat permintaan penarikan: ' + error.message, 'error');
+            console.error('WITHDRAW_ERROR_DETAIL:', error);
+            handleNotify(`Gagal (v1.2): ${error.message} [Code: ${error.code || 'None'}]`, 'error');
           } else {
-            handleNotify('Permintaan cair dana dikirim! Konfirmasi ke loudvoke@gmail.com / WA 085163612553', 'success');
+            handleNotify('Permintaan cair dana dikirim (v1.2)! Konfirmasi ke loudvoke@gmail.com / WA 085163612553', 'success');
             setIsWithdrawOpen(false);
           }
         }}
       />
+
+      {isProcessingTx && (
+        <div className="fixed inset-0 bg-white/50 backdrop-blur-sm z-[1000] flex items-center justify-center">
+          <div className="bg-white p-8 rounded-[2.5rem] shadow-2xl flex flex-col items-center space-y-4">
+            <div className="w-12 h-12 border-4 border-indigo-600 border-t-transparent rounded-full animate-spin"></div>
+            <p className="font-black text-[10px] uppercase tracking-widest text-indigo-600">Memproses Permintaan...</p>
+          </div>
+        </div>
+      )}
       {activeNotification && <Notification notification={activeNotification} onClose={() => setActiveNotification(null)} />}
     </div>
   );
