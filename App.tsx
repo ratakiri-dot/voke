@@ -212,6 +212,7 @@ const App: React.FC = () => {
     console.log('Posts fetched:', data?.length || 0, 'posts');
 
     if (data) {
+      console.log('--- RAW POST DATA SAMPLE ---', data[0]);
       const mappedPosts: Post[] = data.map((p: any) => ({
         id: p.id,
         userId: p.user_id,
@@ -288,6 +289,16 @@ const App: React.FC = () => {
   };
 
   const totalBalance = useMemo(() => user?.giftBalance || 0, [user]);
+
+  // Global Debugger
+  useEffect(() => {
+    (window as any).__VOKE_DEBUG__ = {
+      posts,
+      user,
+      totalBalance,
+      version: '1.2.1-debug'
+    };
+  }, [posts, user, totalBalance]);
 
   const handleLogin = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -569,7 +580,15 @@ const App: React.FC = () => {
   };
 
   const handleGift = async (postId: string, gift: GiftItem) => {
-    if (!user) return;
+    console.log('--- handleGift Triggered ---');
+    console.log('PostId:', postId);
+    console.log('Gift:', gift);
+    console.log('User:', user?.id, 'Balance:', user?.giftBalance);
+
+    if (!user) {
+      console.warn('No user logged in');
+      return;
+    }
     if (totalBalance < gift.price) {
       setIsTopUpOpen(true);
       handleNotify('Saldo tidak mencukupi.', 'error');
