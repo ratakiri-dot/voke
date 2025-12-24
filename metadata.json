@@ -1,0 +1,7 @@
+{
+  "name": "VOKE!",
+  "description": "Sebuah platform menulis sosial modern dengan identitas VOꓘE, mendukung interaksi penuh dan monetisasi konten.",
+  "requestFramePermissions": [
+    "camera"
+  ]
+}
