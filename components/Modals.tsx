@@ -13,6 +13,8 @@ const VokeText = () => (
   <span>VOꓘE</span>
 );
 
+import ReactDOM from 'react-dom';
+
 const Modal: React.FC<ModalProps> = ({ isOpen, onClose, title, children }) => {
   if (!isOpen) return null;
 
@@ -22,16 +24,16 @@ const Modal: React.FC<ModalProps> = ({ isOpen, onClose, title, children }) => {
     }
   };
 
-  return (
-    <div 
+  return ReactDOM.createPortal(
+    <div
       className="fixed inset-0 bg-black/70 backdrop-blur-md flex items-center justify-center z-[999] p-4 overflow-y-auto"
       onClick={handleBackdropClick}
     >
-      <div className="bg-white rounded-[2.5rem] w-full max-w-md overflow-hidden animate-in fade-in zoom-in duration-300 shadow-2xl border border-white/20 my-auto">
+      <div className="bg-white rounded-[2.5rem] w-full max-w-md overflow-hidden animate-in fade-in zoom-in duration-300 shadow-2xl border border-white/20 my-auto relative">
         <div className="p-6 md:p-8 border-b flex justify-between items-center bg-gray-50/50">
           <h3 className="text-xl font-black text-gray-900 tracking-tight uppercase tracking-widest">{title}</h3>
-          <button 
-            onClick={onClose} 
+          <button
+            onClick={onClose}
             className="w-10 h-10 rounded-2xl hover:bg-gray-200 flex items-center justify-center text-gray-400 transition-all active:scale-90"
           >
             <i className="fas fa-times"></i>
@@ -41,7 +43,8 @@ const Modal: React.FC<ModalProps> = ({ isOpen, onClose, title, children }) => {
           {children}
         </div>
       </div>
-    </div>
+    </div>,
+    document.body
   );
 };
 
@@ -121,20 +124,20 @@ export const AdEditorModal: React.FC<{
       <form onSubmit={handleSubmit} className="space-y-4">
         <div className="space-y-1">
           <label className="text-[10px] font-black text-slate-400 uppercase tracking-widest ml-1">Judul Iklan (Opsional)</label>
-          <input 
-            type="text" 
-            value={formData.title} 
-            onChange={e => setFormData({...formData, title: e.target.value})}
+          <input
+            type="text"
+            value={formData.title}
+            onChange={e => setFormData({ ...formData, title: e.target.value })}
             className="w-full p-4 bg-slate-50 border-none rounded-2xl font-bold text-sm"
             placeholder="Contoh: Promo Voke Premium"
           />
         </div>
-        
+
         <div className="space-y-1">
           <label className="text-[10px] font-black text-slate-400 uppercase tracking-widest ml-1">Deskripsi (Opsional)</label>
-          <textarea 
-            value={formData.description} 
-            onChange={e => setFormData({...formData, description: e.target.value})}
+          <textarea
+            value={formData.description}
+            onChange={e => setFormData({ ...formData, description: e.target.value })}
             className="w-full p-4 bg-slate-50 border-none rounded-2xl font-bold text-sm min-h-[80px]"
             placeholder="Tulis pesan promosi..."
           />
@@ -143,8 +146,8 @@ export const AdEditorModal: React.FC<{
         <div className="space-y-1">
           <label className="text-[10px] font-black text-slate-400 uppercase tracking-widest ml-1">Banner Gambar (Opsional)</label>
           <div className="flex items-center space-x-4">
-            <button 
-              type="button" 
+            <button
+              type="button"
               onClick={() => fileInputRef.current?.click()}
               className="flex-1 py-4 bg-slate-100 text-slate-600 rounded-2xl font-black text-[10px] uppercase tracking-widest hover:bg-slate-200 transition-all flex items-center justify-center space-x-2 border border-dashed border-slate-300"
             >
@@ -162,9 +165,9 @@ export const AdEditorModal: React.FC<{
 
         <div className="space-y-1">
           <label className="text-[10px] font-black text-slate-400 uppercase tracking-widest ml-1">Embed Code (Opsional)</label>
-          <textarea 
-            value={formData.embedCode || ''} 
-            onChange={e => setFormData({...formData, embedCode: e.target.value})}
+          <textarea
+            value={formData.embedCode || ''}
+            onChange={e => setFormData({ ...formData, embedCode: e.target.value })}
             className="w-full p-4 bg-slate-50 border-none rounded-2xl font-mono text-xs min-h-[80px]"
             placeholder="<iframe src='...'></iframe>"
           />
@@ -172,10 +175,10 @@ export const AdEditorModal: React.FC<{
 
         <div className="space-y-1">
           <label className="text-[10px] font-black text-slate-400 uppercase tracking-widest ml-1">Link Tujuan (Opsional)</label>
-          <input 
-            type="url" 
-            value={formData.link || ''} 
-            onChange={e => setFormData({...formData, link: e.target.value})}
+          <input
+            type="url"
+            value={formData.link || ''}
+            onChange={e => setFormData({ ...formData, link: e.target.value })}
             className="w-full p-4 bg-slate-50 border-none rounded-2xl font-bold text-sm"
             placeholder="https://..."
           />
@@ -183,9 +186,9 @@ export const AdEditorModal: React.FC<{
 
         <div className="space-y-1">
           <label className="text-[10px] font-black text-slate-400 uppercase tracking-widest ml-1">Posisi Tayang</label>
-          <select 
-            value={formData.position} 
-            onChange={e => setFormData({...formData, position: e.target.value as AdPosition})}
+          <select
+            value={formData.position}
+            onChange={e => setFormData({ ...formData, position: e.target.value as AdPosition })}
             className="w-full p-4 bg-slate-50 border-none rounded-2xl font-bold text-sm"
           >
             <option value="top">Atas (Dashboard)</option>
@@ -194,8 +197,8 @@ export const AdEditorModal: React.FC<{
           </select>
         </div>
 
-        <button 
-          type="submit" 
+        <button
+          type="submit"
           disabled={isUploading}
           className="w-full py-5 bg-indigo-600 text-white rounded-[1.5rem] font-black uppercase tracking-widest shadow-xl hover:bg-indigo-700 transition-all active:scale-95 disabled:opacity-50"
         >
@@ -206,9 +209,9 @@ export const AdEditorModal: React.FC<{
   );
 };
 
-export const GiftModal: React.FC<{ 
-  isOpen: boolean; 
-  onClose: () => void; 
+export const GiftModal: React.FC<{
+  isOpen: boolean;
+  onClose: () => void;
   onGift: (gift: GiftItem) => void;
   currentBalance: number;
   onTopUpRequest: () => void;
@@ -242,11 +245,10 @@ export const GiftModal: React.FC<{
                   onGift(g);
                   onClose();
                 }}
-                className={`flex flex-col items-center p-5 border-2 rounded-3xl transition-all group relative ${
-                  canAfford 
-                    ? 'border-gray-100 hover:border-indigo-500 hover:bg-indigo-50/50' 
+                className={`flex flex-col items-center p-5 border-2 rounded-3xl transition-all group relative ${canAfford
+                    ? 'border-gray-100 hover:border-indigo-500 hover:bg-indigo-50/50'
                     : 'border-gray-50 bg-gray-50/50 opacity-60 cursor-not-allowed'
-                }`}
+                  }`}
               >
                 <span className="text-4xl mb-3 group-hover:scale-110 transition-transform">{g.icon}</span>
                 <span className="font-black text-sm text-gray-800">{g.name}</span>
@@ -256,7 +258,7 @@ export const GiftModal: React.FC<{
           })}
         </div>
 
-        <button 
+        <button
           onClick={() => { onClose(); onTopUpRequest(); }}
           className="w-full py-4 text-indigo-600 font-black text-xs uppercase tracking-widest hover:bg-indigo-50 rounded-2xl transition-all flex items-center justify-center space-x-2 border border-dashed border-indigo-200"
         >
@@ -307,9 +309,9 @@ export const SpotlightModal: React.FC<{
   );
 };
 
-export const WithdrawModal: React.FC<{ 
-  isOpen: boolean; 
-  onClose: () => void; 
+export const WithdrawModal: React.FC<{
+  isOpen: boolean;
+  onClose: () => void;
   balance: number;
   onWithdraw: (amount: number, method: string, account: string, bankName?: string) => void;
 }> = ({ isOpen, onClose, balance, onWithdraw }) => {
@@ -352,8 +354,8 @@ export const WithdrawModal: React.FC<{
         <div className="space-y-4">
           <div>
             <label className="block text-[10px] font-black text-gray-400 uppercase tracking-widest mb-2">Nominal Cairkan (Min. 100k)</label>
-            <input 
-              type="number" 
+            <input
+              type="number"
               value={withdrawAmount}
               onChange={(e) => setWithdrawAmount(Number(e.target.value))}
               className="w-full p-4 bg-gray-50 border-none rounded-2xl font-black text-lg outline-none focus:ring-2 focus:ring-amber-500"
@@ -368,8 +370,8 @@ export const WithdrawModal: React.FC<{
               <option>GoPay</option>
               <option>Dana</option>
             </select>
-            <input 
-              type="text" 
+            <input
+              type="text"
               placeholder="No. Rekening / No. HP"
               value={account}
               onChange={(e) => setAccount(e.target.value)}
@@ -394,11 +396,10 @@ export const WithdrawModal: React.FC<{
           <button
             type="submit"
             disabled={!canWithdraw || !isValidAmount || !account}
-            className={`w-full py-5 rounded-[1.25rem] font-black text-sm uppercase tracking-widest transition-all shadow-xl ${
-              canWithdraw && isValidAmount && account 
-                ? 'bg-amber-500 text-white hover:bg-amber-600 shadow-amber-100' 
+            className={`w-full py-5 rounded-[1.25rem] font-black text-sm uppercase tracking-widest transition-all shadow-xl ${canWithdraw && isValidAmount && account
+                ? 'bg-amber-500 text-white hover:bg-amber-600 shadow-amber-100'
                 : 'bg-gray-100 text-gray-300 cursor-not-allowed shadow-none'
-            }`}
+              }`}
           >
             Cairkan Dana Sekarang
           </button>
@@ -455,9 +456,8 @@ export const ReportModal: React.FC<{
               key={r}
               type="button"
               onClick={() => setReason(r)}
-              className={`w-full p-4 rounded-2xl text-left text-sm font-bold transition-all border-2 ${
-                reason === r ? 'border-indigo-600 bg-indigo-50 text-indigo-600' : 'border-gray-50 text-gray-400 hover:border-gray-100'
-              }`}
+              className={`w-full p-4 rounded-2xl text-left text-sm font-bold transition-all border-2 ${reason === r ? 'border-indigo-600 bg-indigo-50 text-indigo-600' : 'border-gray-50 text-gray-400 hover:border-gray-100'
+                }`}
             >
               {r}
             </button>
