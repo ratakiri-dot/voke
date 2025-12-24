@@ -4,13 +4,15 @@ import { generateAICaption, generateAITitle } from '../services/geminiService';
 
 interface RichEditorProps {
   onPublish: (title: string, content: string, caption: string) => void;
+  onSaveDraft: (title: string, content: string, caption: string) => void;
   onCancel: () => void;
   onNotify: (msg: string, type: 'success' | 'error' | 'info') => void;
+  initialData?: { title: string, content: string, caption: string };
 }
 
-export const RichEditor: React.FC<RichEditorProps> = ({ onPublish, onCancel, onNotify }) => {
-  const [title, setTitle] = useState('');
-  const [caption, setCaption] = useState('');
+export const RichEditor: React.FC<RichEditorProps> = ({ onPublish, onSaveDraft, onCancel, onNotify, initialData }) => {
+  const [title, setTitle] = useState(initialData?.title || '');
+  const [caption, setCaption] = useState(initialData?.caption || '');
   const [isAiLoading, setIsAiLoading] = useState(false);
   const editorRef = useRef<HTMLDivElement>(null);
 
@@ -51,6 +53,15 @@ export const RichEditor: React.FC<RichEditorProps> = ({ onPublish, onCancel, onN
     onPublish(title, content, caption);
   };
 
+  const handleSaveDraft = () => {
+    const content = editorRef.current?.innerHTML || '';
+    if (!title.trim()) {
+      onNotify('Judul wajib diisi untuk menyimpan draf!', 'error');
+      return;
+    }
+    onSaveDraft(title, content, caption);
+  };
+
   return (
     <div className="bg-white rounded-[2.5rem] shadow-2xl max-w-4xl mx-auto overflow-hidden animate-in fade-in slide-in-from-bottom-12 duration-700">
       <div className="p-8 md:p-12 space-y-8">
@@ -67,18 +78,18 @@ export const RichEditor: React.FC<RichEditorProps> = ({ onPublish, onCancel, onN
         </div>
 
         <div className="space-y-2">
-          <input 
-            type="text" 
-            placeholder="Ketik judul yang kuat di sini..." 
+          <input
+            type="text"
+            placeholder="Ketik judul yang kuat di sini..."
             value={title}
             onChange={(e) => setTitle(e.target.value)}
             className="w-full text-4xl font-black border-none focus:ring-0 placeholder-gray-200 text-gray-900 leading-tight outline-none"
           />
           <div className="flex items-center space-x-2">
             <span className="text-indigo-400 font-black">#</span>
-            <input 
-              type="text" 
-              placeholder="caption atau tagar..." 
+            <input
+              type="text"
+              placeholder="caption atau tagar..."
               value={caption}
               onChange={(e) => setCaption(e.target.value)}
               className="flex-1 text-indigo-600 font-bold border-none focus:ring-0 placeholder-indigo-200 text-sm outline-none"
@@ -94,11 +105,11 @@ export const RichEditor: React.FC<RichEditorProps> = ({ onPublish, onCancel, onN
           </div>
           <button onClick={() => execCommand('insertUnorderedList')} className="w-10 h-10 rounded-xl hover:bg-gray-50 flex items-center justify-center text-gray-500" title="Daftar"><i className="fas fa-list-ul"></i></button>
           <button onClick={() => execCommand('formatBlock', 'blockquote')} className="w-10 h-10 rounded-xl hover:bg-gray-50 flex items-center justify-center text-gray-500" title="Kutipan"><i className="fas fa-quote-left text-xs"></i></button>
-          
+
           <div className="flex-1" />
-          
-          <button 
-            onClick={handleAiAssist} 
+
+          <button
+            onClick={handleAiAssist}
             disabled={isAiLoading}
             className="flex items-center space-x-2 bg-gradient-to-r from-indigo-600 to-purple-600 text-white px-5 py-2.5 rounded-2xl text-xs font-black hover:shadow-lg hover:shadow-indigo-200 transition-all disabled:opacity-50 active:scale-95"
           >
@@ -107,23 +118,30 @@ export const RichEditor: React.FC<RichEditorProps> = ({ onPublish, onCancel, onN
           </button>
         </div>
 
-        <div 
+        <div
           ref={editorRef}
-          contentEditable 
+          contentEditable
+          dangerouslySetInnerHTML={{ __html: initialData?.content || '' }}
           data-placeholder="Tuliskan ide brilian Anda, jangan biarkan kertas ini kosong..."
           className="rich-editor min-h-[450px] text-xl text-gray-700 outline-none leading-relaxed prose prose-indigo max-w-none focus:ring-0"
         />
 
         <div className="flex justify-end items-center space-x-6 pt-8 border-t border-gray-50">
-          <p className="text-xs text-gray-400 font-bold hidden md:block">Disimpan otomatis di draf lokal</p>
+          <p className="text-xs text-gray-400 font-bold hidden md:block">Disimpan ke database</p>
           <div className="flex space-x-3">
-            <button 
+            <button
               onClick={onCancel}
               className="px-6 py-3 rounded-2xl text-gray-400 font-black text-sm hover:text-gray-600 transition-colors"
             >
               Batal
             </button>
-            <button 
+            <button
+              onClick={handleSaveDraft}
+              className="px-6 py-3 bg-indigo-50 text-indigo-600 rounded-2xl font-black text-sm hover:bg-indigo-100 transition-colors"
+            >
+              Simpan Draf
+            </button>
+            <button
               onClick={handlePublish}
               className="px-10 py-4 bg-indigo-600 text-white rounded-[1.25rem] font-black text-sm hover:bg-indigo-700 transition-all shadow-xl shadow-indigo-100 hover:-translate-y-1 active:scale-95"
             >
