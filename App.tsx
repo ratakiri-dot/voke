@@ -11,6 +11,12 @@ import { supabase } from './services/supabaseClient';
 
 type ViewType = 'home' | 'saved' | 'profile' | 'edit-profile' | 'admin' | 'landing' | 'wallet';
 
+const ADMIN_CONTACT = {
+  email: 'loudvoke@gmail.com',
+  wa: '085163612553',
+  waLink: 'https://wa.me/6285163612553'
+};
+
 // Menggunakan Unicode ꓘ (U+A4D8)
 export const VokeLogo = ({ className = "text-2xl", withGradient = true }: { className?: string, withGradient?: boolean }) => (
   <span className={`voke-logo inline-flex items-center font-[800] uppercase tracking-tighter ${withGradient ? 'voke-gradient-text' : 'text-slate-900'} ${className}`}>
@@ -780,6 +786,25 @@ const App: React.FC = () => {
               </button>
             </p>
           </div>
+
+          {/* Landing Contact Info */}
+          <div className="mt-12 flex flex-col items-center space-y-4 animate-in fade-in slide-in-from-bottom-8 duration-700 delay-300">
+            <p className="text-[10px] font-black text-slate-400 uppercase tracking-[0.3em]">Butuh Bantuan?</p>
+            <div className="flex items-center space-x-6">
+              <a href={`mailto:${ADMIN_CONTACT.email}`} className="group flex items-center space-x-2 text-slate-500 hover:text-slate-900 transition-all">
+                <div className="w-8 h-8 bg-white rounded-lg flex items-center justify-center shadow-sm group-hover:shadow-md transition-all">
+                  <i className="fas fa-envelope text-[10px]"></i>
+                </div>
+                <span className="text-[10px] font-black uppercase tracking-widest">{ADMIN_CONTACT.email}</span>
+              </a>
+              <a href={ADMIN_CONTACT.waLink} target="_blank" className="group flex items-center space-x-2 text-slate-500 hover:text-slate-900 transition-all">
+                <div className="w-8 h-8 bg-white rounded-lg flex items-center justify-center shadow-sm group-hover:shadow-md transition-all">
+                  <i className="fab fa-whatsapp text-[12px]"></i>
+                </div>
+                <span className="text-[10px] font-black uppercase tracking-widest">{ADMIN_CONTACT.wa}</span>
+              </a>
+            </div>
+          </div>
         </div>
 
         {/* Notification component for landing page */}
@@ -979,6 +1004,24 @@ const App: React.FC = () => {
                 <p className="text-xs text-amber-700/70 leading-relaxed font-bold">Apresiasi langsung pembaca terhadap karya Anda tetap terjaga.</p>
               </div>
             </div>
+
+            {/* Wallet Contact Instruction */}
+            <div className="p-8 bg-slate-50 rounded-[2.5rem] border border-slate-100 items-center justify-between flex flex-col md:flex-row gap-6">
+              <div className="flex-1">
+                <h5 className="font-black text-slate-800 uppercase tracking-widest text-[10px] mb-2">Konfirmasi & Dukungan</h5>
+                <p className="text-xs text-slate-500 font-bold leading-relaxed">
+                  Sudah kirim bukti transfer atau ingin tanya seputar pencairan dana? Hubungi admin melalui WhatsApp atau Email resmi kami.
+                </p>
+              </div>
+              <div className="flex space-x-3">
+                <a href={ADMIN_CONTACT.waLink} target="_blank" className="px-6 py-3 bg-white text-emerald-600 rounded-xl font-black text-[9px] uppercase tracking-widest shadow-sm border border-slate-100 hover:bg-emerald-50 transition-all">
+                  <i className="fab fa-whatsapp mr-2"></i> WhatsApp
+                </a>
+                <a href={`mailto:${ADMIN_CONTACT.email}`} className="px-6 py-3 bg-white text-indigo-600 rounded-xl font-black text-[9px] uppercase tracking-widest shadow-sm border border-slate-100 hover:bg-indigo-50 transition-all">
+                  <i className="fas fa-envelope mr-2"></i> Email
+                </a>
+              </div>
+            </div>
           </div>
         ) : (
           <div className="space-y-10">
@@ -1024,6 +1067,22 @@ const App: React.FC = () => {
             </div>
           </div>
         )}
+
+        {/* Global Footer Contact */}
+        <footer className="mt-20 pt-10 border-t border-slate-100 flex flex-col items-center space-y-6">
+          <VokeLogo className="text-2xl opacity-20 grayscale" withGradient={false} />
+          <div className="flex flex-wrap justify-center gap-8">
+            <a href={`mailto:${ADMIN_CONTACT.email}`} className="flex items-center space-x-2 text-slate-400 hover:text-slate-600 transition-colors">
+              <i className="fas fa-envelope text-[10px]"></i>
+              <span className="text-[9px] font-black uppercase tracking-widest">{ADMIN_CONTACT.email}</span>
+            </a>
+            <a href={ADMIN_CONTACT.waLink} target="_blank" className="flex items-center space-x-2 text-slate-400 hover:text-slate-600 transition-colors">
+              <i className="fab fa-whatsapp text-xs"></i>
+              <span className="text-[9px] font-black uppercase tracking-widest">{ADMIN_CONTACT.wa}</span>
+            </a>
+          </div>
+          <p className="text-[8px] font-black text-slate-300 uppercase tracking-[0.4em]">VOꓘE Premium Platform © 2025</p>
+        </footer>
       </main>
 
       <TopUpModal
