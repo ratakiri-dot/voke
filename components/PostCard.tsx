@@ -87,19 +87,24 @@ export const PostCard: React.FC<PostCardProps> = ({
               </button>
             </div>
           ) : (
-            <div className="flex space-x-2">
+            <div className="flex gap-2">
               <button
                 onClick={() => {
                   if (confirm('Yakin ingin menghapus tulisan ini?')) {
                     onDelete?.(post.id);
                   }
                 }}
-                className="px-4 py-2.5 bg-rose-50 text-rose-500 rounded-xl text-[10px] font-black uppercase tracking-widest hover:bg-rose-100 transition-all border border-rose-100"
+                className="flex items-center justify-center px-3 sm:px-4 py-2.5 bg-rose-50 text-rose-500 rounded-xl text-[10px] font-black uppercase tracking-widest hover:bg-rose-100 transition-all border border-rose-100"
               >
-                <i className="fas fa-trash-alt mr-1"></i> Hapus
+                <i className="fas fa-trash-alt sm:mr-1"></i>
+                <span className="hidden sm:inline">Hapus</span>
               </button>
-              <button onClick={() => setIsPromoteOpen(true)} className="px-6 py-2.5 bg-indigo-50 text-indigo-600 rounded-xl text-[10px] font-black uppercase tracking-widest hover:bg-indigo-100 transition-all border border-indigo-100">
-                <i className="fas fa-rocket mr-1"></i> Spotlight
+              <button
+                onClick={() => setIsPromoteOpen(true)}
+                className="flex items-center justify-center px-3 sm:px-6 py-2.5 bg-indigo-50 text-indigo-600 rounded-xl text-[10px] font-black uppercase tracking-widest hover:bg-indigo-100 transition-all border border-indigo-100"
+              >
+                <i className="fas fa-rocket sm:mr-1"></i>
+                <span className="hidden sm:inline">Spotlight</span>
               </button>
             </div>
           )}
@@ -168,6 +173,31 @@ export const PostCard: React.FC<PostCardProps> = ({
                 <i className="fas fa-gift text-sm"></i>
               </button>
             )}
+            <button
+              onClick={async () => {
+                const shareData = {
+                  title: post.title,
+                  text: post.content.substring(0, 100) + '...',
+                  url: window.location.href
+                };
+
+                if (navigator.share) {
+                  try {
+                    await navigator.share(shareData);
+                    onNotify('Berhasil dibagikan!', 'success');
+                  } catch (err) {
+                    // User cancelled
+                  }
+                } else {
+                  // Fallback: copy to clipboard
+                  navigator.clipboard.writeText(window.location.href);
+                  onNotify('Link disalin ke clipboard!', 'success');
+                }
+              }}
+              className="w-11 h-11 bg-slate-50 text-slate-400 rounded-2xl flex items-center justify-center hover:text-indigo-500 hover:bg-indigo-50 transition-all"
+            >
+              <i className="fas fa-share-nodes text-sm"></i>
+            </button>
             <button onClick={() => onSaveToggle(post.id)} className={`w-11 h-11 rounded-2xl flex items-center justify-center transition-all ${isSaved ? 'bg-indigo-50 text-indigo-600' : 'bg-slate-50 text-slate-300 hover:text-indigo-400'}`}>
               <i className={`${isSaved ? 'fas' : 'far'} fa-bookmark text-sm`}></i>
             </button>
