@@ -14,6 +14,7 @@ interface PostCardProps {
   onNotify: (msg: string, type: 'success' | 'error' | 'info') => void;
   onView?: (postId: string) => void;
   onDelete?: (postId: string) => void;
+  currentUserId?: string;
   userGiftBalance?: number;
   onTopUpRequest?: () => void;
   onPromoteRequest?: (postId: string) => void;
@@ -22,7 +23,7 @@ interface PostCardProps {
 
 export const PostCard: React.FC<PostCardProps> = ({
   post, isFollowing, isSaved, onFollowToggle, onLike, onSaveToggle,
-  onAddComment, onGift, onNotify, onView, onDelete,
+  onAddComment, onGift, onNotify, onView, onDelete, currentUserId,
   userGiftBalance = 0, onTopUpRequest = () => { },
   onPromoteRequest = (_id: string) => { },
   bottomAd
@@ -48,7 +49,7 @@ export const PostCard: React.FC<PostCardProps> = ({
     }
   };
 
-  const isOwnPost = post.userId === 'me';
+  const isOwnPost = currentUserId && post.userId === currentUserId;
   const isCurrentlyPromoted = post.isPromoted && post.promotedUntil && new Date(post.promotedUntil) > new Date();
 
   return (

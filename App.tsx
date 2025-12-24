@@ -778,7 +778,7 @@ const App: React.FC = () => {
               </div>
             </div>
             <div className="space-y-8">
-              {posts.filter(p => p.userId === user?.id).map(p => <PostCard key={p.id} post={p} isFollowing={false} isSaved={savedPosts.has(p.id)} onFollowToggle={() => { }} onLike={handleLike} onSaveToggle={id => setSavedPosts(prev => { const n = new Set(prev); n.has(id) ? n.delete(id) : n.add(id); return n; })} onAddComment={handleAddComment} onGift={handleGift} onNotify={handleNotify} userGiftBalance={totalBalance} onDelete={handleDeletePost} />)}
+              {posts.filter(p => p.userId === user?.id).map(p => <PostCard key={p.id} post={p} isFollowing={false} isSaved={savedPosts.has(p.id)} onFollowToggle={() => { }} onLike={handleLike} onSaveToggle={id => setSavedPosts(prev => { const n = new Set(prev); n.has(id) ? n.delete(id) : n.add(id); return n; })} onAddComment={handleAddComment} onGift={handleGift} onNotify={handleNotify} userGiftBalance={totalBalance} onDelete={handleDeletePost} currentUserId={user?.id} />)}
             </div>
           </div>
         ) : view === 'edit-profile' ? (
@@ -860,6 +860,7 @@ const App: React.FC = () => {
                   onGift={handleGift} onNotify={handleNotify} userGiftBalance={totalBalance} onTopUpRequest={() => setIsTopUpOpen(true)}
                   onPromoteRequest={id => handleNotify('Feature coming soon with DB', 'info')}
                   onDelete={handleDeletePost}
+                  currentUserId={user?.id}
                   bottomAd={activeBottomAd}
                 />
               ))}
