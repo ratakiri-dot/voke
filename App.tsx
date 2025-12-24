@@ -163,7 +163,7 @@ const App: React.FC = () => {
       .from('posts')
       .select(`
         *,
-        profiles (name, username, avatar_url),
+        profiles!user_id (name, username, avatar_url),
         likes (user_id),
         comments (id, text, user_id, created_at, profiles(name))
       `)
