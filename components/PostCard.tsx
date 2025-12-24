@@ -174,7 +174,7 @@ export const PostCard: React.FC<PostCardProps> = ({
             <button
               onClick={() => !isOwnPost && setIsGiftOpen(true)}
               className={`h-11 px-4 rounded-2xl flex items-center justify-center space-x-2 transition-all shadow-sm border ${isOwnPost
-                ? 'bg-amber-100/30 text-amber-500 border-amber-100/30 cursor-default'
+                ? 'bg-amber-100/30 text-amber-600 border-amber-100/30 cursor-default'
                 : 'bg-amber-50 text-amber-600 border-amber-100/50 hover:bg-amber-100'
                 }`}
             >

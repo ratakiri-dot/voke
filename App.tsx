@@ -30,8 +30,9 @@ export const VokeLogo = ({ className = "text-2xl", withGradient = true }: { clas
 );
 
 const App: React.FC = () => {
+  console.log('%c VOKE SYSTEM v1.2.2 ACTIVE ', 'background: #2563EB; color: #white; font-weight: bold;');
   const [session, setSession] = useState<any>(null);
-  const [view, setView] = useState<ViewType>('landing');
+  const [view, setView] = useState<AppView>('landing');
   const [user, setUser] = useState<User | null>(null);
   const [allUsers, setAllUsers] = useState<Record<string, User>>({});
 
