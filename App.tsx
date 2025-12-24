@@ -969,6 +969,65 @@ const App: React.FC = () => {
     }
   };
 
+  const handleSaveAd = async (ad: Advertisement) => {
+    // Map frontend Ad model to DB model if necessary, or just save as is if fields match.
+    // Assuming DB has snake_case columns, let's check types.ts and fetchAds.
+    // fetchAds maps: id, title, description, image_url, link, embed_code, position, is_active
+
+    const dbAd = {
+      // If it's a new ad (generated with Date.now()), we might want to let DB handle UUID or just us string.
+      // The current ID generation in Modals.tsx uses `ad-${Date.now()}` which is fine if ID column is text.
+      // If ID in DB is UUID, this might fail. Let's assume it supports text or we generate UUID if needed.
+      // For now, we'll try to save with the ID provided or let Supabase generate if it was proper UUID.
+      // But Modals.tsx generates string ID. Let's trust it fits.
+      id: ad.id,
+      title: ad.title,
+      description: ad.description,
+      image_url: ad.imageUrl,
+      link: ad.link,
+      embed_code: ad.embedCode,
+      position: ad.position,
+      is_active: ad.isActive
+    };
+
+    const { error } = await supabase.from('ads').upsert(dbAd);
+
+    if (error) {
+      console.error('Error saving ad:', error);
+      handleNotify('Gagal menyimpan iklan: ' + error.message, 'error');
+    } else {
+      handleNotify('Iklan berhasil disimpan!', 'success');
+      fetchAds();
+    }
+  };
+
+  const handleDeleteAd = async (id: string) => {
+    if (!confirm('Yakin ingin menghapus iklan ini?')) return;
+
+    const { error } = await supabase.from('ads').delete().eq('id', id);
+
+    if (error) {
+      handleNotify('Gagal menghapus iklan: ' + error.message, 'error');
+    } else {
+      handleNotify('Iklan dihapus.', 'success');
+      fetchAds();
+    }
+  };
+
+  const handleToggleAd = async (id: string) => {
+    const ad = ads.find(a => a.id === id);
+    if (!ad) return;
+
+    const { error } = await supabase.from('ads').update({ is_active: !ad.isActive }).eq('id', id);
+
+    if (error) {
+      handleNotify('Gagal update status iklan: ' + error.message, 'error');
+    } else {
+      handleNotify(ad.isActive ? 'Iklan dimatikan.' : 'Iklan diaktifkan.', 'success');
+      fetchAds();
+    }
+  };
+
   // --- Render ---
 
   // NOTE: Reuse existing layout code, just replace handlers and state
@@ -1128,9 +1187,9 @@ const App: React.FC = () => {
             onApproveUser={handleApproveUser}
             onRejectUser={handleRejectUser}
             onDeleteUser={handleDeleteUser}
-            onSaveAd={() => { }}
-            onDeleteAd={() => { }}
-            onToggleAd={() => { }}
+            onSaveAd={handleSaveAd}
+            onDeleteAd={handleDeleteAd}
+            onToggleAd={handleToggleAd}
             onClose={() => setView('home')}
           />
         ) : isWriting ? (
