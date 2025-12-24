@@ -70,7 +70,7 @@ export const AdEditorModal: React.FC<{
   adToEdit?: Advertisement | null;
 }> = ({ isOpen, onClose, onSave, adToEdit }) => {
   const [formData, setFormData] = useState<Advertisement>({
-    id: `ad-${Date.now()}`,
+    id: crypto.randomUUID(),
     title: '',
     description: '',
     imageUrl: '',
@@ -88,7 +88,7 @@ export const AdEditorModal: React.FC<{
       setFormData(adToEdit);
     } else {
       setFormData({
-        id: `ad-${Date.now()}`,
+        id: crypto.randomUUID(),
         title: '',
         description: '',
         imageUrl: '',
