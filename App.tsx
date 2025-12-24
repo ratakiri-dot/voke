@@ -36,8 +36,8 @@ const App: React.FC = () => {
 
   const [isWriting, setIsWriting] = useState(false);
   const [activeDraft, setActiveDraft] = useState<Post | null>(null);
-  const [activeTopAd, setActiveTopAd] = useState<Advertisement | null>(null);
-  const [activeBottomAd, setActiveBottomAd] = useState<Advertisement | null>(null);
+  const activeTopAd = useMemo(() => ads.find(a => a.isActive && a.position === 'top'), [ads]);
+  const activeBottomAd = useMemo(() => ads.find(a => a.isActive && a.position === 'bottom'), [ads]);
   const [drafts, setDrafts] = useState<Post[]>([]);
 
   const [isLoading, setIsLoading] = useState(false);
