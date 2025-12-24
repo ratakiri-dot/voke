@@ -236,13 +236,20 @@ const App: React.FC = () => {
       handleNotify(error.message, 'error');
     } else {
       if (data.user) {
-        // Update profile with extra fields
-        await supabase.from('profiles').update({
+        // Update profile with extra fields, using upsert to be safe if trigger failed
+        await supabase.from('profiles').upsert({
+          id: data.user.id,
+          name: signupForm.name,
+          username: signupForm.username.startsWith('@') ? signupForm.username : `@${signupForm.username}`,
+          avatar_url: signupForm.avatar,
+          email: signupForm.email,
           bio: signupForm.bio,
           wa_number: signupForm.waNumber,
           address: signupForm.address,
-          status: 'pending' // Enforce pending status
-        }).eq('id', data.user.id);
+          status: 'pending',
+          role: 'user',
+          gift_balance: 0
+        });
 
         handleNotify('Pendaftaran berhasil! Silakan login.', 'success');
         setAuthMode('login');
