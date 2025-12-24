@@ -206,6 +206,11 @@ const App: React.FC = () => {
         timestamp: new Date(p.created_at),
         isPromoted: p.is_promoted,
         promotedUntil: p.promoted_until ? new Date(p.promoted_until) : undefined,
+        author: p.profiles ? {
+          name: p.profiles.name,
+          username: p.profiles.username,
+          avatar: p.profiles.avatar_url
+        } : undefined,
         comments: p.comments.map((c: any) => ({
           id: c.id,
           userId: c.user_id,
