@@ -352,9 +352,126 @@ const App: React.FC = () => {
   // Note: Implementing full Admin actions with Supabase would require RLS policies and more handlers.
   // We will basic implementations.
 
+  // --- Admin Data Fetching ---
+  const fetchAdminData = async () => {
+    if (!user?.isAdmin) return;
+
+    // Fetch TopUps
+    const { data: topUps } = await supabase.from('transactions').select('*, profiles(name)').eq('type', 'topup').eq('status', 'pending');
+    if (topUps) {
+      setTopUpRequests(topUps.map((t: any) => ({
+        id: t.id,
+        userId: t.user_id,
+        userName: t.profiles?.name || 'User',
+        points: t.amount,
+        price: t.amount,
+        status: t.status,
+        timestamp: new Date(t.created_at)
+      })));
+    }
+
+    // Fetch Withdraws
+    const { data: withdraws } = await supabase.from('transactions').select('*, profiles(name)').eq('type', 'withdraw').eq('status', 'pending');
+    if (withdraws) {
+      setWithdrawRequests(withdraws.map((t: any) => ({
+        id: t.id,
+        userId: t.user_id,
+        userName: t.profiles?.name || 'User',
+        amount: t.amount,
+        method: 'Bank Transfer',
+        account: 'N/A',
+        status: t.status,
+        timestamp: new Date(t.created_at)
+      })));
+    }
+
+    // Fetch Registration Requests (Pending Users)
+    const { data: pendingUsers } = await supabase.from('profiles').select('*').eq('status', 'pending');
+    if (pendingUsers) {
+      setSignupRequests(pendingUsers.map((p: any) => ({
+        id: p.id,
+        name: p.name,
+        username: p.username,
+        avatar: p.avatar_url,
+        bio: p.bio,
+        waNumber: p.wa_number,
+        email: p.email,
+        address: p.address,
+        status: p.status,
+        timestamp: new Date(p.updated_at || Date.now())
+      })));
+    }
+
+    // Fetch Reports
+    const { data: reportsData } = await supabase.from('reports').select('*, profiles(name), posts(title)').eq('status', 'pending');
+    if (reportsData) {
+      setReports(reportsData.map((r: any) => ({
+        id: r.id,
+        postId: r.post_id,
+        postTitle: r.posts?.title || 'Unknown Post',
+        reporterName: r.profiles?.name || 'Reporter',
+        reason: r.reason,
+        status: r.status,
+        timestamp: new Date(r.created_at)
+      })));
+    }
+  };
+
+  useEffect(() => {
+    if (view === 'admin') {
+      fetchAdminData();
+      fetchAllUsers();
+    }
+  }, [view]);
+
+
+  // --- Admin Actions ---
+
   const handleApproveTopUp = async (id: string) => {
-    // Needs 'transactions' table update
-    handleNotify('Fitur admin ini belum terhubung sepenuhnya ke DB.', 'info');
+    const req = topUpRequests.find(r => r.id === id);
+    if (!req) return;
+
+    await supabase.from('transactions').update({ status: 'completed' }).eq('id', id);
+
+    const { data: userData } = await supabase.from('profiles').select('gift_balance').eq('id', req.userId).single();
+    if (userData) {
+      await supabase.from('profiles').update({ gift_balance: userData.gift_balance + req.points }).eq('id', req.userId);
+    }
+
+    fetchAdminData();
+    handleNotify('Top up disetujui.', 'success');
+  };
+
+  const handleApproveWithdraw = async (id: string) => {
+    await supabase.from('transactions').update({ status: 'completed' }).eq('id', id);
+    fetchAdminData();
+    handleNotify('Penarikan disetujui.', 'success');
+  };
+
+  const handleApproveUser = async (id: string) => {
+    await supabase.from('profiles').update({ status: 'approved' }).eq('id', id);
+    fetchAdminData();
+    handleNotify('User disetujui.', 'success');
+  };
+
+  const handleRejectUser = async (id: string) => {
+    await supabase.from('profiles').update({ status: 'rejected' }).eq('id', id);
+    fetchAdminData();
+    handleNotify('User ditolak.', 'info');
+  };
+
+  const onDismissReport = async (id: string) => {
+    await supabase.from('reports').update({ status: 'resolved' }).eq('id', id);
+    fetchAdminData();
+    handleNotify('Laporan diabaikan.', 'success');
+  };
+
+  const onDeletePost = async (postId: string, reportId: string) => {
+    await supabase.from('posts').delete().eq('id', postId);
+    await supabase.from('reports').update({ status: 'resolved' }).eq('id', reportId);
+    fetchAdminData();
+    fetchPosts();
+    handleNotify('Post dihapus.', 'success');
   };
 
   // --- Render ---
@@ -480,14 +597,14 @@ const App: React.FC = () => {
             onUpdateViewRate={setViewRate}
             onApproveTopUp={handleApproveTopUp}
             onRejectTopUp={() => { }}
-            onApproveWithdraw={() => { }}
+            onApproveWithdraw={handleApproveWithdraw}
             onRejectWithdraw={() => { }}
             onApprovePromo={() => { }}
             onRejectPromo={() => { }}
-            onDismissReport={() => { }}
-            onDeletePost={() => { }}
-            onApproveUser={() => { }}
-            onRejectUser={() => { }}
+            onDismissReport={onDismissReport}
+            onDeletePost={onDeletePost}
+            onApproveUser={handleApproveUser}
+            onRejectUser={handleRejectUser}
             onSaveAd={() => { }}
             onDeleteAd={() => { }}
             onToggleAd={() => { }}
