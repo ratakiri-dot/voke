@@ -1018,12 +1018,24 @@ const App: React.FC = () => {
       <TopUpModal
         isOpen={isTopUpOpen}
         onClose={() => setIsTopUpOpen(false)}
-        onSelect={(pkg) => {
-          // Mock payment process or redirect
+        onSelect={async (pkg) => {
+          if (!user) return;
           if (confirm(`Beli paket ${pkg.name} seharga Rp ${pkg.price.toLocaleString('id-ID')}?`)) {
-            handleNotify('Permintaan Top Up berhasil dibuat (Simulasi).', 'success');
-            // In real app: create transaction, redirect to payment gateway
-            setIsTopUpOpen(false);
+            // Create pending transaction
+            const { error } = await supabase.from('transactions').insert({
+              user_id: user.id,
+              type: 'topup',
+              amount: pkg.points, // Points to add
+              status: 'pending',
+              metadata: { package_name: pkg.name, price: pkg.price }
+            });
+
+            if (error) {
+              handleNotify('Gagal membuat permintaan Top Up: ' + error.message, 'error');
+            } else {
+              handleNotify('Permintaan Top Up berhasil dikirim ke Admin. Tunggu persetujuan.', 'success');
+              setIsTopUpOpen(false);
+            }
           }
         }}
       />
@@ -1031,10 +1043,23 @@ const App: React.FC = () => {
         isOpen={isWithdrawOpen}
         onClose={() => setIsWithdrawOpen(false)}
         balance={totalBalance}
-        onWithdraw={(amount, method, account) => {
-          handleNotify(`Permintaan penarikan Rp ${amount.toLocaleString()} ke ${method} (${account}) berhasil.`, 'success');
-          setIsWithdrawOpen(false);
-          // In real app: create pending transaction
+        onWithdraw={async (amount, method, account) => {
+          if (!user) return;
+          // Create pending transaction
+          const { error } = await supabase.from('transactions').insert({
+            user_id: user.id,
+            type: 'withdraw',
+            amount: amount,
+            status: 'pending',
+            metadata: { method, account }
+          });
+
+          if (error) {
+            handleNotify('Gagal membuat permintaan penarikan: ' + error.message, 'error');
+          } else {
+            handleNotify('Permintaan penarikan dikirim ke Admin.', 'success');
+            setIsWithdrawOpen(false);
+          }
         }}
       />
       {activeNotification && <Notification notification={activeNotification} onClose={() => setActiveNotification(null)} />}
