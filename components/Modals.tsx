@@ -310,7 +310,7 @@ export const SpotlightModal: React.FC<{
             />
             <div>
               <p className="text-sm font-black text-white">{authorName}</p>
-              <p className="text-[10px] text-indigo-100/60 uppercase tracking-widest font-black mt-0.5">@ {post.author?.username || 'user'}</p>
+              <p className="text-[10px] text-indigo-100/60 uppercase tracking-widest font-black mt-0.5">{post.author?.username || 'user'}</p>
             </div>
           </div>
         </div>
