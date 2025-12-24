@@ -593,6 +593,9 @@ const App: React.FC = () => {
             </p>
           </div>
         </div>
+
+        {/* Notification component for landing page */}
+        {activeNotification && <Notification notification={activeNotification} onClose={() => setActiveNotification(null)} />}
       </div>
     );
   }
