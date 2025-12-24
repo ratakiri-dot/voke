@@ -96,7 +96,7 @@ const App: React.FC = () => {
     if (user) {
       fetchPosts();
       fetchAds();
-      // Fetch other data if needed
+      fetchSavedPosts(); // Fetch saved posts from database
       fetchAllUsers(); // For Admin Dashboard compatibility
     }
   }, [user]);
@@ -288,6 +288,71 @@ const App: React.FC = () => {
         position: a.position,
         isActive: a.is_active
       })));
+    }
+  };
+
+  // Fetch Saved Posts from Database
+  const fetchSavedPosts = async () => {
+    if (!user) return;
+    const { data, error } = await supabase
+      .from('saved_posts')
+      .select('post_id')
+      .eq('user_id', user.id);
+
+    if (error) {
+      console.error('Error fetching saved posts:', error);
+      return;
+    }
+
+    if (data) {
+      const postIds = new Set(data.map((s: any) => s.post_id));
+      setSavedPosts(postIds);
+      console.log('Loaded saved posts:', postIds.size);
+    }
+  };
+
+  // Toggle Save/Unsave Post
+  const handleSaveToggle = async (postId: string) => {
+    if (!user) return;
+
+    const isSaved = savedPosts.has(postId);
+
+    if (isSaved) {
+      // UNSAVE: Delete from database
+      const { error } = await supabase
+        .from('saved_posts')
+        .delete()
+        .eq('user_id', user.id)
+        .eq('post_id', postId);
+
+      if (error) {
+        console.error('Failed to unsave post:', error);
+        handleNotify('Gagal menghapus simpanan', 'error');
+        return;
+      }
+
+      // Update local state
+      setSavedPosts(prev => {
+        const next = new Set(prev);
+        next.delete(postId);
+        return next;
+      });
+      handleNotify('Post dihapus dari simpanan', 'success');
+    } else {
+      // SAVE: Insert to database
+      const { error } = await supabase
+        .from('saved_posts')
+        .insert({ user_id: user.id, post_id: postId });
+
+      if (error) {
+        console.error('Failed to save post:', error);
+        handleNotify('Gagal menyimpan post', 'error');
+        return;
+      }
+
+      // Update local state
+      setSavedPosts(prev => new Set(prev).add(postId));
+      handleNotify('Post berhasil disimpan!', 'success');
     }
   };
 
@@ -1245,7 +1310,7 @@ const App: React.FC = () => {
                   post={post} isFollowing={following.has(post.userId)} isSaved={savedPosts.has(post.id)}
                   onFollowToggle={id => setFollowing(prev => { const n = new Set(prev); n.has(id) ? n.delete(id) : n.add(id); return n; })}
                   onLike={handleLike}
-                  onSaveToggle={id => setSavedPosts(prev => { const n = new Set(prev); n.has(id) ? n.delete(id) : n.add(id); return n; })}
+                  onSaveToggle={handleSaveToggle}
                   onAddComment={handleAddComment}
                   onGift={handleGift} onNotify={handleNotify} userGiftBalance={totalBalance} onTopUpRequest={() => setIsTopUpOpen(true)}
                   onPromoteRequest={handlePromoteRequest}
