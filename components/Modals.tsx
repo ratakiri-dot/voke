@@ -278,31 +278,68 @@ export const SpotlightModal: React.FC<{
 }> = ({ isOpen, onClose, post, authorName }) => {
   if (!isOpen || !post) return null;
 
+  // Safe snippet helper: uses caption if available, otherwise truncates content text
+  const getTeaser = (post: Post) => {
+    if (post.caption) return post.caption;
+    const textOnly = post.content.replace(/<[^>]*>/g, ' ');
+    return textOnly.length > 200 ? textOnly.substring(0, 200) + '...' : textOnly;
+  };
+
+  const teaser = getTeaser(post);
+
   return (
-    <div className="fixed inset-0 bg-gray-950/98 backdrop-blur-2xl flex items-center justify-center z-[999] p-4 sm:p-6">
-      <div className="bg-white rounded-[3.5rem] w-full max-w-2xl overflow-hidden shadow-[0_30px_100px_rgba(0,0,0,0.5)] relative animate-in fade-in zoom-in duration-500 flex flex-col max-h-[90vh]">
-        <div className="absolute top-0 right-0 p-6 sm:p-10 z-20">
-          <button onClick={onClose} className="w-12 h-12 bg-white/10 hover:bg-white/20 backdrop-blur-md text-white rounded-full flex items-center justify-center border border-white/10">
-            <i className="fas fa-times"></i>
-          </button>
-        </div>
-        <div className="bg-gradient-to-br from-gray-900 via-indigo-950 to-black p-10 sm:p-14 text-white relative shrink-0">
-          <h2 className="text-4xl sm:text-5xl font-black mb-8 leading-[1.1] tracking-tight">{post.title}</h2>
+    <div className="fixed inset-0 bg-slate-950/95 backdrop-blur-2xl flex items-center justify-center z-[999] p-4 sm:p-6">
+      <div className="bg-white rounded-[3.5rem] w-full max-w-lg overflow-hidden shadow-[0_30px_100px_rgba(0,0,0,0.4)] relative animate-in fade-in zoom-in slide-in-from-bottom-10 duration-500">
+        {/* Subtle decorative background */}
+        <div className="absolute top-0 left-0 w-full h-full bg-[radial-gradient(circle_at_top_right,rgba(99,102,241,0.05),transparent)] pointer-events-none"></div>
+
+        <div className="bg-gradient-to-br from-[#0EA5E9] via-[#2563EB] to-[#4F46E5] p-10 sm:p-14 text-white relative">
+          {/* Spotlight Badge */}
+          <div className="inline-flex items-center space-x-2 bg-white/20 backdrop-blur-md px-3.5 py-2 rounded-2xl border border-white/20 mb-8">
+            <i className="fas fa-star text-[10px] text-yellow-300"></i>
+            <span className="text-[10px] font-black uppercase tracking-[0.2em]">Pilihan VOꓘE</span>
+          </div>
+
+          <h2 className="text-3xl sm:text-4xl font-[900] mb-8 leading-[1.1] tracking-tight">{post.title}</h2>
+
           <div className="flex items-center space-x-4">
-            <div className="w-12 h-12 rounded-2xl bg-indigo-500 flex items-center justify-center font-black text-xs uppercase tracking-widest">
-              <VokeText />
-            </div>
+            <img
+              src={post.author?.avatar || 'https://via.placeholder.com/150'}
+              className="w-14 h-14 rounded-2xl border-2 border-white/30 object-cover shadow-lg"
+              alt={authorName}
+            />
             <div>
               <p className="text-sm font-black text-white">{authorName}</p>
-              <span className="text-[9px] text-indigo-400 uppercase tracking-widest font-black">Spotlight <VokeText /></span>
+              <p className="text-[10px] text-indigo-100/60 uppercase tracking-widest font-black mt-0.5">@ {post.author?.username || 'user'}</p>
             </div>
           </div>
         </div>
-        <div className="p-10 sm:p-14 overflow-y-auto flex-1 custom-scrollbar">
-          <div className="text-gray-600 text-lg leading-[1.8] prose prose-indigo max-w-none" dangerouslySetInnerHTML={{ __html: post.content }} />
+
+        <div className="p-10 sm:p-14 relative">
+          <div className="text-slate-500 text-lg leading-[1.8] font-medium italic mb-2 relative">
+            <span className="absolute -top-4 -left-6 text-slate-100 text-6xl font-serif select-none pointer-events-none">“</span>
+            {teaser}
+            <span className="inline-block items-center ml-2">
+              <span className="w-1.5 h-1.5 bg-indigo-500 rounded-full inline-block animate-bounce"></span>
+            </span>
+          </div>
         </div>
-        <div className="p-8 sm:p-12 border-t border-gray-50 bg-gray-50/30 shrink-0">
-          <button onClick={onClose} className="w-full bg-gray-900 text-white py-5 rounded-[1.5rem] font-black text-sm uppercase tracking-[0.2em] hover:bg-black transition-all">Tutup Bacaan</button>
+
+        <div className="p-8 sm:p-12 border-t border-slate-50 bg-slate-50/50 flex flex-col space-y-4">
+          <button
+            onClick={onClose}
+            className="w-full bg-slate-900 text-white py-5 rounded-[1.5rem] font-black text-[11px] uppercase tracking-[0.25em] hover:bg-black transition-all flex items-center justify-center space-x-3 shadow-xl hover:scale-[1.02] active:scale-95 shadow-indigo-100"
+          >
+            <span>Baca Selengkapnya</span>
+            <i className="fas fa-arrow-right text-[10px] transform translate-x-0 group-hover:translate-x-1 transition-transform"></i>
+          </button>
+
+          <button
+            onClick={onClose}
+            className="w-full py-2 text-slate-400 font-bold text-[9px] uppercase tracking-widest hover:text-slate-600 transition-colors"
+          >
+            Nanti Saja
+          </button>
         </div>
       </div>
     </div>
