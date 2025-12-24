@@ -754,7 +754,7 @@ const App: React.FC = () => {
         <div className="absolute -bottom-24 -left-24 w-96 h-96 bg-purple-200 rounded-full blur-[120px] opacity-40"></div>
 
         <div className="w-full max-w-xl text-center relative z-10">
-          <VokeLogo className="text-8xl mb-12 block" />
+          <VokeLogo className="text-4xl md:text-5xl lg:text-6xl mb-6 md:mb-8 lg:mb-10 block" />
 
           <div className="voke-card p-10 md:p-14 text-left animate-in fade-in zoom-in duration-500">
             <h3 className="text-2xl font-black text-slate-800 mb-8 text-center uppercase tracking-widest">
