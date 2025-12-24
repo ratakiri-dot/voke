@@ -50,7 +50,7 @@ export const ProfileEditor: React.FC<ProfileEditorProps> = ({ user, onSave, onCa
       <div className="p-8 md:p-12">
         <div className="flex justify-between items-center mb-8">
           <div className="flex items-center space-x-3">
-            <div className="w-10 h-10 bg-indigo-50 text-indigo-600 rounded-xl flex items-center justify-center">
+            <div className="w-10 h-10 bg-cyan-50 text-cyan-600 rounded-xl flex items-center justify-center">
               <i className="fas fa-user-edit"></i>
             </div>
             <h2 className="text-2xl font-black text-gray-800 tracking-tight">Edit Profil</h2>
@@ -62,14 +62,14 @@ export const ProfileEditor: React.FC<ProfileEditorProps> = ({ user, onSave, onCa
 
         <form onSubmit={handleSubmit} className="space-y-6">
           <div className="flex flex-col items-center mb-8">
-            <div 
+            <div
               className="relative group cursor-pointer"
               onClick={triggerFileInput}
             >
               <div className="w-32 h-32 rounded-[2.5rem] overflow-hidden border-4 border-indigo-50 shadow-xl relative bg-gray-100">
-                <img 
-                  src={formData.avatar} 
-                  alt="Avatar Preview" 
+                <img
+                  src={formData.avatar}
+                  alt="Avatar Preview"
                   className={`w-full h-full object-cover transition-opacity ${isUploading ? 'opacity-30' : 'opacity-100'}`}
                 />
                 {isUploading && (
@@ -81,8 +81,8 @@ export const ProfileEditor: React.FC<ProfileEditorProps> = ({ user, onSave, onCa
               <div className="absolute inset-0 bg-black/40 rounded-[2.5rem] opacity-0 group-hover:opacity-100 flex items-center justify-center transition-opacity">
                 <i className="fas fa-camera text-white text-xl"></i>
               </div>
-              <input 
-                type="file" 
+              <input
+                type="file"
                 ref={fileInputRef}
                 onChange={handleFileChange}
                 accept="image/*"
@@ -95,8 +95,8 @@ export const ProfileEditor: React.FC<ProfileEditorProps> = ({ user, onSave, onCa
           <div className="space-y-4">
             <div>
               <label className="block text-xs font-black text-gray-400 uppercase tracking-widest mb-2 ml-1">Nama Lengkap</label>
-              <input 
-                type="text" 
+              <input
+                type="text"
                 name="name"
                 value={formData.name}
                 onChange={handleChange}
@@ -110,11 +110,11 @@ export const ProfileEditor: React.FC<ProfileEditorProps> = ({ user, onSave, onCa
               <label className="block text-xs font-black text-gray-400 uppercase tracking-widest mb-2 ml-1">Username</label>
               <div className="relative">
                 <span className="absolute left-6 top-1/2 -translate-y-1/2 text-gray-400 font-bold">@</span>
-                <input 
-                  type="text" 
+                <input
+                  type="text"
                   name="username"
                   value={formData.username.replace('@', '')}
-                  onChange={(e) => setFormData(prev => ({...prev, username: `@${e.target.value}`}))}
+                  onChange={(e) => setFormData(prev => ({ ...prev, username: `@${e.target.value}` }))}
                   className="w-full pl-10 pr-6 py-4 bg-gray-50 border-none rounded-2xl focus:ring-2 focus:ring-indigo-500 outline-none font-bold text-gray-700 transition-all"
                   placeholder="username"
                   required
@@ -124,7 +124,7 @@ export const ProfileEditor: React.FC<ProfileEditorProps> = ({ user, onSave, onCa
 
             <div>
               <label className="block text-xs font-black text-gray-400 uppercase tracking-widest mb-2 ml-1">Bio Singkat</label>
-              <textarea 
+              <textarea
                 name="bio"
                 value={formData.bio}
                 onChange={handleChange}
@@ -136,17 +136,17 @@ export const ProfileEditor: React.FC<ProfileEditorProps> = ({ user, onSave, onCa
           </div>
 
           <div className="flex justify-end space-x-4 pt-8">
-            <button 
+            <button
               type="button"
               onClick={onCancel}
               className="px-8 py-4 rounded-2xl text-gray-400 font-black text-sm hover:text-gray-600 transition-colors"
             >
               Batal
             </button>
-            <button 
+            <button
               type="submit"
               disabled={isUploading}
-              className="px-10 py-4 bg-indigo-600 text-white rounded-[1.25rem] font-black text-sm hover:bg-indigo-700 transition-all shadow-xl shadow-indigo-100 hover:-translate-y-1 active:scale-95 disabled:opacity-50"
+              className="px-10 py-4 bg-gradient-to-r from-[#0EA5E9] to-[#2563EB] text-white rounded-[1.25rem] font-black text-sm hover:shadow-2xl hover:scale-105 transition-all shadow-xl shadow-cyan-100 active:scale-95 disabled:opacity-50"
             >
               Simpan Perbarui
             </button>

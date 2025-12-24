@@ -750,8 +750,8 @@ const App: React.FC = () => {
   if (view === 'landing') {
     return (
       <div className="min-h-screen bg-[#F8FAFC] flex flex-col items-center justify-center p-6 relative overflow-hidden">
-        <div className="absolute -top-24 -right-24 w-96 h-96 bg-indigo-200 rounded-full blur-[120px] opacity-40"></div>
-        <div className="absolute -bottom-24 -left-24 w-96 h-96 bg-purple-200 rounded-full blur-[120px] opacity-40"></div>
+        <div className="absolute -top-24 -right-24 w-96 h-96 bg-cyan-200 rounded-full blur-[120px] opacity-40"></div>
+        <div className="absolute -bottom-24 -left-24 w-96 h-96 bg-blue-200 rounded-full blur-[120px] opacity-40"></div>
 
         <div className="w-full max-w-xl text-center relative z-10">
           <VokeLogo className="text-4xl md:text-5xl lg:text-6xl mb-6 md:mb-8 lg:mb-10 block" />
@@ -765,11 +765,11 @@ const App: React.FC = () => {
               <form onSubmit={handleLogin} className="space-y-6">
                 <div className="space-y-2">
                   <label className="text-[10px] font-black text-slate-400 uppercase tracking-widest ml-1">Username / Email</label>
-                  <input required type="text" value={loginForm.email} onChange={e => setLoginForm({ ...loginForm, email: e.target.value })} className="w-full p-4 bg-slate-50 border border-slate-100 rounded-2xl font-semibold outline-none focus:ring-4 focus:ring-indigo-500/10 transition-all" placeholder="@username atau email@example.com" disabled={isLoading} />
+                  <input required type="text" value={loginForm.email} onChange={e => setLoginForm({ ...loginForm, email: e.target.value })} className="w-full p-4 bg-slate-50 border border-slate-100 rounded-2xl font-semibold outline-none focus:ring-4 focus:ring-cyan-500/10 transition-all" placeholder="@username atau email@example.com" disabled={isLoading} />
                 </div>
                 <div className="space-y-2">
                   <label className="text-[10px] font-black text-slate-400 uppercase tracking-widest ml-1">Password</label>
-                  <input required type="password" value={loginForm.password} onChange={e => setLoginForm({ ...loginForm, password: e.target.value })} className="w-full p-4 bg-slate-50 border border-slate-100 rounded-2xl font-semibold outline-none focus:ring-4 focus:ring-indigo-500/10 transition-all" placeholder="••••••••" disabled={isLoading} />
+                  <input required type="password" value={loginForm.password} onChange={e => setLoginForm({ ...loginForm, password: e.target.value })} className="w-full p-4 bg-slate-50 border border-slate-100 rounded-2xl font-semibold outline-none focus:ring-4 focus:ring-cyan-500/10 transition-all" placeholder="••••••••" disabled={isLoading} />
                 </div>
                 <button type="submit" disabled={isLoading} className="w-full py-5 bg-slate-900 text-white rounded-[1.5rem] font-black uppercase tracking-widest shadow-xl hover:bg-black transition-all active:scale-95 disabled:opacity-50 disabled:cursor-not-allowed">
                   {isLoading ? 'Memproses...' : 'Masuk ke VOꓘE'}
@@ -803,7 +803,7 @@ const App: React.FC = () => {
                   <label className="text-[10px] font-black text-slate-400 uppercase tracking-widest ml-1">Password</label>
                   <input required type="password" value={signupForm.password} onChange={e => setSignupForm({ ...signupForm, password: e.target.value })} className="w-full p-4 bg-slate-50 border-slate-100 border rounded-2xl font-bold text-sm" placeholder="Minimal 6 karakter" disabled={isLoading} />
                 </div>
-                <button type="submit" disabled={isLoading} className="w-full py-5 bg-indigo-600 text-white rounded-[1.5rem] font-black uppercase tracking-widest shadow-xl hover:bg-indigo-700 transition-all active:scale-95 disabled:opacity-50 disabled:cursor-not-allowed">
+                <button type="submit" disabled={isLoading} className="w-full py-5 bg-gradient-to-r from-[#0EA5E9] to-[#2563EB] text-white rounded-[1.5rem] font-black uppercase tracking-widest shadow-xl hover:shadow-2xl hover:scale-[1.02] transition-all active:scale-95 disabled:opacity-50 disabled:cursor-not-allowed">
                   {isLoading ? 'Mendaftar...' : 'Kirim Pendaftaran'}
                 </button>
               </form>
@@ -859,7 +859,7 @@ const App: React.FC = () => {
           </div>
 
           <div className="flex items-center space-x-3">
-            <button onClick={() => setIsWriting(true)} className="w-11 h-11 bg-indigo-600 text-white rounded-2xl flex items-center justify-center shadow-lg shadow-indigo-100 hover:scale-105 active:scale-95 transition-all">
+            <button onClick={() => setIsWriting(true)} className="w-11 h-11 bg-gradient-to-br from-[#0EA5E9] to-[#2563EB] text-white rounded-2xl flex items-center justify-center shadow-lg shadow-cyan-100 hover:scale-105 active:scale-95 transition-all">
               <i className="fas fa-plus"></i>
             </button>
             {user?.isAdmin && (
@@ -940,7 +940,7 @@ const App: React.FC = () => {
                           setActiveDraft(draft);
                           setIsWriting(true);
                         }}
-                        className="w-10 h-10 bg-indigo-50 text-indigo-600 rounded-xl flex items-center justify-center hover:bg-indigo-100 transition-all"
+                        className="w-10 h-10 bg-cyan-50 text-cyan-600 rounded-xl flex items-center justify-center hover:bg-cyan-100 transition-all"
                         title="Edit Draf"
                       >
                         <i className="fas fa-pen-nib"></i>
@@ -966,7 +966,7 @@ const App: React.FC = () => {
         ) : view === 'profile' ? (
           <div className="space-y-8 animate-in fade-in slide-in-from-bottom-4 duration-500">
             <div className="voke-card p-12 text-center relative overflow-hidden">
-              <div className="absolute top-0 left-0 w-full h-32 bg-indigo-50/50"></div>
+              <div className="absolute top-0 left-0 w-full h-32 bg-cyan-50/50"></div>
               <div className="relative z-10">
                 <img src={user?.avatar} className="w-32 h-32 rounded-[2.5rem] object-cover mx-auto mb-6 border-4 border-white shadow-xl" />
                 <h2 className="text-3xl font-[800] text-slate-900">{user?.name}</h2>
@@ -980,7 +980,7 @@ const App: React.FC = () => {
                 </div>
 
                 <div className="flex justify-center space-x-3">
-                  <button onClick={() => setView('edit-profile')} className="px-8 py-3.5 bg-indigo-600 text-white rounded-2xl font-black text-[10px] uppercase tracking-widest shadow-lg shadow-indigo-100 hover:bg-indigo-700 transition-all">Edit Profil</button>
+                  <button onClick={() => setView('edit-profile')} className="px-8 py-3.5 bg-gradient-to-r from-[#0EA5E9] to-[#2563EB] text-white rounded-2xl font-black text-[10px] uppercase tracking-widest shadow-lg shadow-cyan-100 hover:shadow-xl hover:scale-105 transition-all">Edit Profil</button>
                   <button onClick={() => setView('wallet')} className="px-8 py-3.5 bg-slate-100 text-slate-600 rounded-2xl font-black text-[10px] uppercase tracking-widest hover:bg-slate-200 transition-all">Dompet</button>
                   <button onClick={() => { fetchDrafts(); setView('drafts'); }} className="px-8 py-3.5 bg-slate-100 text-slate-600 rounded-2xl font-black text-[10px] uppercase tracking-widest hover:bg-slate-200 transition-all">Draf</button>
                 </div>
@@ -1010,7 +1010,7 @@ const App: React.FC = () => {
             </div>
             {/* Wallet Info Cards */}
             <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-              <div className="voke-card p-8 bg-indigo-50 border-indigo-100">
+              <div className="voke-card p-8 bg-cyan-50 border-cyan-100">
                 <div className="flex justify-between items-start mb-2">
                   <h5 className="font-black text-lg text-indigo-900">Program View</h5>
                   <div className="flex items-center space-x-1 bg-emerald-100 text-emerald-600 px-3 py-1.5 rounded-lg text-[9px] font-black uppercase tracking-widest">
@@ -1041,10 +1041,10 @@ const App: React.FC = () => {
                 </p>
               </div>
               <div className="flex space-x-3">
-                <a href={ADMIN_CONTACT.waLink} target="_blank" className="px-6 py-3 bg-white text-emerald-600 rounded-xl font-black text-[9px] uppercase tracking-widest shadow-sm border border-slate-100 hover:bg-emerald-50 transition-all">
+                <a href={ADMIN_CONTACT.waLink} target="_blank" className="px-6 py-3 bg-white text-emerald-600 rounded-xl font-black text-[9px] uppercase tracking-widest shadow-sm border border-slate-100 hover:bg-emerald-50 hover:scale-105 transition-all">
                   <i className="fab fa-whatsapp mr-2"></i> WhatsApp
                 </a>
-                <a href={`mailto:${ADMIN_CONTACT.email}`} className="px-6 py-3 bg-white text-indigo-600 rounded-xl font-black text-[9px] uppercase tracking-widest shadow-sm border border-slate-100 hover:bg-indigo-50 transition-all">
+                <a href={`mailto:${ADMIN_CONTACT.email}`} className="px-6 py-3 bg-white text-cyan-600 rounded-xl font-black text-[9px] uppercase tracking-widest shadow-sm border border-slate-100 hover:bg-cyan-50 hover:scale-105 transition-all">
                   <i className="fas fa-envelope mr-2"></i> Email
                 </a>
               </div>
@@ -1057,7 +1057,7 @@ const App: React.FC = () => {
                 {/* Ad Content */}
                 <div className="relative z-10 flex flex-col md:flex-row items-center gap-10 text-center md:text-left">
                   <div className="flex-1 w-full">
-                    <span className="bg-indigo-500/20 text-indigo-400 text-[8px] font-black px-3 py-1.5 rounded-full uppercase tracking-widest border border-indigo-500/30 mb-4 inline-block">Sponsor VOꓘE</span>
+                    <span className="bg-cyan-500/20 text-cyan-500 text-[8px] font-black px-3 py-1.5 rounded-full uppercase tracking-widest border border-cyan-500/30 mb-4 inline-block">Sponsor VOꓘE</span>
                     {activeTopAd.embedCode ? (
                       <div className="w-full overflow-hidden rounded-2xl bg-white/5 p-4" dangerouslySetInnerHTML={{ __html: activeTopAd.embedCode }} />
                     ) : (

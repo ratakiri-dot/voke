@@ -103,7 +103,7 @@ export const PostCard: React.FC<PostCardProps> = ({
               </button>
               <button
                 onClick={() => setIsPromoteOpen(true)}
-                className="flex items-center justify-center px-3 sm:px-6 py-2.5 bg-indigo-50 text-indigo-600 rounded-xl text-[10px] font-black uppercase tracking-widest hover:bg-indigo-100 transition-all border border-indigo-100"
+                className="flex items-center justify-center px-3 sm:px-6 py-2.5 bg-cyan-50 text-cyan-600 rounded-xl text-[10px] font-black uppercase tracking-widest hover:bg-cyan-100 transition-all border border-cyan-100"
               >
                 <i className="fas fa-rocket sm:mr-1"></i>
                 <span className="hidden sm:inline">Spotlight</span>
@@ -201,11 +201,11 @@ export const PostCard: React.FC<PostCardProps> = ({
                   onNotify('Link disalin ke clipboard!', 'success');
                 }
               }}
-              className="w-11 h-11 bg-slate-50 text-slate-400 rounded-2xl flex items-center justify-center hover:text-indigo-500 hover:bg-indigo-50 transition-all"
+              className="w-11 h-11 bg-slate-50 text-slate-400 rounded-2xl flex items-center justify-center hover:text-cyan-500 hover:bg-cyan-50 transition-all"
             >
               <i className="fas fa-share-nodes text-sm"></i>
             </button>
-            <button onClick={() => onSaveToggle(post.id)} className={`w-11 h-11 rounded-2xl flex items-center justify-center transition-all ${isSaved ? 'bg-indigo-50 text-indigo-600' : 'bg-slate-50 text-slate-300 hover:text-indigo-400'}`}>
+            <button onClick={() => onSaveToggle(post.id)} className={`w-11 h-11 rounded-2xl flex items-center justify-center transition-all ${isSaved ? 'bg-cyan-50 text-cyan-600' : 'bg-slate-50 text-slate-300 hover:text-cyan-400'}`}>
               <i className={`${isSaved ? 'fas' : 'far'} fa-bookmark text-sm`}></i>
             </button>
           </div>

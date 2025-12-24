@@ -67,7 +67,7 @@ export const RichEditor: React.FC<RichEditorProps> = ({ onPublish, onSaveDraft, 
       <div className="p-8 md:p-12 space-y-8">
         <div className="flex justify-between items-center">
           <div className="flex items-center space-x-3">
-            <div className="w-10 h-10 bg-indigo-50 text-indigo-600 rounded-xl flex items-center justify-center">
+            <div className="w-10 h-10 bg-cyan-50 text-cyan-600 rounded-xl flex items-center justify-center">
               <i className="fas fa-pen-nib"></i>
             </div>
             <h2 className="text-2xl font-black text-gray-800 tracking-tight">Ruang Kreatif (v1.1)</h2>
@@ -144,7 +144,7 @@ export const RichEditor: React.FC<RichEditorProps> = ({ onPublish, onSaveDraft, 
             </button>
             <button
               onClick={handlePublish}
-              className="px-8 py-4 bg-indigo-600 text-white rounded-[1.25rem] font-black text-sm hover:bg-indigo-700 transition-all shadow-xl shadow-indigo-100 active:scale-95 w-full md:w-auto"
+              className="px-8 py-4 bg-gradient-to-r from-[#0EA5E9] to-[#2563EB] text-white rounded-[1.25rem] font-black text-sm hover:shadow-2xl hover:scale-105 transition-all shadow-xl shadow-cyan-100 active:scale-95 w-full md:w-auto"
             >
               Terbitkan
             </button>
