@@ -182,6 +182,7 @@ const App: React.FC = () => {
         comments (id, text, user_id, created_at, profiles(name))
       `)
       .eq('status', 'published')
+      .order('is_promoted', { ascending: false })
       .order('created_at', { ascending: false });
 
     if (error) {
@@ -797,27 +798,32 @@ const App: React.FC = () => {
     const until = new Date();
     until.setDate(until.getDate() + 7);
 
-    const { error } = await supabase.from('posts').update({
+    const { data, error } = await supabase.from('posts').update({
       is_pending_promotion: false,
       is_promoted: true,
       promoted_until: until.toISOString()
-    }).eq('id', postId);
+    }).eq('id', postId).select();
 
     if (error) {
       handleNotify('Gagal menyetujui Spotlight: ' + error.message, 'error');
+    } else if (!data || data.length === 0) {
+      handleNotify('Gagal: Post tidak ditemukan atau izin ditolak (RLS).', 'error');
     } else {
-      fetchAdminData();
-      fetchPosts();
+      console.log('Spotlight approved:', data);
+      await fetchPosts();
+      await fetchAdminData();
       handleNotify('Spotlight diaktifkan selama 7 hari.', 'success');
     }
   };
 
   const handleRejectPromo = async (postId: string) => {
     // 1. Mark as not pending
-    const { error } = await supabase.from('posts').update({ is_pending_promotion: false }).eq('id', postId);
+    const { data, error } = await supabase.from('posts').update({ is_pending_promotion: false }).eq('id', postId).select();
 
     if (error) {
       handleNotify('Gagal menolak Spotlight: ' + error.message, 'error');
+    } else if (!data || data.length === 0) {
+      handleNotify('Gagal: Izin ditolak atau post tidak ditemukan.', 'error');
     } else {
       // 2. Refund points (Optional but fair)
       const post = posts.find(p => p.id === postId);
@@ -827,8 +833,8 @@ const App: React.FC = () => {
           await supabase.from('profiles').update({ gift_balance: userData.gift_balance + 10000 }).eq('id', post.userId);
         }
       }
-      fetchAdminData();
-      fetchPosts();
+      await fetchPosts();
+      await fetchAdminData();
       handleNotify('Spotlight ditolak & poin dikembalikan.', 'info');
     }
   };
