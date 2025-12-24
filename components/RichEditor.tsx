@@ -126,26 +126,26 @@ export const RichEditor: React.FC<RichEditorProps> = ({ onPublish, onSaveDraft, 
           className="rich-editor min-h-[450px] text-xl text-gray-700 outline-none leading-relaxed prose prose-indigo max-w-none focus:ring-0"
         />
 
-        <div className="flex justify-end items-center space-x-6 pt-8 border-t border-gray-50">
+        <div className="flex flex-col md:flex-row justify-end items-center space-y-4 md:space-y-0 md:space-x-6 pt-8 border-t border-gray-50">
           <p className="text-xs text-gray-400 font-bold hidden md:block">Disimpan ke database</p>
-          <div className="flex space-x-3">
+          <div className="flex flex-col sm:flex-row w-full md:w-auto space-y-3 sm:space-y-0 sm:space-x-3">
             <button
               onClick={onCancel}
-              className="px-6 py-3 rounded-2xl text-gray-400 font-black text-sm hover:text-gray-600 transition-colors"
+              className="px-6 py-3 rounded-2xl text-gray-400 font-black text-sm hover:text-gray-600 transition-colors bg-gray-50 md:bg-transparent w-full md:w-auto"
             >
               Batal
             </button>
             <button
               onClick={handleSaveDraft}
-              className="px-6 py-3 bg-indigo-50 text-indigo-600 rounded-2xl font-black text-sm hover:bg-indigo-100 transition-colors"
+              className="px-6 py-3 bg-indigo-50 text-indigo-600 rounded-2xl font-black text-sm hover:bg-indigo-100 transition-colors w-full md:w-auto"
             >
               Simpan Draf
             </button>
             <button
               onClick={handlePublish}
-              className="px-10 py-4 bg-indigo-600 text-white rounded-[1.25rem] font-black text-sm hover:bg-indigo-700 transition-all shadow-xl shadow-indigo-100 hover:-translate-y-1 active:scale-95"
+              className="px-8 py-4 bg-indigo-600 text-white rounded-[1.25rem] font-black text-sm hover:bg-indigo-700 transition-all shadow-xl shadow-indigo-100 active:scale-95 w-full md:w-auto"
             >
-              Terbitkan Cerita
+              Terbitkan
             </button>
           </div>
         </div>
