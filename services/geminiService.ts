@@ -2,7 +2,8 @@
 import { GoogleGenAI } from "@google/genai";
 
 // Always initialize with the direct process.env.API_KEY string
-const ai = new GoogleGenAI({ apiKey: process.env.API_KEY });
+const apiKey = process.env.API_KEY || ''; // Safe fallback
+const ai = new GoogleGenAI({ apiKey });
 
 export const generateAITitle = async (content: string) => {
   try {
