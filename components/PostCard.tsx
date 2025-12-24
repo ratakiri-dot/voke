@@ -60,25 +60,16 @@ export const PostCard: React.FC<PostCardProps> = ({
             <img src={author.avatar} alt={author.name} className="w-14 h-14 rounded-2xl object-cover border-4 border-white shadow-md transition-transform group-hover:scale-105" />
             <div>
               <div className="flex items-center space-x-2">
-                <h4 className="font-extrabold text-slate-800 leading-none text-lg flex items-center">
+                <h4 className="font-extrabold text-slate-800 leading-none text-lg">
                   {author.name}
-                  {author.username === '@superadmin' && (
-                    <span className="ml-1.5 inline-flex items-center justify-center w-4 h-4 bg-blue-500 text-white rounded-full shadow-sm" title="Verified Creator">
-                      <i className="fas fa-check text-[7px]"></i>
-                    </span>
-                  )}
                 </h4>
                 {isCurrentlyPromoted && (
-                  <span className="bg-gradient-to-r from-indigo-600 to-blue-600 text-white text-[8px] font-black px-3 py-1.5 rounded-full uppercase tracking-widest shadow-[0_5px_15px_rgba(79,70,229,0.3)] border border-white/20">
+                  <span className="bg-gradient-to-r from-blue-500 to-cyan-500 text-white text-[8px] font-black px-2.5 py-1 rounded-full uppercase tracking-widest shadow-lg shadow-blue-100">
                     <i className="fas fa-sparkles mr-1 animate-pulse"></i> Spotlight
                   </span>
                 )}
               </div>
-              <p className="text-[10px] text-slate-400 font-bold uppercase tracking-wider mt-1.5 flex items-center">
-                <span>{author.username}</span>
-                <span className="mx-2 opacity-30">•</span>
-                <span>{new Date(post.timestamp).toLocaleDateString('id-ID', { month: 'short', day: 'numeric' })}</span>
-              </p>
+              <p className="text-[10px] text-slate-400 font-bold uppercase tracking-wider mt-1.5">{author.username} • {new Date(post.timestamp).toLocaleDateString('id-ID', { month: 'short', day: 'numeric' })}</p>
             </div>
           </div>
           {!isOwnPost ? (

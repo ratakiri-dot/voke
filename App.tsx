@@ -17,15 +17,10 @@ const ADMIN_CONTACT = {
   waLink: 'https://wa.me/6285163612553'
 };
 
-// Premium Logo Component
+// Basic Logo Component (Text Only)
 export const VokeLogo = ({ className = "text-2xl", withGradient = true }: { className?: string, withGradient?: boolean }) => (
-  <span className={`voke-logo inline-flex items-center space-x-2 font-[800] uppercase tracking-tighter ${className}`}>
-    <div className={`w-[1.2em] h-[1.2em] rounded-[0.4em] flex items-center justify-center ${withGradient ? 'bg-slate-900 shadow-lg' : 'bg-slate-900'} shrink-0`}>
-      <i className="fas fa-feather-alt text-white text-[0.6em]"></i>
-    </div>
-    <span className={withGradient ? 'voke-gradient-text' : 'text-slate-900'} style={{ letterSpacing: '-0.06em' }}>
-      VOꓘE
-    </span>
+  <span className={`voke-logo inline-flex items-center font-[800] uppercase tracking-tighter ${className} ${withGradient ? 'voke-gradient-text' : 'text-slate-900'}`} style={{ letterSpacing: '-0.06em' }}>
+    VOꓘE
   </span>
 );
 
