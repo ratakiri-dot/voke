@@ -682,8 +682,7 @@ const App: React.FC = () => {
 
   // NOTE: Reuse existing layout code, just replace handlers and state
 
-  const activeTopAd = useMemo(() => ads.find(a => a.isActive && a.position === 'top'), [ads]);
-  const activeBottomAd = useMemo(() => ads.find(a => a.isActive && a.position === 'bottom'), [ads]);
+
 
   if (view === 'landing') {
     return (
