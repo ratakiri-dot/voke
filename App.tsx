@@ -1015,8 +1015,28 @@ const App: React.FC = () => {
         )}
       </main>
 
-      <TopUpModal isOpen={isTopUpOpen} onClose={() => setIsTopUpOpen(false)} onSelect={() => { }} />
-      <WithdrawModal isOpen={isWithdrawOpen} onClose={() => setIsWithdrawOpen(false)} balance={totalBalance} onWithdraw={() => { }} />
+      <TopUpModal
+        isOpen={isTopUpOpen}
+        onClose={() => setIsTopUpOpen(false)}
+        onSelect={(pkg) => {
+          // Mock payment process or redirect
+          if (confirm(`Beli paket ${pkg.name} seharga Rp ${pkg.price.toLocaleString('id-ID')}?`)) {
+            handleNotify('Permintaan Top Up berhasil dibuat (Simulasi).', 'success');
+            // In real app: create transaction, redirect to payment gateway
+            setIsTopUpOpen(false);
+          }
+        }}
+      />
+      <WithdrawModal
+        isOpen={isWithdrawOpen}
+        onClose={() => setIsWithdrawOpen(false)}
+        balance={totalBalance}
+        onWithdraw={(amount, method, account) => {
+          handleNotify(`Permintaan penarikan Rp ${amount.toLocaleString()} ke ${method} (${account}) berhasil.`, 'success');
+          setIsWithdrawOpen(false);
+          // In real app: create pending transaction
+        }}
+      />
       {activeNotification && <Notification notification={activeNotification} onClose={() => setActiveNotification(null)} />}
     </div>
   );

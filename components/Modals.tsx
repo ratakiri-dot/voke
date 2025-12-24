@@ -246,8 +246,8 @@ export const GiftModal: React.FC<{
                   onClose();
                 }}
                 className={`flex flex-col items-center p-5 border-2 rounded-3xl transition-all group relative ${canAfford
-                    ? 'border-gray-100 hover:border-indigo-500 hover:bg-indigo-50/50'
-                    : 'border-gray-50 bg-gray-50/50 opacity-60 cursor-not-allowed'
+                  ? 'border-gray-100 hover:border-indigo-500 hover:bg-indigo-50/50'
+                  : 'border-gray-50 bg-gray-50/50 opacity-60 cursor-not-allowed'
                   }`}
               >
                 <span className="text-4xl mb-3 group-hover:scale-110 transition-transform">{g.icon}</span>
@@ -397,8 +397,8 @@ export const WithdrawModal: React.FC<{
             type="submit"
             disabled={!canWithdraw || !isValidAmount || !account}
             className={`w-full py-5 rounded-[1.25rem] font-black text-sm uppercase tracking-widest transition-all shadow-xl ${canWithdraw && isValidAmount && account
-                ? 'bg-amber-500 text-white hover:bg-amber-600 shadow-amber-100'
-                : 'bg-gray-100 text-gray-300 cursor-not-allowed shadow-none'
+              ? 'bg-amber-500 text-white hover:bg-amber-600 shadow-amber-100'
+              : 'bg-gray-100 text-gray-300 cursor-not-allowed shadow-none'
               }`}
           >
             Cairkan Dana Sekarang
@@ -487,22 +487,24 @@ export const TopUpModal: React.FC<{ isOpen: boolean; onClose: () => void; onSele
     { id: 'p3', name: 'Elite VOKE', points: 97500, price: 100000, isPopular: true },
   ];
 
+  console.log('Rendering TopUpModal. Packages:', packages.length);
   return (
     <Modal isOpen={isOpen} onClose={onClose} title={<>Isi Poin <VokeText /></>}>
-      <div className="space-y-4">
+      <div className="space-y-4 bg-white">
+        {/* Added bg-white to ensure visibility */}
         {packages.map((pkg) => (
-          <button key={pkg.id} onClick={() => onSelect(pkg)} className={`relative flex items-center justify-between p-5 rounded-3xl border-2 transition-all overflow-hidden ${pkg.isPopular ? 'border-indigo-600 bg-indigo-50/20' : 'border-gray-100 hover:border-indigo-200'}`}>
-            <div className="text-left">
+          <button key={pkg.id} onClick={() => onSelect(pkg)} className={`w-full relative flex items-center justify-between p-5 rounded-3xl border-2 transition-all overflow-hidden text-left ${pkg.isPopular ? 'border-indigo-600 bg-indigo-50/20' : 'border-gray-100 hover:border-indigo-200'}`}>
+            <div className="flex-1">
               <h4 className="font-black text-gray-900 text-sm mb-1">{pkg.name}</h4>
               <div className="flex items-center space-x-2">
                 <span className="text-lg font-black text-indigo-600">{pkg.points.toLocaleString('id-ID')}</span>
                 <span className="text-[10px] font-bold text-indigo-400">Poin</span>
               </div>
             </div>
-            <span className="text-sm font-black text-gray-800">Rp {pkg.price.toLocaleString('id-ID')}</span>
+            <span className="text-sm font-black text-gray-800 shrink-0 ml-4">Rp {pkg.price.toLocaleString('id-ID')}</span>
           </button>
         ))}
-        <button onClick={onClose} className="w-full py-4 text-gray-400 font-black text-xs uppercase tracking-widest">Batal</button>
+        <button onClick={onClose} className="w-full py-4 text-gray-400 font-black text-xs uppercase tracking-widest hover:text-gray-600 transition-colors">Batal</button>
       </div>
     </Modal>
   );
