@@ -55,58 +55,58 @@ export const PostCard: React.FC<PostCardProps> = ({
   return (
     <div className={`voke-card group overflow-hidden ${isCurrentlyPromoted ? 'ring-2 ring-indigo-500/30' : ''}`}>
       <div className="p-8 md:p-10">
-        <div className="flex items-center justify-between mb-8">
-          <div className="flex items-center space-x-4">
-            <img src={author.avatar} alt={author.name} className="w-14 h-14 rounded-2xl object-cover border-4 border-white shadow-md transition-transform group-hover:scale-105" />
-            <div>
-              <div className="flex items-center space-x-2">
-                <h4 className="font-extrabold text-slate-800 leading-none text-lg">
+        <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-6 mb-8">
+          <div className="flex items-center space-x-4 min-w-0">
+            <img src={author.avatar} alt={author.name} className="w-14 h-14 rounded-2xl object-cover border-4 border-white shadow-md transition-transform group-hover:scale-105 shrink-0" />
+            <div className="min-w-0">
+              <div className="flex flex-wrap items-center gap-2">
+                <h4 className="font-extrabold text-slate-800 leading-none text-lg truncate">
                   {author.name}
                 </h4>
                 {isCurrentlyPromoted && (
-                  <span className="bg-gradient-to-r from-blue-500 to-cyan-500 text-white text-[8px] font-black px-2.5 py-1 rounded-full uppercase tracking-widest shadow-lg shadow-blue-100">
+                  <span className="bg-gradient-to-r from-blue-500 to-cyan-500 text-white text-[8px] font-black px-2.5 py-1 rounded-full uppercase tracking-widest shadow-lg shadow-blue-100 shrink-0">
                     <i className="fas fa-sparkles mr-1 animate-pulse"></i> Spotlight
                   </span>
                 )}
               </div>
-              <p className="text-[10px] text-slate-400 font-bold uppercase tracking-wider mt-1.5">{author.username} • {new Date(post.timestamp).toLocaleDateString('id-ID', { month: 'short', day: 'numeric' })}</p>
+              <p className="text-[10px] text-slate-400 font-bold uppercase tracking-wider mt-1.5 truncate">{author.username} • {new Date(post.timestamp).toLocaleDateString('id-ID', { month: 'short', day: 'numeric' })}</p>
             </div>
           </div>
           {!isOwnPost ? (
-            <div className="flex space-x-2">
+            <div className="flex items-center space-x-2 w-full sm:w-auto">
               <button
                 onClick={() => setIsReportOpen(true)}
-                className="w-10 h-10 bg-slate-50 text-slate-300 hover:text-rose-500 rounded-xl flex items-center justify-center transition-all"
+                className="w-11 h-11 sm:w-10 sm:h-10 bg-slate-50 text-slate-300 hover:text-rose-500 rounded-xl flex items-center justify-center transition-all shrink-0"
               >
                 <i className="fas fa-flag text-xs"></i>
               </button>
               <button
                 onClick={() => onFollowToggle(post.userId)}
-                className={`px-6 py-2.5 rounded-xl text-[11px] font-black uppercase tracking-widest transition-all ${isFollowing ? 'bg-slate-100 text-slate-500' : 'bg-slate-900 text-white hover:bg-black shadow-lg shadow-slate-900/10'
+                className={`flex-1 sm:flex-none px-6 py-3 sm:py-2.5 rounded-xl text-[11px] font-black uppercase tracking-widest transition-all ${isFollowing ? 'bg-slate-100 text-slate-500' : 'bg-slate-900 text-white hover:bg-black shadow-lg shadow-slate-900/10'
                   }`}
               >
                 {isFollowing ? 'Mengikuti' : 'Ikuti'}
               </button>
             </div>
           ) : (
-            <div className="flex gap-2">
+            <div className="flex gap-2 w-full sm:w-auto">
               <button
                 onClick={() => {
                   if (confirm('Yakin ingin menghapus tulisan ini?')) {
                     onDelete?.(post.id);
                   }
                 }}
-                className="flex items-center justify-center px-3 sm:px-4 py-2.5 bg-rose-50 text-rose-500 rounded-xl text-[10px] font-black uppercase tracking-widest hover:bg-rose-100 transition-all border border-rose-100"
+                className="flex-1 sm:flex-none flex items-center justify-center px-4 py-3 sm:py-2.5 bg-rose-50 text-rose-500 rounded-xl text-[10px] font-black uppercase tracking-widest hover:bg-rose-100 transition-all border border-rose-100"
               >
-                <i className="fas fa-trash-alt sm:mr-1"></i>
-                <span className="hidden sm:inline">Hapus</span>
+                <i className="fas fa-trash-alt mr-1"></i>
+                <span>Hapus</span>
               </button>
               <button
                 onClick={() => setIsPromoteOpen(true)}
-                className="flex items-center justify-center px-3 sm:px-6 py-2.5 bg-cyan-50 text-cyan-600 rounded-xl text-[10px] font-black uppercase tracking-widest hover:bg-cyan-100 transition-all border border-cyan-100"
+                className="flex-1 sm:flex-none flex items-center justify-center px-4 py-3 sm:py-2.5 bg-cyan-50 text-cyan-600 rounded-xl text-[10px] font-black uppercase tracking-widest hover:bg-cyan-100 transition-all border border-cyan-100"
               >
-                <i className="fas fa-rocket sm:mr-1"></i>
-                <span className="hidden sm:inline">Spotlight</span>
+                <i className="fas fa-rocket mr-1"></i>
+                <span>Spotlight</span>
               </button>
             </div>
           )}
