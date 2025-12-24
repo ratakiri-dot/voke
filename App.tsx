@@ -578,27 +578,42 @@ const App: React.FC = () => {
 
     // 1. Deduct from sender
     const { error: deductErr } = await supabase.from('profiles').update({ gift_balance: user.giftBalance - gift.price }).eq('id', user.id);
-    if (deductErr) return;
+    if (deductErr) {
+      console.error('Error deducting balance from sender:', deductErr);
+      handleNotify('Gagal memotong saldo: ' + deductErr.message, 'error');
+      return;
+    }
 
     // 2. Add transaction record
-    await supabase.from('transactions').insert({
+    const { error: txErr } = await supabase.from('transactions').insert({
       user_id: user.id,
       type: 'gift_sent',
       amount: gift.price,
       related_entity_id: postId,
       status: 'completed'
     });
+    if (txErr) console.warn('Gagal mencatat transaksi:', txErr);
 
     // 3. Increment Post Gifts
     const post = posts.find(p => p.id === postId);
     if (post) {
-      await supabase.from('posts').update({ gifts_received: (post.gifts || 0) + gift.price }).eq('id', postId);
+      const { error: postUpdateErr } = await supabase.from('posts').update({ gifts_received: (post.gifts || 0) + gift.price }).eq('id', postId);
+      if (postUpdateErr) {
+        console.error('Error updating post gifts:', postUpdateErr);
+        handleNotify('Catatan hadiah di postingan gagal diperbarui (RLS?).', 'info');
+      }
+
       // 4. Add to receiver balance 
-      // Need to fetch receiver id from post.userId
-      const { data: authorData } = await supabase.from('profiles').select('gift_balance').eq('id', post.userId).single();
-      if (authorData) {
+      const { data: authorData, error: fetchErr } = await supabase.from('profiles').select('gift_balance').eq('id', post.userId).single();
+      if (fetchErr) {
+        console.error('Error fetching receiver balance:', fetchErr);
+      } else if (authorData) {
         const currentAuthorBalance = parseFloat(authorData.gift_balance.toString()) || 0;
-        await supabase.from('profiles').update({ gift_balance: currentAuthorBalance + gift.price }).eq('id', post.userId);
+        const { error: receiveErr } = await supabase.from('profiles').update({ gift_balance: currentAuthorBalance + gift.price }).eq('id', post.userId);
+        if (receiveErr) {
+          console.error('Error updating receiver balance:', receiveErr);
+          handleNotify('Poin gagal Masuk ke penerima. Pastikan kebijakan keamanan Supabase (RLS) mengizinkan update.', 'error');
+        }
       }
     }
 
