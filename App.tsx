@@ -47,6 +47,8 @@ const App: React.FC = () => {
     avatar: `https://picsum.photos/seed/${Math.random()}/200`
   });
 
+  const [isLoading, setIsLoading] = useState(false);
+
   const handleNotify = (message: string, type: 'success' | 'error' | 'info') => {
     const newNotif: NotificationType = { id: Date.now().toString(), message, type, timestamp: new Date() };
     setActiveNotification(newNotif);
@@ -203,19 +205,41 @@ const App: React.FC = () => {
 
   const handleLogin = async (e: React.FormEvent) => {
     e.preventDefault();
-    // For real DB integration, we remove the hardcoded bypass.
-    // User must login via Supabase Auth and have 'admin' role in profiles table.
+    setIsLoading(true);
+
+    let emailToLogin = loginForm.email.trim();
+
+    // Check if input is likely a username (no @ symbol)
+    if (!emailToLogin.includes('@')) {
+      let usernameInput = emailToLogin;
+      if (!usernameInput.startsWith('@')) usernameInput = '@' + usernameInput;
+
+      // Resolve username to email
+      const { data: profile, error: profileError } = await supabase
+        .from('profiles')
+        .select('email')
+        .eq('username', usernameInput)
+        .single();
+
+      if (profileError || !profile || !profile.email) {
+        handleNotify('Username tidak ditemukan.', 'error');
+        setIsLoading(false);
+        return;
+      }
+      emailToLogin = profile.email;
+    }
 
     const { error } = await supabase.auth.signInWithPassword({
-      email: loginForm.email,
+      email: emailToLogin,
       password: loginForm.password,
     });
 
     if (error) {
-      handleNotify(error.message, 'error');
+      handleNotify(error.message === 'Invalid login credentials' ? 'Password salah atau akun tidak ditemukan.' : error.message, 'error');
     } else {
       handleNotify('Login berhasil!', 'success');
     }
+    setIsLoading(false);
   };
 
   const handleSignUp = async (e: React.FormEvent) => {
