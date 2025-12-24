@@ -13,6 +13,7 @@ interface PostCardProps {
   onGift: (postId: string, gift: GiftItem) => void;
   onNotify: (msg: string, type: 'success' | 'error' | 'info') => void;
   onView?: (postId: string) => void;
+  onDelete?: (postId: string) => void;
   userGiftBalance?: number;
   onTopUpRequest?: () => void;
   onPromoteRequest?: (postId: string) => void;
@@ -21,7 +22,7 @@ interface PostCardProps {
 
 export const PostCard: React.FC<PostCardProps> = ({
   post, isFollowing, isSaved, onFollowToggle, onLike, onSaveToggle,
-  onAddComment, onGift, onNotify, onView,
+  onAddComment, onGift, onNotify, onView, onDelete,
   userGiftBalance = 0, onTopUpRequest = () => { },
   onPromoteRequest = (_id: string) => { },
   bottomAd
@@ -85,9 +86,21 @@ export const PostCard: React.FC<PostCardProps> = ({
               </button>
             </div>
           ) : (
-            <button onClick={() => setIsPromoteOpen(true)} className="px-6 py-2.5 bg-indigo-50 text-indigo-600 rounded-xl text-[10px] font-black uppercase tracking-widest hover:bg-indigo-100 transition-all border border-indigo-100">
-              <i className="fas fa-rocket mr-1"></i> Spotlight
-            </button>
+            <div className="flex space-x-2">
+              <button
+                onClick={() => {
+                  if (confirm('Yakin ingin menghapus tulisan ini?')) {
+                    onDelete?.(post.id);
+                  }
+                }}
+                className="px-4 py-2.5 bg-rose-50 text-rose-500 rounded-xl text-[10px] font-black uppercase tracking-widest hover:bg-rose-100 transition-all border border-rose-100"
+              >
+                <i className="fas fa-trash-alt mr-1"></i> Hapus
+              </button>
+              <button onClick={() => setIsPromoteOpen(true)} className="px-6 py-2.5 bg-indigo-50 text-indigo-600 rounded-xl text-[10px] font-black uppercase tracking-widest hover:bg-indigo-100 transition-all border border-indigo-100">
+                <i className="fas fa-rocket mr-1"></i> Spotlight
+              </button>
+            </div>
           )}
         </div>
 

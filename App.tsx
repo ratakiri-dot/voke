@@ -373,6 +373,19 @@ const App: React.FC = () => {
     }
   };
 
+  const handleDeletePost = async (postId: string) => {
+    if (!user) return;
+
+    const { error } = await supabase.from('posts').delete().eq('id', postId);
+
+    if (error) {
+      handleNotify('Gagal menghapus tulisan: ' + error.message, 'error');
+    } else {
+      handleNotify('Tulisan berhasil dihapus.', 'success');
+      fetchPosts();
+    }
+  };
+
   const handleLike = async (postId: string) => {
     if (!user) return;
     const post = posts.find(p => p.id === postId);
@@ -757,7 +770,7 @@ const App: React.FC = () => {
               </div>
             </div>
             <div className="space-y-8">
-              {posts.filter(p => p.userId === user?.id).map(p => <PostCard key={p.id} post={p} isFollowing={false} isSaved={savedPosts.has(p.id)} onFollowToggle={() => { }} onLike={handleLike} onSaveToggle={id => setSavedPosts(prev => { const n = new Set(prev); n.has(id) ? n.delete(id) : n.add(id); return n; })} onAddComment={handleAddComment} onGift={handleGift} onNotify={handleNotify} userGiftBalance={totalBalance} />)}
+              {posts.filter(p => p.userId === user?.id).map(p => <PostCard key={p.id} post={p} isFollowing={false} isSaved={savedPosts.has(p.id)} onFollowToggle={() => { }} onLike={handleLike} onSaveToggle={id => setSavedPosts(prev => { const n = new Set(prev); n.has(id) ? n.delete(id) : n.add(id); return n; })} onAddComment={handleAddComment} onGift={handleGift} onNotify={handleNotify} userGiftBalance={totalBalance} onDelete={handleDeletePost} />)}
             </div>
           </div>
         ) : view === 'edit-profile' ? (
@@ -838,6 +851,7 @@ const App: React.FC = () => {
                   onAddComment={handleAddComment}
                   onGift={handleGift} onNotify={handleNotify} userGiftBalance={totalBalance} onTopUpRequest={() => setIsTopUpOpen(true)}
                   onPromoteRequest={id => handleNotify('Feature coming soon with DB', 'info')}
+                  onDelete={handleDeletePost}
                   bottomAd={activeBottomAd}
                 />
               ))}
