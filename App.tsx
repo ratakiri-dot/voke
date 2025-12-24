@@ -6,7 +6,7 @@ import { RichEditor } from './components/RichEditor';
 import { Notification } from './components/Notification';
 import { ProfileEditor } from './components/ProfileEditor';
 import { AdminDashboard } from './components/AdminDashboard';
-import { GiftItem, WithdrawModal, TopUpModal } from './components/Modals';
+import { GiftItem, WithdrawModal, TopUpModal, SpotlightModal } from './components/Modals';
 import { supabase } from './services/supabaseClient';
 
 type ViewType = 'home' | 'saved' | 'profile' | 'edit-profile' | 'admin' | 'landing' | 'wallet';
@@ -58,6 +58,8 @@ const App: React.FC = () => {
   const [isTopUpOpen, setIsTopUpOpen] = useState(false);
   const [isWithdrawOpen, setIsWithdrawOpen] = useState(false);
   const [isProcessingTx, setIsProcessingTx] = useState(false);
+  const [activeSpotlight, setActiveSpotlight] = useState<Post | null>(null);
+  const [shownSpotlights, setShownSpotlights] = useState<Set<string>>(new Set());
 
   const [authMode, setAuthMode] = useState<'login' | 'signup'>('login');
   const [loginForm, setLoginForm] = useState({ email: '', password: '' });
@@ -97,6 +99,22 @@ const App: React.FC = () => {
       fetchAllUsers(); // For Admin Dashboard compatibility
     }
   }, [user]);
+
+  // Spotlight Popup Logic
+  useEffect(() => {
+    if (view === 'home' && posts.length > 0 && !activeSpotlight) {
+      const pending = posts.find(p =>
+        p.isPromoted &&
+        !shownSpotlights.has(p.id) &&
+        p.userId !== user?.id &&
+        (!p.promotedUntil || new Date(p.promotedUntil) > new Date())
+      );
+      if (pending) {
+        setActiveSpotlight(pending);
+        setShownSpotlights(prev => new Set(prev).add(pending.id));
+      }
+    }
+  }, [posts, activeSpotlight, shownSpotlights, view, user?.id]);
 
   const fetchUserProfile = async (userId: string) => {
     const { data, error } = await supabase
@@ -1260,6 +1278,13 @@ const App: React.FC = () => {
             setIsWithdrawOpen(false);
           }
         }}
+      />
+
+      <SpotlightModal
+        isOpen={!!activeSpotlight}
+        onClose={() => setActiveSpotlight(null)}
+        post={activeSpotlight}
+        authorName={activeSpotlight?.author?.name || 'User'}
       />
 
       {isProcessingTx && (
