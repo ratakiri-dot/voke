@@ -734,9 +734,6 @@ const App: React.FC = () => {
         <div className="absolute -bottom-24 -left-24 w-96 h-96 bg-purple-200 rounded-full blur-[120px] opacity-40"></div>
 
         <div className="w-full max-w-xl text-center relative z-10">
-          <div className="w-20 h-20 bg-slate-900 rounded-[2.5rem] flex items-center justify-center shadow-2xl mx-auto mb-10 float-animation">
-            <i className="fas fa-feather-alt text-white text-3xl"></i>
-          </div>
           <VokeLogo className="text-8xl mb-12 block" />
 
           <div className="voke-card p-10 md:p-14 text-left animate-in fade-in zoom-in duration-500">
@@ -824,9 +821,6 @@ const App: React.FC = () => {
       <nav className="sticky top-0 z-[100] bg-white/90 backdrop-blur-2xl border-b border-slate-100 h-20">
         <div className="max-w-7xl mx-auto px-6 h-full flex items-center justify-between">
           <div className="flex items-center space-x-3 cursor-pointer group" onClick={() => setView('home')}>
-            <div className="w-11 h-11 bg-slate-900 rounded-2xl flex items-center justify-center shadow-lg group-hover:scale-105 transition-transform">
-              <i className="fas fa-feather-alt text-white text-xl"></i>
-            </div>
             <VokeLogo className="text-2xl" />
           </div>
 
