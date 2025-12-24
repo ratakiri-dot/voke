@@ -979,10 +979,10 @@ const App: React.FC = () => {
                   <div><p className="text-xl font-black">{user?.followingCount}</p><p className="text-[10px] text-slate-400 uppercase font-black tracking-widest">Mengikuti</p></div>
                 </div>
 
-                <div className="flex justify-center space-x-3">
-                  <button onClick={() => setView('edit-profile')} className="px-8 py-3.5 bg-gradient-to-r from-[#0EA5E9] to-[#2563EB] text-white rounded-2xl font-black text-[10px] uppercase tracking-widest shadow-lg shadow-cyan-100 hover:shadow-xl hover:scale-105 transition-all">Edit Profil</button>
-                  <button onClick={() => setView('wallet')} className="px-8 py-3.5 bg-slate-100 text-slate-600 rounded-2xl font-black text-[10px] uppercase tracking-widest hover:bg-slate-200 transition-all">Dompet</button>
-                  <button onClick={() => { fetchDrafts(); setView('drafts'); }} className="px-8 py-3.5 bg-slate-100 text-slate-600 rounded-2xl font-black text-[10px] uppercase tracking-widest hover:bg-slate-200 transition-all">Draf</button>
+                <div className="flex flex-wrap justify-center gap-3">
+                  <button onClick={() => setView('edit-profile')} className="flex-1 min-w-[120px] sm:flex-none px-6 sm:px-8 py-3.5 bg-gradient-to-r from-[#0EA5E9] to-[#2563EB] text-white rounded-2xl font-black text-[10px] uppercase tracking-widest shadow-lg shadow-cyan-100 hover:shadow-xl hover:scale-105 transition-all">Edit Profil</button>
+                  <button onClick={() => setView('wallet')} className="flex-1 min-w-[100px] sm:flex-none px-6 sm:px-8 py-3.5 bg-slate-100 text-slate-600 rounded-2xl font-black text-[10px] uppercase tracking-widest hover:bg-slate-200 transition-all">Dompet</button>
+                  <button onClick={() => { fetchDrafts(); setView('drafts'); }} className="flex-1 min-w-[100px] sm:flex-none px-6 sm:px-8 py-3.5 bg-slate-100 text-slate-600 rounded-2xl font-black text-[10px] uppercase tracking-widest hover:bg-slate-200 transition-all">Draf</button>
                 </div>
               </div>
             </div>
