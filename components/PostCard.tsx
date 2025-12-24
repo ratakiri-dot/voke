@@ -171,8 +171,12 @@ export const PostCard: React.FC<PostCardProps> = ({
           </div>
           <div className="flex space-x-2">
             {!isOwnPost && (
-              <button onClick={() => setIsGiftOpen(true)} className="w-11 h-11 bg-amber-50 text-amber-600 rounded-2xl flex items-center justify-center hover:bg-amber-100 transition-all shadow-sm">
+              <button
+                onClick={() => setIsGiftOpen(true)}
+                className="h-11 px-4 bg-amber-50 text-amber-600 rounded-2xl flex items-center justify-center space-x-2 hover:bg-amber-100 transition-all shadow-sm border border-amber-100/50"
+              >
                 <i className="fas fa-gift text-sm"></i>
+                <span className="text-xs font-black">{post.gifts > 0 ? (post.gifts / 1000).toFixed(1) + 'k' : '0'}</span>
               </button>
             )}
             <button

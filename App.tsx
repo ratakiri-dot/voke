@@ -597,7 +597,8 @@ const App: React.FC = () => {
       // Need to fetch receiver id from post.userId
       const { data: authorData } = await supabase.from('profiles').select('gift_balance').eq('id', post.userId).single();
       if (authorData) {
-        await supabase.from('profiles').update({ gift_balance: authorData.gift_balance + gift.price }).eq('id', post.userId);
+        const currentAuthorBalance = parseFloat(authorData.gift_balance.toString()) || 0;
+        await supabase.from('profiles').update({ gift_balance: currentAuthorBalance + gift.price }).eq('id', post.userId);
       }
     }
 
