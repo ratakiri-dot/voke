@@ -20,6 +20,7 @@ export const VokeLogo = ({ className = "text-2xl", withGradient = true }: { clas
 
 const App: React.FC = () => {
   const [session, setSession] = useState<any>(null);
+  const [view, setView] = useState<ViewType>('landing');
   const [user, setUser] = useState<User | null>(null);
   const [allUsers, setAllUsers] = useState<Record<string, User>>({});
 
