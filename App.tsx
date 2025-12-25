@@ -1024,7 +1024,18 @@ const App: React.FC = () => {
 
     if (txErr) console.warn('Gagal mencatat log transaksi:', txErr.message);
 
-    // 4. Refresh data
+    // 4. Send notification to user
+    const { error: notifyErr } = await supabase.from('notifications').insert({
+      user_id: userId,
+      type: 'system',
+      title: amount >= 0 ? 'Poin Ditambahkan!' : 'Poin Dikurangi',
+      content: `Admin telah ${amount >= 0 ? 'menambahkan' : 'mengurangi'} saldo Anda sebesar ${Math.abs(amount)} poin. Total saldo Anda sekarang adalah ${newBalance}.`,
+      is_read: false
+    });
+
+    if (notifyErr) console.warn('Gagal mengirim notifikasi:', notifyErr.message);
+
+    // 5. Refresh data
     fetchAllUsers();
     if (userId === user?.id) fetchUserProfile(userId);
     handleNotify(`Saldo user berhasil diperbarui. Total sekarang: ${newBalance}`, 'success');
