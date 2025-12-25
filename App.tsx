@@ -70,9 +70,10 @@ const App: React.FC = () => {
     return {
       title: activeDraft.title,
       content: activeDraft.content,
-      caption: activeDraft.caption || ''
+      caption: activeDraft.caption || '',
+      coverImage: activeDraft.coverImage
     };
-  }, [activeDraft?.id, activeDraft?.title, activeDraft?.content, activeDraft?.caption]);
+  }, [activeDraft?.id, activeDraft?.title, activeDraft?.content, activeDraft?.caption, activeDraft?.coverImage]);
 
   const [authMode, setAuthMode] = useState<'login' | 'signup'>('login');
   const [loginForm, setLoginForm] = useState({ email: '', password: '' });
@@ -243,6 +244,7 @@ const App: React.FC = () => {
         likes: p.likes_count,
         shares: p.shares_count,
         views: p.views_count,
+        coverImage: p.cover_image,
         gifts: p.gifts_received || 0,
         timestamp: new Date(p.created_at),
         isPromoted: p.is_promoted,
@@ -542,7 +544,7 @@ const App: React.FC = () => {
 
   // --- Actions ---
 
-  const handlePublish = async (title: string, content: string, caption: string) => {
+  const handlePublish = async (title: string, content: string, caption: string, coverImage?: string) => {
     if (!user) return;
 
     let error;
@@ -553,6 +555,7 @@ const App: React.FC = () => {
         title,
         content,
         caption,
+        cover_image: coverImage,
         status: 'published'
       };
 
@@ -570,6 +573,7 @@ const App: React.FC = () => {
         title,
         content,
         caption,
+        cover_image: coverImage,
         status: 'published'
       });
       error = insertError;
@@ -586,7 +590,7 @@ const App: React.FC = () => {
     }
   };
 
-  const handleSaveDraft = async (title: string, content: string, caption: string) => {
+  const handleSaveDraft = async (title: string, content: string, caption: string, coverImage?: string) => {
     if (!user) return;
 
     let error;
@@ -596,7 +600,8 @@ const App: React.FC = () => {
       const { error: updateError } = await supabase.from('posts').update({
         title,
         content,
-        caption
+        caption,
+        cover_image: coverImage
       }).eq('id', activeDraft.id);
       error = updateError;
     } else {
@@ -606,6 +611,7 @@ const App: React.FC = () => {
         title,
         content,
         caption,
+        cover_image: coverImage,
         status: 'draft'
       });
       error = insertError;
@@ -1239,8 +1245,8 @@ const App: React.FC = () => {
           />
         ) : isWriting ? (
           <RichEditor
-            onPublish={(t, c, cap) => handlePublish(t, c, cap)}
-            onSaveDraft={(t, c, cap) => handleSaveDraft(t, c, cap)}
+            onPublish={(t, c, cap, img) => handlePublish(t, c, cap, img)}
+            onSaveDraft={(t, c, cap, img) => handleSaveDraft(t, c, cap, img)}
             onCancel={() => { setIsWriting(false); setActiveDraft(null); }}
             onNotify={handleNotify}
             initialData={editorData}

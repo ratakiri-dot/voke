@@ -60,6 +60,15 @@ export const PostCard: React.FC<PostCardProps> = ({
 
   return (
     <div className={`voke-card group overflow-hidden ${isCurrentlyPromoted ? 'ring-2 ring-indigo-500/30' : ''}`}>
+      {post.coverImage && (
+        <div className="w-full h-48 sm:h-64 overflow-hidden border-b border-slate-50">
+          <img
+            src={post.coverImage}
+            alt={post.title}
+            className="w-full h-full object-cover transition-transform duration-700 group-hover:scale-105"
+          />
+        </div>
+      )}
       <div className="p-8 md:p-10">
         <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-6 mb-8">
           <div className="flex items-center space-x-4 min-w-0">

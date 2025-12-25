@@ -7,12 +7,13 @@ interface RichEditorProps {
   onSaveDraft: (title: string, content: string, caption: string) => void;
   onCancel: () => void;
   onNotify: (msg: string, type: 'success' | 'error' | 'info') => void;
-  initialData?: { title: string, content: string, caption: string };
+  initialData?: { title: string, content: string, caption: string, coverImage?: string };
 }
 
 export const RichEditor: React.FC<RichEditorProps> = ({ onPublish, onSaveDraft, onCancel, onNotify, initialData }) => {
   const [title, setTitle] = useState(initialData?.title || '');
   const [caption, setCaption] = useState(initialData?.caption || '');
+  const [coverImage, setCoverImage] = useState(initialData?.coverImage || '');
   const [isAiLoading, setIsAiLoading] = useState(false);
   const editorRef = useRef<HTMLDivElement>(null);
   const isInitialized = useRef(false);
@@ -59,7 +60,7 @@ export const RichEditor: React.FC<RichEditorProps> = ({ onPublish, onSaveDraft, 
       onNotify('Judul dan isi tulisan wajib diisi!', 'error');
       return;
     }
-    onPublish(title, content, caption);
+    onPublish(title, content, caption, coverImage);
   };
 
   const handleSaveDraft = () => {
@@ -68,7 +69,7 @@ export const RichEditor: React.FC<RichEditorProps> = ({ onPublish, onSaveDraft, 
       onNotify('Judul wajib diisi untuk menyimpan draf!', 'error');
       return;
     }
-    onSaveDraft(title, content, caption);
+    onSaveDraft(title, content, caption, coverImage);
   };
 
   return (
@@ -76,10 +77,10 @@ export const RichEditor: React.FC<RichEditorProps> = ({ onPublish, onSaveDraft, 
       <div className="p-8 md:p-12 space-y-8">
         <div className="flex justify-between items-center">
           <div className="flex items-center space-x-3">
-            <div className="w-10 h-10 bg-cyan-50 text-cyan-600 rounded-xl flex items-center justify-center">
+            <div className="w-10 h-10 bg-indigo-50 text-indigo-600 rounded-xl flex items-center justify-center">
               <i className="fas fa-pen-nib"></i>
             </div>
-            <h2 className="text-2xl font-black text-gray-800 tracking-tight">Ruang Kreatif (v1.1)</h2>
+            <h2 className="text-2xl font-black text-gray-800 tracking-tight">VOꓘE up Now!</h2>
           </div>
           <button onClick={onCancel} className="w-10 h-10 rounded-full hover:bg-gray-100 flex items-center justify-center text-gray-400 transition-colors">
             <i className="fas fa-times"></i>
@@ -102,6 +103,16 @@ export const RichEditor: React.FC<RichEditorProps> = ({ onPublish, onSaveDraft, 
               value={caption}
               onChange={(e) => setCaption(e.target.value)}
               className="flex-1 text-indigo-600 font-bold border-none focus:ring-0 placeholder-indigo-200 text-sm outline-none"
+            />
+          </div>
+          <div className="flex items-center space-x-2 border-t border-gray-50 pt-2">
+            <i className="fas fa-image text-slate-300 text-xs"></i>
+            <input
+              type="text"
+              placeholder="Link Gambar Sampul (opsional)..."
+              value={coverImage}
+              onChange={(e) => setCoverImage(e.target.value)}
+              className="flex-1 text-slate-500 font-medium border-none focus:ring-0 placeholder-slate-200 text-xs outline-none"
             />
           </div>
         </div>

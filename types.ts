@@ -36,6 +36,7 @@ export interface Post {
   gifts: number;
   giftStats?: Record<string, { count: number; icon: string }>;
   views: number;
+  coverImage?: string;
   timestamp: Date;
   isLiked?: boolean;
   isPromoted?: boolean;
