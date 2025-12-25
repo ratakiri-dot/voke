@@ -153,38 +153,53 @@ export const PostCard: React.FC<PostCardProps> = ({
           ) : (
             <div className="text-slate-600 leading-[1.8] text-base sm:text-lg space-y-4">
               {(() => {
-                const paragraphs = post.content.split('</p>').filter(p => p.trim());
-                if (paragraphs.length > 2 && middleAd && middleAd.isActive) {
-                  const mid = Math.ceil(paragraphs.length / 2);
-                  const firstHalf = paragraphs.slice(0, mid);
-                  const secondHalf = paragraphs.slice(mid);
+                // Match ending of paragraphs, divs, or double breaks
+                const parts = post.content.split(/(<\/p>|<\/div>|<br\s*\/?>\s*<br\s*\/?>)/i);
+
+                // Group pairs of [content, tag]
+                const segments = [];
+                for (let i = 0; i < parts.length; i += 2) {
+                  if (parts[i].trim() || (parts[i + 1] && parts[i + 1].trim())) {
+                    segments.push(parts[i] + (parts[i + 1] || ''));
+                  }
+                }
+
+                if (segments.length >= 1 && middleAd && middleAd.isActive) {
+                  // For 1 segment, place after. For more, place in middle.
+                  const mid = Math.max(1, Math.ceil(segments.length / 2));
+                  const firstHalf = segments.slice(0, mid);
+                  const secondHalf = segments.slice(mid);
+
                   return (
-                    <>
-                      <div dangerouslySetInnerHTML={{ __html: firstHalf.join('</p>') + '</p>' }} />
+                    <div className="space-y-0">
+                      <div dangerouslySetInnerHTML={{ __html: firstHalf.join('') }} />
 
                       {/* Middle Ad */}
-                      <div className="my-8 p-6 bg-slate-50 rounded-3xl border border-slate-100 overflow-hidden">
-                        <span className="text-[8px] font-black text-slate-400 uppercase tracking-widest mb-4 inline-block">Sponsor VOꓘE</span>
+                      <div className="my-10 p-6 bg-slate-50 rounded-3xl border border-slate-100 overflow-hidden shadow-sm relative group/ad">
+                        <div className="flex items-center justify-between mb-4">
+                          <span className="text-[8px] font-black text-slate-400 uppercase tracking-widest tracking-[0.2em]">Pariwara Sponsor</span>
+                          <span className="text-[8px] font-black text-slate-200 uppercase px-2 py-0.5 border border-slate-100 rounded-md">VOKE ADS</span>
+                        </div>
                         {middleAd.embedCode ? (
                           <ScriptAd embedCode={middleAd.embedCode} />
                         ) : (
                           <div className="flex flex-col md:flex-row gap-6 items-center">
                             {middleAd.imageUrl && (
-                              <img src={middleAd.imageUrl} className="w-24 h-24 object-cover rounded-2xl shrink-0 shadow-sm" alt="" />
+                              <img src={middleAd.imageUrl} className="w-24 h-24 object-cover rounded-2xl shrink-0 shadow-sm transition-transform group-hover/ad:scale-105" alt="" />
                             )}
                             <div className="flex-1 text-center md:text-left">
                               <h4 className="text-sm font-black mb-1 text-slate-800">{middleAd.title || 'Pariwara'}</h4>
-                              <p className="text-[10px] text-slate-500 mb-4 line-clamp-2">{middleAd.description || 'Lihat penawaran menarik dari mitra kami.'}</p>
+                              <p className="text-[10px] text-slate-500 mb-4 line-clamp-2 leading-relaxed">{middleAd.description || 'Lihat penawaran menarik dari mitra kami.'}</p>
                               {middleAd.link && (
-                                <a href={middleAd.link} target="_blank" rel="noopener" className="inline-block px-6 py-2 bg-indigo-600 text-white rounded-xl text-[9px] font-black uppercase tracking-widest hover:bg-indigo-700 transition-all">Pelajari</a>
+                                <a href={middleAd.link} target="_blank" rel="noopener" className="inline-block px-8 py-2.5 bg-indigo-600 text-white rounded-xl text-[9px] font-black uppercase tracking-widest hover:bg-black transition-all shadow-md active:scale-95">Pelajari Selengkapnya</a>
                               )}
                             </div>
                           </div>
                         )}
                       </div>
 
-                      <div dangerouslySetInnerHTML={{ __html: secondHalf.join('</p>') + '</p>' }} />
-                    </>
+                      {secondHalf.length > 0 && <div dangerouslySetInnerHTML={{ __html: secondHalf.join('') }} />}
+                    </div>
                   );
                 }
                 return <div dangerouslySetInnerHTML={{ __html: post.content }} />;
