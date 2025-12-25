@@ -769,35 +769,40 @@ const App: React.FC = () => {
     handleNotify(`Apresiasi ${gift.name} terkirim!`, 'success');
   };
 
-  const handlePromoteRequest = async (postId: string) => {
+  const handlePromoteRequest = async (postId: string, duration: number, cost: number) => {
     if (!user) return;
-    const PROMOTE_COST = 10000;
-    if (user.giftBalance < PROMOTE_COST) {
+    if (user.giftBalance < cost) {
       handleNotify('Saldo tidak mencukupi untuk Spotlight.', 'error');
       return;
     }
 
     // 1. Deduct points
-    const { error: deductErr } = await supabase.from('profiles').update({ gift_balance: user.giftBalance - PROMOTE_COST }).eq('id', user.id);
+    const { error: deductErr } = await supabase.from('profiles').update({ gift_balance: user.giftBalance - cost }).eq('id', user.id);
     if (deductErr) {
       handleNotify('Gagal memproses poin: ' + deductErr.message, 'error');
       return;
     }
 
     // 2. Set pending promotion
-    const { error: updateErr } = await supabase.from('posts').update({ is_pending_promotion: true }).eq('id', postId);
+    const { error: updateErr } = await supabase.from('posts').update({
+      is_pending_promotion: true,
+      // We'll store the requested duration in metadata if the table supports it, 
+      // or just assume it's handled by the transaction record for now.
+    }).eq('id', postId);
+
     if (updateErr) {
       handleNotify('Gagal mengajukan Spotlight: ' + updateErr.message, 'error');
       return;
     }
 
-    // 3. Record transaction
+    // 3. Record transaction with duration metadata
     const { error: txErr } = await supabase.from('transactions').insert({
       user_id: user.id,
       type: 'promotion_request',
-      amount: PROMOTE_COST,
+      amount: cost,
       related_entity_id: postId,
-      status: 'completed'
+      status: 'completed',
+      metadata: { duration, cost }
     });
 
     if (txErr) {
@@ -976,8 +981,18 @@ const App: React.FC = () => {
   };
 
   const handleApprovePromo = async (postId: string) => {
+    // 1. Fetch the duration from the latest transaction
+    const { data: txs, error: txErr } = await supabase
+      .from('transactions')
+      .select('metadata')
+      .eq('related_entity_id', postId)
+      .eq('type', 'promotion_request')
+      .order('created_at', { ascending: false })
+      .limit(1);
+
+    const duration = (txs && txs[0]?.metadata?.duration) || 7; // Default to 7 if not found
     const until = new Date();
-    until.setDate(until.getDate() + 7);
+    until.setDate(until.getDate() + duration);
 
     const { data, error } = await supabase.from('posts').update({
       is_pending_promotion: false,
@@ -993,12 +1008,23 @@ const App: React.FC = () => {
       console.log('Spotlight approved:', data);
       await fetchPosts();
       await fetchAdminData();
-      handleNotify('Spotlight diaktifkan selama 7 hari.', 'success');
+      handleNotify(`Spotlight diaktifkan selama ${duration} hari.`, 'success');
     }
   };
 
   const handleRejectPromo = async (postId: string) => {
-    // 1. Mark as not pending
+    // 1. Fetch the cost from the latest transaction
+    const { data: txs } = await supabase
+      .from('transactions')
+      .select('amount, metadata')
+      .eq('related_entity_id', postId)
+      .eq('type', 'promotion_request')
+      .order('created_at', { ascending: false })
+      .limit(1);
+
+    const cost = (txs && txs[0]?.amount) || (txs && txs[0]?.metadata?.cost) || 10000;
+
+    // 2. Mark as not pending
     const { data, error } = await supabase.from('posts').update({ is_pending_promotion: false }).eq('id', postId).select();
 
     if (error) {
@@ -1006,17 +1032,17 @@ const App: React.FC = () => {
     } else if (!data || data.length === 0) {
       handleNotify('Gagal: Izin ditolak atau post tidak ditemukan.', 'error');
     } else {
-      // 2. Refund points (Optional but fair)
+      // 3. Refund points
       const post = posts.find(p => p.id === postId);
       if (post) {
         const { data: userData } = await supabase.from('profiles').select('gift_balance').eq('id', post.userId).single();
         if (userData) {
-          await supabase.from('profiles').update({ gift_balance: userData.gift_balance + 10000 }).eq('id', post.userId);
+          await supabase.from('profiles').update({ gift_balance: userData.gift_balance + cost }).eq('id', post.userId);
         }
       }
       await fetchPosts();
       await fetchAdminData();
-      handleNotify('Spotlight ditolak & poin dikembalikan.', 'info');
+      handleNotify(`Spotlight ditolak & ${cost} poin dikembalikan.`, 'info');
     }
   };
 
@@ -1413,7 +1439,7 @@ const App: React.FC = () => {
                   {searchQuery && <button onClick={() => setSearchQuery('')} className="mt-4 text-blue-500 font-black text-[10px] uppercase tracking-widest">Hapus Pencarian</button>}
                 </div>
               ) : (
-                filteredPosts.filter(p => p.userId === user?.id).map(p => <PostCard key={p.id} post={p} isFollowing={false} isSaved={savedPosts.has(p.id)} onFollowToggle={() => { }} onLike={handleLike} onSaveToggle={id => setSavedPosts(prev => { const n = new Set(prev); n.has(id) ? n.delete(id) : n.add(id); return n; })} onAddComment={handleAddComment} onGift={handleGift} onNotify={handleNotify} userGiftBalance={totalBalance} onDelete={handleDeletePost} onEdit={handleEdit} currentUserId={user?.id} />)
+                filteredPosts.filter(p => p.userId === user?.id).map(p => <PostCard key={p.id} post={p} isFollowing={false} isSaved={savedPosts.has(p.id)} onFollowToggle={() => { }} onLike={handleLike} onSaveToggle={id => setSavedPosts(prev => { const n = new Set(prev); n.has(id) ? n.delete(id) : n.add(id); return n; })} onAddComment={handleAddComment} onGift={handleGift} onNotify={handleNotify} userGiftBalance={totalBalance} onPromoteRequest={handlePromoteRequest} onDelete={handleDeletePost} onEdit={handleEdit} currentUserId={user?.id} />)
               )}
             </div>
           </div>

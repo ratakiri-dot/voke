@@ -18,7 +18,7 @@ interface PostCardProps {
   currentUserId?: string;
   userGiftBalance?: number;
   onTopUpRequest?: () => void;
-  onPromoteRequest?: (postId: string) => void;
+  onPromoteRequest?: (postId: string, duration: number, cost: number) => void;
   bottomAd?: Advertisement | null;
   viewRate?: number;
 }
@@ -27,7 +27,7 @@ export const PostCard: React.FC<PostCardProps> = ({
   post, isFollowing, isSaved, onFollowToggle, onLike, onSaveToggle,
   onAddComment, onGift, onNotify, onView, onEdit, onDelete, currentUserId,
   userGiftBalance = 0, onTopUpRequest = () => { },
-  onPromoteRequest = (_id: string) => { },
+  onPromoteRequest = (_id: string, _d: number, _c: number) => { },
   bottomAd,
   viewRate
 }) => {
@@ -314,7 +314,7 @@ export const PostCard: React.FC<PostCardProps> = ({
 
       <GiftModal isOpen={isGiftOpen} onClose={() => setIsGiftOpen(false)} onGift={onGift.bind(null, post.id)} currentBalance={userGiftBalance} onTopUpRequest={onTopUpRequest} />
       <ReportModal isOpen={isReportOpen} onClose={() => setIsReportOpen(false)} onReport={(reason) => { onNotify(`Laporan "${reason}" terkirim ke moderator.`, 'info'); }} />
-      <PromoteModal isOpen={isPromoteOpen} onClose={() => setIsPromoteOpen(false)} postTitle={post.title} balance={userGiftBalance} onConfirm={() => { onPromoteRequest(post.id); onNotify('Pengajuan Spotlight terkirim.', 'success'); }} />
+      <PromoteModal isOpen={isPromoteOpen} onClose={() => setIsPromoteOpen(false)} postTitle={post.title} balance={userGiftBalance} onConfirm={(duration, cost) => { onPromoteRequest(post.id, duration, cost); onNotify('Pengajuan Spotlight terkirim.', 'success'); }} />
     </div>
   );
 };

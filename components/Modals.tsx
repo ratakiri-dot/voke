@@ -447,9 +447,20 @@ export const WithdrawModal: React.FC<{
   );
 };
 
-export const PromoteModal: React.FC<{ isOpen: boolean; onClose: () => void; onConfirm: () => void; postTitle: string; balance: number; }> = ({ isOpen, onClose, onConfirm, postTitle, balance }) => {
-  const PROMOTE_COST = 10000;
-  const canAfford = balance >= PROMOTE_COST;
+export const PromoteModal: React.FC<{
+  isOpen: boolean;
+  onClose: () => void;
+  onConfirm: (duration: number, cost: number) => void;
+  postTitle: string;
+  balance: number;
+}> = ({ isOpen, onClose, onConfirm, postTitle, balance }) => {
+  const PLANS = [
+    { duration: 1, cost: 200, label: '1 Hari', points: '200 Poin' },
+    { duration: 3, cost: 400, label: '3 Hari', points: '400 Poin' }
+  ];
+  const [selectedPlan, setSelectedPlan] = useState(PLANS[0]);
+
+  const canAfford = balance >= selectedPlan.cost;
 
   return (
     <Modal isOpen={isOpen} onClose={onClose} title={<><VokeText /> Spotlight</>}>
@@ -458,14 +469,31 @@ export const PromoteModal: React.FC<{ isOpen: boolean; onClose: () => void; onCo
           <div className="w-16 h-16 bg-white rounded-2xl flex items-center justify-center shadow-md mx-auto mb-4">
             <i className="fas fa-rocket text-indigo-500 text-2xl"></i>
           </div>
-          <p className="text-xs text-gray-500 leading-relaxed px-4">Tampilkan karya <b>"{postTitle}"</b> di barisan terdepan <VokeText /> selama 7 hari.</p>
+          <p className="text-xs text-gray-500 leading-relaxed px-4">Tampilkan karya <b>"{postTitle}"</b> di barisan terdepan <VokeText /> selama {selectedPlan.label}.</p>
         </div>
-        <div className="bg-gray-50 p-5 rounded-3xl border border-gray-100 flex justify-between items-center">
-          <span className="text-[10px] font-black text-gray-400 uppercase tracking-widest">Biaya Promosi</span>
-          <span className="text-sm font-black text-indigo-600">10.000 Poin</span>
+
+        <div className="grid grid-cols-2 gap-4">
+          {PLANS.map(plan => (
+            <button
+              key={plan.duration}
+              onClick={() => setSelectedPlan(plan)}
+              className={`p-4 rounded-3xl border-2 transition-all flex flex-col items-center space-y-2 ${selectedPlan.duration === plan.duration
+                ? 'border-indigo-600 bg-indigo-50 shadow-lg shadow-indigo-100'
+                : 'border-gray-100 bg-gray-50 text-gray-400 hover:border-gray-200'
+                }`}
+            >
+              <span className={`text-[10px] font-black uppercase tracking-widest ${selectedPlan.duration === plan.duration ? 'text-indigo-600' : ''}`}>{plan.label}</span>
+              <span className={`text-sm font-black ${selectedPlan.duration === plan.duration ? 'text-indigo-900' : ''}`}>{plan.points}</span>
+            </button>
+          ))}
         </div>
+
         <div className="flex flex-col space-y-3">
-          <button onClick={() => { onConfirm(); onClose(); }} disabled={!canAfford} className={`w-full py-5 rounded-[1.25rem] font-black text-sm uppercase tracking-widest transition-all shadow-xl ${canAfford ? 'bg-indigo-600 text-white hover:bg-indigo-700 shadow-indigo-100' : 'bg-gray-100 text-gray-300 cursor-not-allowed'}`}>
+          <button
+            onClick={() => { onConfirm(selectedPlan.duration, selectedPlan.cost); onClose(); }}
+            disabled={!canAfford}
+            className={`w-full py-5 rounded-[1.25rem] font-black text-sm uppercase tracking-widest transition-all shadow-xl ${canAfford ? 'bg-indigo-600 text-white hover:bg-indigo-700 shadow-indigo-100' : 'bg-gray-100 text-gray-300 cursor-not-allowed'}`}
+          >
             {canAfford ? 'Konfirmasi Spotlight' : 'Poin Tidak Cukup'}
           </button>
           <button onClick={onClose} className="w-full py-4 text-gray-400 font-black text-xs uppercase tracking-widest">Batal</button>
