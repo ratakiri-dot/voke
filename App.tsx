@@ -58,10 +58,13 @@ const App: React.FC = () => {
 
   const [isTopUpOpen, setIsTopUpOpen] = useState(false);
   const [isWithdrawOpen, setIsWithdrawOpen] = useState(false);
+  const [isTopUpOpen, setIsTopUpOpen] = useState(false);
+  const [isWithdrawOpen, setIsWithdrawOpen] = useState(false);
   const [isProcessingTx, setIsProcessingTx] = useState(false);
   const [activeSpotlight, setActiveSpotlight] = useState<Post | null>(null);
   const [shownSpotlights, setShownSpotlights] = useState<Set<string>>(new Set());
   const [isInitializing, setIsInitializing] = useState(true);
+  const [isLoadingPosts, setIsLoadingPosts] = useState(true);
 
   const [authMode, setAuthMode] = useState<'login' | 'signup'>('login');
   const [loginForm, setLoginForm] = useState({ email: '', password: '' });
@@ -74,10 +77,11 @@ const App: React.FC = () => {
 
   // --- Auth & Initial Data Fetching ---
   useEffect(() => {
-    supabase.auth.getSession().then(async ({ data: { session } }) => {
+    supabase.auth.getSession().then(({ data: { session } }) => {
       setSession(session);
       if (session) {
-        await fetchUserProfile(session.user.id);
+        // Parallelize fetching, don't await blocking
+        fetchUserProfile(session.user.id);
         setView('home');
       }
       setIsInitializing(false);
@@ -196,6 +200,7 @@ const App: React.FC = () => {
   };
 
   const fetchPosts = async () => {
+    setIsLoadingPosts(true);
     console.log('Fetching posts...');
     const { data, error } = await supabase
       .from('posts')
@@ -213,6 +218,7 @@ const App: React.FC = () => {
     if (error) {
       console.error('Error fetching posts:', error);
       handleNotify('Gagal memuat posts: ' + error.message, 'error');
+      setIsLoadingPosts(false);
       return;
     }
 
@@ -252,6 +258,7 @@ const App: React.FC = () => {
       console.log('Gift values in posts:', mappedPosts.map(p => ({ id: p.id, gifts: p.gifts })));
       setPosts(mappedPosts);
     }
+    setIsLoadingPosts(false);
   };
 
   const fetchDrafts = async () => {
@@ -1417,8 +1424,31 @@ const App: React.FC = () => {
             )}
 
             <div className="space-y-10">
+            <div className="space-y-10">
               <div className="space-y-10">
-                {posts.map((post) => (
+                {isLoadingPosts ? (
+                  <div className="space-y-8 animate-pulse">
+                     {[1, 2].map(i => (
+                       <div key={i} className="bg-white rounded-[2.5rem] p-6 sm:p-8 space-y-6">
+                         <div className="flex items-center space-x-4">
+                           <div className="w-12 h-12 bg-slate-100 rounded-full"></div>
+                           <div className="space-y-2">
+                             <div className="h-4 bg-slate-100 rounded w-32"></div>
+                             <div className="h-3 bg-slate-50 rounded w-24"></div>
+                           </div>
+                         </div>
+                         <div className="space-y-4">
+                           <div className="h-6 bg-slate-100 rounded w-3/4"></div>
+                           <div className="space-y-2">
+                             <div className="h-4 bg-slate-50 rounded w-full"></div>
+                             <div className="h-4 bg-slate-50 rounded w-full"></div>
+                           </div>
+                         </div>
+                       </div>
+                     ))}
+                  </div>
+                ) : (
+                  posts.map((post) => (
                   <PostCard
                     key={post.id}
                     post={post} isFollowing={following.has(post.userId)} isSaved={savedPosts.has(post.id)}
@@ -1534,14 +1564,14 @@ const App: React.FC = () => {
       />
 
       {isProcessingTx && (
-        <div className="fixed inset-0 bg-white/50 backdrop-blur-sm z-[1000] flex items-center justify-center">
-          <div className="bg-white p-8 rounded-[2.5rem] shadow-2xl flex flex-col items-center space-y-4">
-            <div className="w-12 h-12 border-4 border-indigo-600 border-t-transparent rounded-full animate-spin"></div>
-            <p className="font-black text-[10px] uppercase tracking-widest text-indigo-600">Memproses Permintaan...</p>
+          <div className="fixed inset-0 bg-white/50 backdrop-blur-sm z-[1000] flex items-center justify-center">
+            <div className="bg-white p-8 rounded-[2.5rem] shadow-2xl flex flex-col items-center space-y-4">
+              <div className="w-12 h-12 border-4 border-indigo-600 border-t-transparent rounded-full animate-spin"></div>
+              <p className="font-black text-[10px] uppercase tracking-widest text-indigo-600">Memproses Permintaan...</p>
+            </div>
           </div>
-        </div>
-      )}
-      {activeNotification && <Notification notification={activeNotification} onClose={() => setActiveNotification(null)} />}
+        )}
+        {activeNotification && <Notification notification={activeNotification} onClose={() => setActiveNotification(null)} />}
     </div>
   );
 };
