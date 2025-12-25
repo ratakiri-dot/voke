@@ -1396,7 +1396,7 @@ const App: React.FC = () => {
             <div onClick={() => setView('profile')} className="w-10 h-10 md:w-11 md:h-11 rounded-full border-2 border-white overflow-hidden cursor-pointer shadow-sm hover:ring-4 hover:ring-indigo-500/10 transition-all">
               <img src={user?.avatar} className="w-full h-full object-cover" />
             </div>
-            <button onClick={handleLogout} className="hidden sm:flex w-10 h-10 md:w-11 md:h-11 bg-slate-50 text-slate-300 hover:text-rose-500 rounded-2xl items-center justify-center transition-all">
+            <button onClick={handleLogout} className="flex w-10 h-10 md:w-11 md:h-11 bg-slate-50 text-slate-300 hover:text-rose-500 rounded-2xl items-center justify-center transition-all">
               <i className="fas fa-power-off"></i>
             </button>
           </div>
