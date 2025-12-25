@@ -167,7 +167,7 @@ export const PostCard: React.FC<PostCardProps> = ({
               <i className="far fa-comment text-sm mr-2.5"></i>
               <span className="text-xs font-black">{post.comments.length}</span>
             </button>
-            <div className="hidden sm:flex items-center px-4 py-2 bg-slate-50 text-slate-400 rounded-2xl">
+            <div className="flex items-center px-4 py-2 bg-slate-50 text-slate-400 rounded-2xl">
               <i className="far fa-eye text-sm mr-2.5"></i>
               <span className="text-xs font-black">{post.views.toLocaleString('id-ID')}</span>
               {viewRate !== undefined && (
