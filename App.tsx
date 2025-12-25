@@ -1460,13 +1460,12 @@ const App: React.FC = () => {
                     bottomAd={activeBottomAd}
                     viewRate={viewRate}
                     onView={(postId) => {
-                      const viewedKey = `voke_view_${postId}_v2`; // Changed key version to force a 'new' view for testing if user wants, or keep original. 
-                      // actually let's just log it.
-                      const existingKey = localStorage.getItem(`voke_view_${postId}`);
-                      console.log(`[View Debug] Post ${postId}, existingKey:`, existingKey);
+                      const viewedKey = `voke_view_${postId}`;
+                      const alreadyViewed = localStorage.getItem(viewedKey);
+                      console.log(`[View Debug] Post ${postId}, alreadyViewed:`, alreadyViewed);
 
-                      if (!existingKey) {
-                        console.log('[View Debug] Incrementing view!');
+                      if (!alreadyViewed) {
+                        console.log('[View Debug] Incrementing view! (New unique view)');
                         localStorage.setItem(`voke_view_${postId}`, 'true');
                         // Update local state
                         setPosts(prev => prev.map(p => p.id === postId ? { ...p, views: p.views + 1 } : p));
