@@ -580,7 +580,7 @@ const App: React.FC = () => {
     }
 
     if (error) {
-      handleNotify('Gagal menerbitkan karya.', 'error');
+      handleNotify('Gagal menerbitkan karya: ' + (error as any).message, 'error');
     } else {
       handleNotify('Karya diterbitkan!', 'success');
       setIsWriting(false);
@@ -618,7 +618,7 @@ const App: React.FC = () => {
     }
 
     if (error) {
-      handleNotify('Gagal menyimpan draf: ' + error.message, 'error');
+      handleNotify('Gagal menyimpan draf: ' + (error as any).message, 'error');
     } else {
       handleNotify('Draf berhasil disimpan ke database!', 'success');
       setIsWriting(false);
