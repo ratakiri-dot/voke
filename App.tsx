@@ -61,6 +61,7 @@ const App: React.FC = () => {
   const [isProcessingTx, setIsProcessingTx] = useState(false);
   const [activeSpotlight, setActiveSpotlight] = useState<Post | null>(null);
   const [shownSpotlights, setShownSpotlights] = useState<Set<string>>(new Set());
+  const [isInitializing, setIsInitializing] = useState(true);
 
   const [authMode, setAuthMode] = useState<'login' | 'signup'>('login');
   const [loginForm, setLoginForm] = useState({ email: '', password: '' });
@@ -73,12 +74,13 @@ const App: React.FC = () => {
 
   // --- Auth & Initial Data Fetching ---
   useEffect(() => {
-    supabase.auth.getSession().then(({ data: { session } }) => {
+    supabase.auth.getSession().then(async ({ data: { session } }) => {
       setSession(session);
       if (session) {
-        fetchUserProfile(session.user.id);
+        await fetchUserProfile(session.user.id);
         setView('home');
       }
+      setIsInitializing(false);
     });
 
     const { data: { subscription } } = supabase.auth.onAuthStateChange((_event, session) => {
@@ -1036,6 +1038,19 @@ const App: React.FC = () => {
   // NOTE: Reuse existing layout code, just replace handlers and state
 
 
+
+
+  if (isInitializing) {
+    return (
+      <div className="min-h-screen bg-[#F8FAFC] flex flex-col items-center justify-center relative overscroll-none">
+        <div className="relative">
+          <div className="absolute inset-0 bg-blue-500 blur-xl opacity-20 animate-pulse rounded-full"></div>
+          <VokeLogo className="text-4xl animate-bounce" />
+        </div>
+        <p className="mt-8 text-[10px] font-black uppercase tracking-[0.3em] text-slate-400 animate-pulse">Memuat...</p>
+      </div>
+    );
+  }
 
   if (view === 'landing') {
     return (
