@@ -1484,9 +1484,8 @@ const App: React.FC = () => {
                     }}
                   />
                 ))}
-            </div>
-          </div>
         )}
+      </div>
 
         {/* Global Footer Contact */}
         <footer className="mt-20 pt-10 border-t border-slate-100 flex flex-col items-center space-y-6">
@@ -1565,14 +1564,14 @@ const App: React.FC = () => {
       />
 
       {isProcessingTx && (
-        <div className="fixed inset-0 bg-white/50 backdrop-blur-sm z-[1000] flex items-center justify-center">
-          <div className="bg-white p-8 rounded-[2.5rem] shadow-2xl flex flex-col items-center space-y-4">
-            <div className="w-12 h-12 border-4 border-indigo-600 border-t-transparent rounded-full animate-spin"></div>
-            <p className="font-black text-[10px] uppercase tracking-widest text-indigo-600">Memproses Permintaan...</p>
+          <div className="fixed inset-0 bg-white/50 backdrop-blur-sm z-[1000] flex items-center justify-center">
+            <div className="bg-white p-8 rounded-[2.5rem] shadow-2xl flex flex-col items-center space-y-4">
+              <div className="w-12 h-12 border-4 border-indigo-600 border-t-transparent rounded-full animate-spin"></div>
+              <p className="font-black text-[10px] uppercase tracking-widest text-indigo-600">Memproses Permintaan...</p>
+            </div>
           </div>
-        </div>
-      )}
-      {activeNotification && <Notification notification={activeNotification} onClose={() => setActiveNotification(null)} />}
+        )}
+        {activeNotification && <Notification notification={activeNotification} onClose={() => setActiveNotification(null)} />}
     </div>
   );
 };
