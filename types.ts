@@ -40,6 +40,7 @@ export interface Post {
   timestamp: Date;
   isLiked?: boolean;
   isPromoted?: boolean;
+  isEditorPick?: boolean;
   promotedUntil?: Date;
   isPendingPromotion?: boolean;
   author?: {

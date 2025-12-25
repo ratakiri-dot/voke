@@ -86,6 +86,26 @@ const App: React.FC = () => {
     return result;
   }, [posts, searchQuery, activePostId]);
 
+  const popularPosts = useMemo(() => {
+    return [...posts]
+      .sort((a, b) => {
+        const scoreA = (a.likes * 5) + (a.comments.length * 10) + (a.views) + (a.gifts * 2);
+        const scoreB = (b.likes * 5) + (b.comments.length * 10) + (b.views) + (b.gifts * 2);
+        return scoreB - scoreA;
+      })
+      .slice(0, 5);
+  }, [posts]);
+
+  const editorPicks = useMemo(() => {
+    return posts.filter(p => p.isEditorPick).slice(0, 5);
+  }, [posts]);
+
+  const newPosts = useMemo(() => {
+    return [...posts]
+      .sort((a, b) => b.timestamp.getTime() - a.timestamp.getTime())
+      .slice(0, 5);
+  }, [posts]);
+
   const editorData = useMemo(() => {
     if (!activeDraft) return undefined;
     return {
@@ -162,6 +182,48 @@ const App: React.FC = () => {
       }
     }
   }, [posts, activeSpotlight, shownSpotlights, view, user?.id]);
+
+  const updateViewRate = async (rate: number) => {
+    const { error } = await supabase.from('settings').upsert({ key: 'view_rate', value: rate });
+    if (error) {
+      handleNotify('Gagal update rate: ' + error.message, 'error');
+    } else {
+      setViewRate(rate);
+      handleNotify('Rate diupdate.', 'success');
+    }
+  };
+
+  const handleRejectTopUp = async (requestId: string) => {
+    setIsProcessingTx(true);
+    const { error } = await supabase
+      .from('top_up_requests')
+      .update({ status: 'rejected' })
+      .eq('id', requestId);
+
+    if (error) {
+      handleNotify('Gagal menolak permintaan top-up: ' + error.message, 'error');
+    } else {
+      setTopUpRequests(prev => prev.map(req => req.id === requestId ? { ...req, status: 'rejected' } : req));
+      handleNotify('Permintaan top-up ditolak.', 'success');
+    }
+    setIsProcessingTx(false);
+  };
+
+  const handleRejectWithdraw = async (requestId: string) => {
+    setIsProcessingTx(true);
+    const { error } = await supabase
+      .from('withdraw_requests')
+      .update({ status: 'rejected' })
+      .eq('id', requestId);
+
+    if (error) {
+      handleNotify('Gagal menolak permintaan withdraw: ' + error.message, 'error');
+    } else {
+      setWithdrawRequests(prev => prev.map(req => req.id === requestId ? { ...req, status: 'rejected' } : req));
+      handleNotify('Permintaan withdraw ditolak.', 'success');
+    }
+    setIsProcessingTx(false);
+  };
 
   const fetchUserProfile = async (userId: string) => {
     const { data, error } = await supabase
@@ -276,6 +338,7 @@ const App: React.FC = () => {
         gifts: p.gifts_received || 0,
         timestamp: new Date(p.created_at),
         isPromoted: p.is_promoted,
+        isEditorPick: p.is_editor_pick,
         promotedUntil: p.promoted_until ? new Date(p.promoted_until) : undefined,
         isPendingPromotion: p.is_pending_promotion,
         author: p.profiles ? {
@@ -946,6 +1009,28 @@ const App: React.FC = () => {
     handleNotify('Penarikan disetujui.', 'success');
   };
 
+  const handleRejectTopUp = async (id: string) => {
+    await supabase.from('transactions').update({ status: 'rejected' }).eq('id', id);
+    fetchAdminData();
+    handleNotify('Top up ditolak.', 'info');
+  };
+
+  const handleRejectWithdraw = async (id: string) => {
+    const req = withdrawRequests.find(r => r.id === id);
+    if (!req) return;
+
+    await supabase.from('transactions').update({ status: 'rejected' }).eq('id', id);
+
+    // Refund points
+    const { data: userData } = await supabase.from('profiles').select('gift_balance').eq('id', req.userId).single();
+    if (userData) {
+      await supabase.from('profiles').update({ gift_balance: userData.gift_balance + req.amount }).eq('id', req.userId);
+    }
+
+    fetchAdminData();
+    handleNotify('Penarikan ditolak & poin dikembalikan.', 'info');
+  };
+
   const handleApproveUser = async (id: string) => {
     await supabase.from('profiles').update({ status: 'approved' }).eq('id', id);
     fetchAdminData();
@@ -1013,16 +1098,9 @@ const App: React.FC = () => {
       return;
     }
 
-    // 3. Record internal transaction
-    const { error: txErr } = await supabase.from('transactions').insert({
-      user_id: userId,
-      type: amount >= 0 ? 'topup' : 'withdraw',
-      amount: Math.abs(amount),
-      status: 'completed',
-      metadata: { admin_note: 'Manual adjustment by admin', previous_balance: currentBalance }
-    });
-
     if (txErr) console.warn('Gagal mencatat log transaksi:', txErr.message);
+
+    // 4. Send notification to user
 
     // 4. Send notification to user
     const { error: notifyErr } = await supabase.from('notifications').insert({
@@ -1039,6 +1117,24 @@ const App: React.FC = () => {
     fetchAllUsers();
     if (userId === user?.id) fetchUserProfile(userId);
     handleNotify(`Saldo user berhasil diperbarui. Total sekarang: ${newBalance}`, 'success');
+  };
+
+  const handleToggleEditorPick = async (postId: string) => {
+    const post = posts.find(p => p.id === postId);
+    if (!post) return;
+
+    const newValue = !post.isEditorPick;
+    const { error } = await supabase
+      .from('posts')
+      .update({ is_editor_pick: newValue })
+      .eq('id', postId);
+
+    if (error) {
+      handleNotify('Gagal mengubah status Editor Pick: ' + error.message, 'error');
+    } else {
+      handleNotify(newValue ? 'Ditambahkan ke Pilihan Editor!' : 'Dihapus dari Pilihan Editor', 'success');
+      setPosts(prev => prev.map(p => p.id === postId ? { ...p, isEditorPick: newValue } : p));
+    }
   };
 
   const handleApprovePromo = async (postId: string) => {
@@ -1328,22 +1424,23 @@ const App: React.FC = () => {
         {view === 'admin' ? (
           <AdminDashboard
             topUps={topUpRequests}
+            withdraws={withdrawRequests}
             reports={reports}
             pendingPromos={posts.filter(p => p.isPendingPromotion)}
             signupRequests={signupRequests}
             ads={ads}
             allUsers={allUsers}
-            withdraws={withdrawRequests}
+            allPosts={posts}
             viewRate={viewRate}
-            onUpdateViewRate={setViewRate}
+            onUpdateViewRate={updateViewRate}
             onApproveTopUp={handleApproveTopUp}
-            onRejectTopUp={() => { }}
+            onRejectTopUp={handleRejectTopUp}
             onApproveWithdraw={handleApproveWithdraw}
-            onRejectWithdraw={() => { }}
+            onRejectWithdraw={handleRejectWithdraw}
             onApprovePromo={handleApprovePromo}
             onRejectPromo={handleRejectPromo}
             onDismissReport={onDismissReport}
-            onDeletePost={onDeletePost}
+            onDeletePost={handleDeletePost}
             onApproveUser={handleApproveUser}
             onRejectUser={handleRejectUser}
             onDeleteUser={handleDeleteUser}
@@ -1351,6 +1448,7 @@ const App: React.FC = () => {
             onDeleteAd={handleDeleteAd}
             onToggleAd={handleToggleAd}
             onUpdatePoints={handleUpdatePoints}
+            onToggleEditorPick={handleToggleEditorPick}
             onClose={() => setView('home')}
           />
         ) : isWriting ? (
@@ -1642,6 +1740,90 @@ const App: React.FC = () => {
                   >
                     Tampilkan Semua
                   </button>
+                </div>
+              )}
+
+              {/* Featured Sections - Popular & Editor Picks */}
+              {!searchQuery && !activePostId && !isLoadingPosts && (
+                <div className="space-y-16 py-4 animate-in fade-in slide-in-from-bottom-4 duration-700">
+                  {/* Popular Posts Carousel */}
+                  {popularPosts.length > 0 && (
+                    <section className="space-y-8">
+                      <div className="flex items-center justify-between px-2">
+                        <div className="flex items-center space-x-4">
+                          <div className="w-12 h-12 bg-rose-50 rounded-[1.25rem] flex items-center justify-center text-rose-500 shadow-sm shadow-rose-100/50">
+                            <i className="fas fa-fire text-lg"></i>
+                          </div>
+                          <div>
+                            <h3 className="text-2xl font-[900] text-slate-900 tracking-tight">Terpopuler</h3>
+                            <p className="text-[10px] font-black text-slate-400 uppercase tracking-[0.2em] mt-1.5 flex items-center">
+                              <span className="w-1.5 h-1.5 bg-rose-400 rounded-full mr-2 animate-pulse"></span>
+                              Karya Terpanas Minggu Ini
+                            </p>
+                          </div>
+                        </div>
+                      </div>
+                      <div className="flex overflow-x-auto pb-8 -mx-4 px-4 space-x-6 no-scrollbar scroll-smooth">
+                        {popularPosts.map(post => (
+                          <div key={`pop-${post.id}`} className="min-w-[300px] sm:min-w-[400px] transform hover:scale-[1.01] transition-transform duration-300">
+                            <PostCard
+                              post={post} isFollowing={following.has(post.userId)} isSaved={savedPosts.has(post.id)}
+                              onFollowToggle={id => setFollowing(prev => { const n = new Set(prev); n.has(id) ? n.delete(id) : n.add(id); return n; })}
+                              onLike={handleLike} onSaveToggle={handleSaveToggle} onAddComment={handleAddComment}
+                              onGift={handleGift} onNotify={handleNotify} userGiftBalance={totalBalance} onTopUpRequest={() => setIsTopUpOpen(true)}
+                              onPromoteRequest={handlePromoteRequest} onDelete={handleDeletePost} onEdit={handleEdit} currentUserId={user?.id}
+                              viewRate={viewRate}
+                            />
+                          </div>
+                        ))}
+                      </div>
+                    </section>
+                  )}
+
+                  {/* Editor Picks Carousel */}
+                  {editorPicks.length > 0 && (
+                    <section className="space-y-8">
+                      <div className="flex items-center justify-between px-2">
+                        <div className="flex items-center space-x-4">
+                          <div className="w-12 h-12 bg-amber-50 rounded-[1.25rem] flex items-center justify-center text-amber-500 shadow-sm shadow-amber-100/50">
+                            <i className="fas fa-award text-lg"></i>
+                          </div>
+                          <div>
+                            <h3 className="text-2xl font-[900] text-slate-900 tracking-tight">Pilihan Editor</h3>
+                            <p className="text-[10px] font-black text-slate-400 uppercase tracking-[0.2em] mt-1.5 flex items-center">
+                              <span className="w-1.5 h-1.5 bg-amber-400 rounded-full mr-2 animate-pulse"></span>
+                              Kurasi Terbaik dari Tim VOꓘE
+                            </p>
+                          </div>
+                        </div>
+                      </div>
+                      <div className="flex overflow-x-auto pb-8 -mx-4 px-4 space-x-6 no-scrollbar scroll-smooth">
+                        {editorPicks.map(post => (
+                          <div key={`edit-${post.id}`} className="min-w-[300px] sm:min-w-[400px] transform hover:scale-[1.01] transition-transform duration-300">
+                            <PostCard
+                              post={post} isFollowing={following.has(post.userId)} isSaved={savedPosts.has(post.id)}
+                              onFollowToggle={id => setFollowing(prev => { const n = new Set(prev); n.has(id) ? n.delete(id) : n.add(id); return n; })}
+                              onLike={handleLike} onSaveToggle={handleSaveToggle} onAddComment={handleAddComment}
+                              onGift={handleGift} onNotify={handleNotify} userGiftBalance={totalBalance} onTopUpRequest={() => setIsTopUpOpen(true)}
+                              onPromoteRequest={handlePromoteRequest} onDelete={handleDeletePost} onEdit={handleEdit} currentUserId={user?.id}
+                              viewRate={viewRate}
+                            />
+                          </div>
+                        ))}
+                      </div>
+                    </section>
+                  )}
+
+                  {/* Main Feed Label for New Posts */}
+                  <div className="flex items-center space-x-4 px-2 pt-4">
+                    <div className="w-10 h-10 bg-indigo-50 rounded-2xl flex items-center justify-center text-indigo-500 shadow-sm">
+                      <i className="fas fa-bolt-lightning text-lg"></i>
+                    </div>
+                    <div>
+                      <h3 className="text-xl font-[900] text-slate-900 tracking-tight leading-none">Karya Terbaru</h3>
+                      <p className="text-[9px] font-black text-slate-400 uppercase tracking-[0.2em] mt-1.5">Update langsung dari kreator</p>
+                    </div>
+                  </div>
                 </div>
               )}
 

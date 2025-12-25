@@ -11,6 +11,7 @@ interface AdminDashboardProps {
   signupRequests: SignUpRequest[];
   ads: Advertisement[];
   allUsers: Record<string, User>;
+  allPosts: Post[];
   viewRate: number;
   onUpdateViewRate: (rate: number) => void;
   onApproveTopUp: (id: string) => void;
@@ -28,19 +29,21 @@ interface AdminDashboardProps {
   onDeleteAd: (id: string) => void;
   onToggleAd: (id: string) => void;
   onUpdatePoints: (userId: string, amount: number) => void;
+  onToggleEditorPick: (postId: string) => void;
   onClose: () => void;
 }
 
 export const AdminDashboard: React.FC<AdminDashboardProps> = ({
-  topUps, withdraws, reports, pendingPromos, signupRequests, ads, allUsers,
+  topUps, withdraws, reports, pendingPromos, signupRequests, ads, allUsers, allPosts,
   viewRate, onUpdateViewRate,
   onApproveTopUp, onRejectTopUp, onApproveWithdraw, onRejectWithdraw, onApprovePromo, onRejectPromo, onDismissReport, onDeletePost,
   onApproveUser, onRejectUser, onDeleteUser, onSaveAd, onDeleteAd, onToggleAd,
-  onUpdatePoints,
+  onUpdatePoints, onToggleEditorPick,
   onClose
 }) => {
-  const [activeTab, setActiveTab] = useState<'users' | 'finance' | 'promo' | 'reports' | 'ads'>('users');
+  const [activeTab, setActiveTab] = useState<'users' | 'finance' | 'promo' | 'reports' | 'ads' | 'posts'>('users');
   const [searchUser, setSearchUser] = useState('');
+  const [searchPost, setSearchPost] = useState('');
   const [tempRate, setTempRate] = useState(viewRate.toString());
   const [selectedUser, setSelectedUser] = useState<User | null>(null);
 
@@ -58,6 +61,13 @@ export const AdminDashboard: React.FC<AdminDashboardProps> = ({
       u.username.toLowerCase().includes(searchUser.toLowerCase())
     );
   }, [allUsers, searchUser]);
+
+  const filteredPosts = useMemo(() => {
+    return allPosts.filter(p =>
+      p.title.toLowerCase().includes(searchPost.toLowerCase()) ||
+      (allUsers[p.userId]?.name || '').toLowerCase().includes(searchPost.toLowerCase())
+    );
+  }, [allPosts, allUsers, searchPost]);
 
   return (
     <div className="bg-white rounded-[3rem] shadow-2xl overflow-hidden border border-slate-100 animate-in fade-in duration-500">
@@ -77,7 +87,7 @@ export const AdminDashboard: React.FC<AdminDashboardProps> = ({
       </div>
 
       <div className="flex border-b border-slate-100 bg-slate-50/50 p-2 overflow-x-auto no-scrollbar">
-        {(['users', 'finance', 'promo', 'reports', 'ads'] as const).map(tab => {
+        {(['users', 'finance', 'promo', 'reports', 'ads', 'posts'] as const).map(tab => {
           let count = 0;
           if (tab === 'users') count = signupRequests.length;
           if (tab === 'finance') count = topUps.length + withdraws.length;
@@ -90,7 +100,7 @@ export const AdminDashboard: React.FC<AdminDashboardProps> = ({
               onClick={() => { setActiveTab(tab); setSelectedUser(null); }}
               className={`flex-none px-6 py-4 text-[10px] font-black uppercase tracking-widest rounded-2xl transition-all flex items-center space-x-2 ${activeTab === tab ? 'bg-white text-indigo-600 shadow-sm' : 'text-slate-400 hover:text-slate-600'}`}
             >
-              <span>{tab === 'users' ? 'Pengguna' : tab === 'finance' ? 'Keuangan' : tab === 'promo' ? 'Promosi' : tab === 'reports' ? 'Laporan' : 'Iklan'}</span>
+              <span>{tab === 'users' ? 'Pengguna' : tab === 'finance' ? 'Keuangan' : tab === 'promo' ? 'Promosi' : tab === 'reports' ? 'Laporan' : tab === 'ads' ? 'Iklan' : 'Karya'}</span>
               {count > 0 && (
                 <span className={`w-5 h-5 rounded-full flex items-center justify-center text-[9px] text-white ${activeTab === tab ? 'bg-indigo-600' : 'bg-slate-300'}`}>
                   {count}
@@ -392,6 +402,52 @@ export const AdminDashboard: React.FC<AdminDashboardProps> = ({
               ))}
             </div>
             {ads.length === 0 && <p className="text-center py-12 text-slate-200 italic font-black uppercase tracking-widest">Belum ada pariwara.</p>}
+          </div>
+        )}
+
+        {/* TAB SEMUA POSTS: MANAGE EDITOR PICKS */}
+        {activeTab === 'posts' && (
+          <div className="space-y-6">
+            <div className="flex justify-between items-center px-2">
+              <h4 className="text-[10px] font-black text-slate-400 uppercase tracking-widest">Manajemen Karya ({filteredPosts.length})</h4>
+              <div className="relative">
+                <input
+                  type="text"
+                  placeholder="Cari karya..."
+                  value={searchPost}
+                  onChange={e => setSearchPost(e.target.value)}
+                  className="pl-10 pr-4 py-2 bg-slate-50 border-none rounded-xl text-xs font-bold focus:ring-2 focus:ring-indigo-100 outline-none"
+                />
+                <i className="fas fa-search absolute left-4 top-1/2 -translate-y-1/2 text-slate-300 text-[10px]"></i>
+              </div>
+            </div>
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+              {filteredPosts.map(p => (
+                <div key={p.id} className="p-6 bg-white border border-slate-100 rounded-2xl flex flex-col justify-between hover:shadow-md transition-all group">
+                  <div className="mb-4">
+                    <p className="font-black text-slate-800 text-sm leading-tight line-clamp-2 mb-1 group-hover:text-indigo-600 transition-colors">"{p.title}"</p>
+                    <p className="text-[9px] text-slate-400 uppercase font-black tracking-widest flex items-center">
+                      <i className="far fa-user mr-1.5 opacity-40"></i>
+                      {allUsers[p.userId]?.name || 'User'}
+                    </p>
+                  </div>
+                  <div className="flex items-center justify-between pt-4 border-t border-slate-50">
+                    <div className="flex space-x-3 text-[9px] font-black text-slate-300 uppercase">
+                      <span className="flex items-center"><i className="far fa-heart mr-1 opacity-50"></i> {p.likes}</span>
+                      <span className="flex items-center"><i className="far fa-eye mr-1 opacity-50"></i> {p.views}</span>
+                    </div>
+                    <button
+                      onClick={() => onToggleEditorPick(p.id)}
+                      className={`px-4 py-2 rounded-xl text-[9px] font-black uppercase tracking-widest transition-all flex items-center ${p.isEditorPick ? 'bg-amber-100 text-amber-600 shadow-sm shadow-amber-50' : 'bg-slate-50 text-slate-400 hover:bg-amber-50 hover:text-amber-500'}`}
+                    >
+                      <i className={`fas fa-award mr-2 ${p.isEditorPick ? 'text-amber-500 animate-bounce' : 'opacity-40'}`}></i>
+                      {p.isEditorPick ? 'Pilihan Editor' : 'Jadikan Pilihan'}
+                    </button>
+                  </div>
+                </div>
+              ))}
+              {filteredPosts.length === 0 && <p className="text-center py-12 text-slate-200 italic font-black uppercase tracking-widest col-span-2">Tidak ada karya ditemukan.</p>}
+            </div>
           </div>
         )}
       </div>
