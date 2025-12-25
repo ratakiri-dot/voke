@@ -289,25 +289,25 @@ export const PostCard: React.FC<PostCardProps> = ({
           <div className="grid grid-cols-3 gap-2 sm:flex sm:items-center sm:space-x-2 sm:gap-0">
             <button
               onClick={() => onLike(post.id)}
-              className={`h-11 flex items-center justify-center px-4 rounded-2xl transition-all ${post.isLiked ? 'bg-rose-50 text-rose-500 shadow-sm shadow-rose-100' : 'bg-slate-50 text-slate-400 hover:text-rose-400'}`}
+              className={`h-8 flex items-center justify-center px-3 rounded-xl transition-all ${post.isLiked ? 'bg-rose-50 text-rose-500 shadow-sm shadow-rose-100' : 'bg-slate-50 text-slate-400 hover:text-rose-400'}`}
               title="Like"
             >
-              <i className={`${post.isLiked ? 'fas' : 'far'} fa-heart text-sm mr-2`}></i>
-              <span className="text-xs font-black">{post.likes}</span>
+              <i className={`${post.isLiked ? 'fas' : 'far'} fa-heart text-xs mr-1.5`}></i>
+              <span className="text-[10px] font-black">{post.likes}</span>
             </button>
 
             <button
               onClick={() => setShowComments(!showComments)}
-              className="h-11 flex items-center justify-center px-4 bg-slate-50 text-slate-400 hover:text-blue-500 rounded-2xl transition-all"
+              className="h-8 flex items-center justify-center px-3 bg-slate-50 text-slate-400 hover:text-blue-500 rounded-xl transition-all"
               title="Komentar"
             >
-              <i className="far fa-comment text-sm mr-2"></i>
-              <span className="text-xs font-black">{post.comments.length}</span>
+              <i className="far fa-comment text-xs mr-1.5"></i>
+              <span className="text-[10px] font-black">{post.comments.length}</span>
             </button>
 
-            <div className="h-11 flex items-center justify-center px-4 bg-slate-50 text-slate-400 rounded-2xl" title="Tayangan">
-              <i className="far fa-eye text-sm mr-2"></i>
-              <span className="text-xs font-black">{post.views >= 1000 ? `${(post.views / 1000).toFixed(1)}k` : post.views}</span>
+            <div className="h-8 flex items-center justify-center px-3 bg-slate-50 text-slate-400 rounded-xl" title="Tayangan">
+              <i className="far fa-eye text-xs mr-1.5"></i>
+              <span className="text-[10px] font-black">{post.views >= 1000 ? `${(post.views / 1000).toFixed(1)}k` : post.views}</span>
             </div>
           </div>
 
@@ -315,14 +315,14 @@ export const PostCard: React.FC<PostCardProps> = ({
           <div className="grid grid-cols-3 gap-2 sm:flex sm:items-center sm:justify-end sm:space-x-2 sm:gap-0">
             <button
               onClick={() => !isOwnPost && setIsGiftOpen(true)}
-              className={`h-11 flex items-center justify-center px-3 rounded-2xl transition-all shadow-sm border ${isOwnPost
+              className={`h-8 flex items-center justify-center px-2.5 rounded-xl transition-all shadow-sm border ${isOwnPost
                 ? 'bg-gradient-to-r from-amber-100 to-amber-50 text-amber-700 border-amber-200 cursor-default'
                 : 'bg-gradient-to-r from-amber-50 to-yellow-50 text-amber-700 border-amber-200 hover:from-amber-100 hover:to-yellow-100'
                 }`}
               title={isOwnPost ? `Total hadiah: Rp ${(post.gifts || 0).toLocaleString('id-ID')}` : 'Kirim hadiah'}
             >
-              <i className="fas fa-gift text-sm text-amber-600 mr-2"></i>
-              <span className="text-xs font-extrabold text-amber-800">
+              <i className="fas fa-gift text-xs text-amber-600 mr-1.5"></i>
+              <span className="text-[10px] font-extrabold text-amber-800">
                 {post.gifts >= 1000 ? `${(post.gifts / 1000).toFixed(1)}k` : (post.gifts || 0)}
               </span>
             </button>
@@ -352,18 +352,18 @@ export const PostCard: React.FC<PostCardProps> = ({
                   onNotify('Link artikel disalin!', 'success');
                 }
               }}
-              className="h-11 bg-slate-50 text-slate-400 rounded-2xl flex items-center justify-center hover:text-cyan-500 hover:bg-cyan-50 transition-all"
+              className="h-8 bg-slate-50 text-slate-400 rounded-xl flex items-center justify-center hover:text-cyan-500 hover:bg-cyan-50 transition-all px-3"
               title="Bagikan artikel"
             >
-              <i className="fas fa-share-nodes text-sm"></i>
+              <i className="fas fa-share-nodes text-xs"></i>
             </button>
 
             <button
               onClick={() => onSaveToggle(post.id)}
-              className={`h-11 rounded-2xl flex items-center justify-center transition-all ${isSaved ? 'bg-indigo-50 text-indigo-600 shadow-sm shadow-indigo-100' : 'bg-slate-50 text-slate-300 hover:text-indigo-400'}`}
+              className={`h-8 rounded-xl flex items-center justify-center transition-all px-3 ${isSaved ? 'bg-indigo-50 text-indigo-600 shadow-sm shadow-indigo-100' : 'bg-slate-50 text-slate-300 hover:text-indigo-400'}`}
               title={isSaved ? "Hapus dari simpanan" : "Simpan artikel"}
             >
-              <i className={`${isSaved ? 'fas' : 'far'} fa-bookmark text-sm`}></i>
+              <i className={`${isSaved ? 'fas' : 'far'} fa-bookmark text-xs`}></i>
             </button>
           </div>
         </div>
