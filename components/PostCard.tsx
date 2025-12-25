@@ -70,34 +70,83 @@ export const PostCard: React.FC<PostCardProps> = ({
         </div>
       )}
       <div className="p-8 md:p-10">
-        <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-6 mb-8">
+        {/* 1. Title Section */}
+        <div className="mb-6">
+          <h3 className="text-2xl sm:text-3xl font-[800] mb-4 text-slate-800 leading-[1.2] tracking-tight group-hover:text-indigo-600 transition-colors">
+            {post.title}
+          </h3>
+
+          <div className="flex flex-wrap items-center gap-3">
+            {post.caption && (
+              <span className="text-[9px] sm:text-[10px] bg-slate-100 text-slate-500 px-3 sm:px-4 py-1.5 sm:py-2 rounded-xl font-black uppercase tracking-wider">
+                #{post.caption.replace(/#/g, '')}
+              </span>
+            )}
+
+            {post.giftStats && Object.entries(post.giftStats).length > 0 && (
+              <div className="flex flex-wrap gap-2">
+                {Object.entries(post.giftStats).map(([name, stat]) => {
+                  const giftDetail = stat as { count: number; icon: string };
+                  return (
+                    <div key={name} className="flex items-center space-x-2 bg-amber-50 text-amber-600 border border-amber-100/50 px-2.5 py-1 rounded-xl shadow-sm">
+                      <span className="text-xs sm:text-sm">{giftDetail.icon}</span>
+                      <span className="text-[10px] sm:text-[11px] font-black">+{giftDetail.count}</span>
+                    </div>
+                  );
+                })}
+              </div>
+            )}
+          </div>
+        </div>
+
+        {/* 2. Excerpt Section */}
+        <div className="relative mb-8">
+          <div
+            className={`text-slate-600 leading-[1.8] text-base sm:text-lg transition-all duration-700 ${!isExpanded ? 'line-clamp-3 overflow-hidden' : ''}`}
+            dangerouslySetInnerHTML={{ __html: post.content }}
+          />
+          {!isExpanded && (
+            <button
+              onClick={handleExpand}
+              className="mt-6 text-indigo-600 font-black text-[10px] sm:text-[11px] uppercase tracking-[0.25em] hover:text-indigo-700 flex items-center space-x-2 group-read-more"
+            >
+              <span>Ulas Tulisan</span>
+              <i className="fas fa-arrow-right text-[9px] transition-transform group-read-more:translate-x-1"></i>
+            </button>
+          )}
+        </div>
+
+        {/* 3. Author Profile Section (Content Footer) */}
+        <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-6 p-6 sm:p-0 sm:mt-8 bg-slate-50 sm:bg-transparent rounded-3xl border sm:border-0 border-slate-100 mb-2">
           <div className="flex items-center space-x-4 min-w-0">
-            <img src={author.avatar} alt={author.name} className="w-14 h-14 rounded-2xl object-cover border-4 border-white shadow-md transition-transform group-hover:scale-105 shrink-0" />
+            <img src={author.avatar} alt={author.name} className="w-12 h-12 sm:w-14 sm:h-14 rounded-2xl object-cover border-4 border-white shadow-md transition-transform group-hover:scale-105 shrink-0" />
             <div className="min-w-0">
               <div className="flex flex-wrap items-center gap-2">
-                <h4 className="font-extrabold text-slate-800 leading-none text-lg truncate">
+                <h4 className="font-extrabold text-slate-800 leading-none text-base sm:text-lg truncate">
                   {author.name}
                 </h4>
                 {isCurrentlyPromoted && (
-                  <span className="bg-gradient-to-r from-blue-500 to-cyan-500 text-white text-[8px] font-black px-2.5 py-1 rounded-full uppercase tracking-widest shadow-lg shadow-blue-100 shrink-0">
+                  <span className="bg-gradient-to-r from-blue-500 to-cyan-500 text-white text-[7px] sm:text-[8px] font-black px-2 py-0.5 sm:px-2.5 sm:py-1 rounded-full uppercase tracking-widest shadow-lg shadow-blue-100 shrink-0">
                     <i className="fas fa-sparkles mr-1 animate-pulse"></i> Spotlight
                   </span>
                 )}
               </div>
-              <p className="text-[10px] text-slate-400 font-bold uppercase tracking-wider mt-1.5 truncate">{author.username} • {new Date(post.timestamp).toLocaleDateString('id-ID', { month: 'short', day: 'numeric' })}</p>
+              <p className="text-[9px] sm:text-[10px] text-slate-400 font-bold uppercase tracking-wider mt-1 sm:mt-1.5 truncate">
+                {author.username} • {new Date(post.timestamp).toLocaleDateString('id-ID', { month: 'short', day: 'numeric' })}
+              </p>
             </div>
           </div>
           {!isOwnPost ? (
             <div className="flex items-center space-x-2 w-full sm:w-auto">
               <button
                 onClick={() => setIsReportOpen(true)}
-                className="w-11 h-11 sm:w-10 sm:h-10 bg-slate-50 text-slate-300 hover:text-rose-500 rounded-xl flex items-center justify-center transition-all shrink-0"
+                className="w-10 h-10 bg-white sm:bg-slate-50 text-slate-300 hover:text-rose-500 rounded-xl flex items-center justify-center transition-all shrink-0 border border-slate-100 sm:border-0"
               >
-                <i className="fas fa-flag text-xs"></i>
+                <i className="fas fa-flag text-[10px]"></i>
               </button>
               <button
                 onClick={() => onFollowToggle(post.userId)}
-                className={`flex-1 sm:flex-none px-6 py-3 sm:py-2.5 rounded-xl text-[11px] font-black uppercase tracking-widest transition-all ${isFollowing ? 'bg-slate-100 text-slate-500' : 'bg-slate-900 text-white hover:bg-black shadow-lg shadow-slate-900/10'
+                className={`flex-1 sm:flex-none px-6 py-2.5 rounded-xl text-[10px] sm:text-[11px] font-black uppercase tracking-widest transition-all ${isFollowing ? 'bg-slate-200 text-slate-500' : 'bg-slate-900 text-white hover:bg-black shadow-lg shadow-slate-900/10'
                   }`}
               >
                 {isFollowing ? 'Mengikuti' : 'Ikuti'}
@@ -111,68 +160,26 @@ export const PostCard: React.FC<PostCardProps> = ({
                     onDelete?.(post.id);
                   }
                 }}
-                className="flex-1 sm:flex-none flex items-center justify-center px-4 py-3 sm:py-2.5 bg-rose-50 text-rose-500 rounded-xl text-[10px] font-black uppercase tracking-widest hover:bg-rose-100 transition-all border border-rose-100"
+                className="flex-1 sm:flex-none flex items-center justify-center px-4 py-2.5 bg-rose-50 text-rose-500 rounded-xl text-[9px] sm:text-[10px] font-black uppercase tracking-widest hover:bg-rose-100 transition-all border border-rose-100"
               >
                 <i className="fas fa-trash-alt mr-1"></i>
                 <span>Hapus</span>
               </button>
               <button
                 onClick={() => onEdit?.(post)}
-                className="flex-1 sm:flex-none flex items-center justify-center px-4 py-3 sm:py-2.5 bg-indigo-50 text-indigo-600 rounded-xl text-[10px] font-black uppercase tracking-widest hover:bg-indigo-100 transition-all border border-indigo-100"
+                className="flex-1 sm:flex-none flex items-center justify-center px-4 py-2.5 bg-indigo-50 text-indigo-600 rounded-xl text-[9px] sm:text-[10px] font-black uppercase tracking-widest hover:bg-indigo-100 transition-all border border-indigo-100"
               >
                 <i className="fas fa-pen-nib mr-1"></i>
                 <span>Edit</span>
               </button>
               <button
                 onClick={() => setIsPromoteOpen(true)}
-                className="flex-1 sm:flex-none flex items-center justify-center px-4 py-3 sm:py-2.5 bg-cyan-50 text-cyan-600 rounded-xl text-[10px] font-black uppercase tracking-widest hover:bg-cyan-100 transition-all border border-cyan-100"
+                className="flex-1 sm:flex-none flex items-center justify-center px-4 py-2.5 bg-cyan-50 text-cyan-600 rounded-xl text-[9px] sm:text-[10px] font-black uppercase tracking-widest hover:bg-cyan-100 transition-all border border-cyan-100"
               >
                 <i className="fas fa-rocket mr-1"></i>
                 <span>Spotlight</span>
               </button>
             </div>
-          )}
-        </div>
-
-        <div className="mb-6">
-          <h3 className="text-3xl font-[800] mb-4 text-slate-800 leading-[1.15] tracking-tight group-hover:text-indigo-600 transition-colors">{post.title}</h3>
-
-          <div className="flex flex-wrap items-center gap-3">
-            {post.caption && (
-              <span className="text-[10px] bg-slate-100 text-slate-500 px-4 py-2 rounded-xl font-black uppercase tracking-wider">
-                #{post.caption.replace(/#/g, '')}
-              </span>
-            )}
-
-            {post.giftStats && Object.entries(post.giftStats).length > 0 && (
-              <div className="flex flex-wrap gap-2">
-                {Object.entries(post.giftStats).map(([name, stat]) => {
-                  const giftDetail = stat as { count: number; icon: string };
-                  return (
-                    <div key={name} className="flex items-center space-x-2 bg-amber-50 text-amber-600 border border-amber-100/50 px-3 py-1.5 rounded-xl shadow-sm">
-                      <span className="text-sm">{giftDetail.icon}</span>
-                      <span className="text-[11px] font-black">+{giftDetail.count}</span>
-                    </div>
-                  );
-                })}
-              </div>
-            )}
-          </div>
-        </div>
-
-        <div className="relative mb-10">
-          <div
-            className={`text-slate-600 leading-[1.8] text-lg transition-all duration-700 ${!isExpanded ? 'line-clamp-3 overflow-hidden' : ''}`}
-            dangerouslySetInnerHTML={{ __html: post.content }}
-          />
-          {!isExpanded && (
-            <button
-              onClick={handleExpand}
-              className="mt-6 text-indigo-600 font-black text-[11px] uppercase tracking-[0.25em] hover:text-indigo-700 flex items-center space-x-2"
-            >
-              <span>Ulas Tulisan</span>
-              <i className="fas fa-arrow-right text-[10px]"></i>
-            </button>
           )}
         </div>
 
