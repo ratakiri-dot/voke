@@ -1102,6 +1102,67 @@ const App: React.FC = () => {
     handleNotify(`Saldo user berhasil diperbarui. Total sekarang: ${newBalance}`, 'success');
   };
 
+  const handleView = async (postId: string) => {
+    if (!user) return;
+
+    // Check localStorage for unique view tracking
+    const viewKey = `view_${postId}_${user.id}`;
+    const hasViewed = localStorage.getItem(viewKey);
+
+    if (hasViewed) return; // Already viewed
+
+    // Mark as viewed
+    localStorage.setItem(viewKey, 'true');
+
+    // Get post to find author
+    const post = posts.find(p => p.id === postId);
+    if (!post || post.userId === user.id) return; // Don't pay for own views
+
+    try {
+      // Update post unique_views in database
+      const { data: postData } = await supabase
+        .from('posts')
+        .select('unique_views, user_id')
+        .eq('id', postId)
+        .single();
+
+      if (!postData) return;
+
+      const newUniqueViews = (postData.unique_views || 0) + 1;
+
+      // Update post unique_views
+      await supabase
+        .from('posts')
+        .update({ unique_views: newUniqueViews })
+        .eq('id', postId);
+
+      // Credit author's gift_balance
+      const { data: authorProfile } = await supabase
+        .from('profiles')
+        .select('gift_balance')
+        .eq('id', post.userId)
+        .single();
+
+      if (authorProfile) {
+        const currentBalance = parseFloat(authorProfile.gift_balance.toString()) || 0;
+        const newBalance = currentBalance + viewRate;
+        await supabase
+          .from('profiles')
+          .update({ gift_balance: newBalance })
+          .eq('id', post.userId);
+      }
+
+      // Update local post state
+      setPosts(prev => prev.map(p =>
+        p.id === postId
+          ? { ...p, unique_views: newUniqueViews }
+          : p
+      ));
+    } catch (error) {
+      console.error('Error tracking view:', error);
+    }
+  };
+
   const handleToggleEditorPick = async (postId: string) => {
     const post = posts.find(p => p.id === postId);
     if (!post) return;
@@ -1541,6 +1602,7 @@ const App: React.FC = () => {
                     middleAd={activeMiddleAd}
                     bottomAd={activeBottomAd}
                     viewRate={viewRate}
+                    onView={handleView}
                   />
                 ))}
               </div>
@@ -1594,7 +1656,7 @@ const App: React.FC = () => {
                   {searchQuery && <button onClick={() => setSearchQuery('')} className="mt-4 text-blue-500 font-black text-[10px] uppercase tracking-widest">Hapus Pencarian</button>}
                 </div>
               ) : (
-                filteredPosts.filter(p => p.userId === user?.id).map(p => <PostCard key={p.id} post={p} isFollowing={false} isSaved={savedPosts.has(p.id)} onFollowToggle={() => { }} onLike={handleLike} onSaveToggle={id => setSavedPosts(prev => { const n = new Set(prev); n.has(id) ? n.delete(id) : n.add(id); return n; })} onAddComment={handleAddComment} onGift={handleGift} onNotify={handleNotify} userGiftBalance={totalBalance} onPromoteRequest={handlePromoteRequest} onDelete={handleDeletePost} onEdit={handleEdit} currentUserId={user?.id} middleAd={activeMiddleAd} bottomAd={activeBottomAd} viewRate={viewRate} />)
+                filteredPosts.filter(p => p.userId === user?.id).map(p => <PostCard key={p.id} post={p} isFollowing={false} isSaved={savedPosts.has(p.id)} onFollowToggle={() => { }} onLike={handleLike} onSaveToggle={id => setSavedPosts(prev => { const n = new Set(prev); n.has(id) ? n.delete(id) : n.add(id); return n; })} onAddComment={handleAddComment} onGift={handleGift} onNotify={handleNotify} userGiftBalance={totalBalance} onPromoteRequest={handlePromoteRequest} onDelete={handleDeletePost} onEdit={handleEdit} currentUserId={user?.id} middleAd={activeMiddleAd} bottomAd={activeBottomAd} viewRate={viewRate} onView={handleView} />)
               )}
             </div>
           </div>
@@ -1756,6 +1818,7 @@ const App: React.FC = () => {
                               onGift={handleGift} onNotify={handleNotify} userGiftBalance={totalBalance} onTopUpRequest={() => setIsTopUpOpen(true)}
                               onPromoteRequest={handlePromoteRequest} onDelete={handleDeletePost} onEdit={handleEdit} currentUserId={user?.id}
                               viewRate={viewRate}
+                              onView={handleView}
                             />
                           </div>
                         ))}
