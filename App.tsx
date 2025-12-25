@@ -254,9 +254,9 @@ const App: React.FC = () => {
         title: p.title,
         content: p.content,
         caption: p.caption,
-        likes: p.likes_count,
-        shares: p.shares_count,
-        views: p.views_count,
+        likes: p.likes_count || 0,
+        shares: p.shares_count || 0,
+        views: p.views_count || 0,
         coverImage: p.cover_image,
         gifts: p.gifts_received || 0,
         timestamp: new Date(p.created_at),
@@ -1574,15 +1574,24 @@ const App: React.FC = () => {
                         const alreadyViewed = localStorage.getItem(viewedKey);
 
                         if (!alreadyViewed) {
-                          localStorage.setItem(`voke_view_${postId}`, 'true');
-                          // Update local state
-                          setPosts(prev => prev.map(p => p.id === postId ? { ...p, views: p.views + 1 } : p));
-                          // Update DB
+                          localStorage.setItem(viewedKey, 'true');
+                          // Update local state immediately for snappy UI
+                          setPosts(prev => prev.map(p => p.id === postId ? { ...p, views: (p.views || 0) + 1 } : p));
+
+                          // Update DB via RPC
                           supabase.rpc('increment_view', { post_id: postId }).then(({ error }) => {
                             if (error) {
-                              console.warn('RPC increment_view failed', error);
+                              console.warn('RPC increment_view failed, falling back to direct update:', error);
+                              // Fallback direct update if RPC fails
                               const p = posts.find(x => x.id === postId);
-                              if (p) supabase.from('posts').update({ views_count: p.views + 1 }).eq('id', postId);
+                              if (p) {
+                                supabase.from('posts')
+                                  .update({ views_count: (p.views || 0) + 1 })
+                                  .eq('id', postId)
+                                  .then(({ error: upError }) => {
+                                    if (upError) console.error('View fallback update failed:', upError);
+                                  });
+                              }
                             }
                           });
                         }
