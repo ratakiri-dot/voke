@@ -43,7 +43,7 @@ const App: React.FC = () => {
   const [signupRequests, setSignupRequests] = useState<SignUpRequest[]>([]);
   const [ads, setAds] = useState<Advertisement[]>([]);
 
-  const [viewRate, setViewRate] = useState<number>(0.0001); // Can be fetched from a 'settings' table if created
+  const [viewRate, setViewRate] = useState<number>(0.01); // 1 view = 0.01 point
   const [following, setFollowing] = useState<Set<string>>(new Set());
   const [savedPosts, setSavedPosts] = useState<Set<string>>(new Set());
 

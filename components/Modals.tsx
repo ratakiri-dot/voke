@@ -217,10 +217,10 @@ export const GiftModal: React.FC<{
   onTopUpRequest: () => void;
 }> = ({ isOpen, onClose, onGift, currentBalance, onTopUpRequest }) => {
   const gifts: GiftItem[] = [
-    { name: 'Kopi', icon: '☕', price: 500 },
-    { name: 'Pena Emas', icon: '✒️', price: 1000 },
-    { name: 'Medali', icon: '🏅', price: 10000 },
-    { name: 'Mahkota', icon: '👑', price: 20000 },
+    { name: 'Bronze', icon: '🥉', price: 10 },
+    { name: 'Silver', icon: '🥈', price: 50 },
+    { name: 'Gold', icon: '🥇', price: 200 },
+    { name: 'Platinum', icon: '💎', price: 1000 },
   ];
 
   return (
@@ -366,7 +366,7 @@ export const WithdrawModal: React.FC<{
     }
   }, [isOpen, balance]);
 
-  const netAmount = Math.max(0, withdrawAmount - adminFee);
+  const netAmount = Math.max(0, (withdrawAmount * 10) - adminFee);
   const isValidAmount = withdrawAmount >= MIN_WITHDRAW && withdrawAmount <= balance;
   const canWithdraw = balance >= MIN_WITHDRAW;
 
@@ -519,9 +519,10 @@ export const ReportModal: React.FC<{
 
 export const TopUpModal: React.FC<{ isOpen: boolean; onClose: () => void; onSelect: (pkg: TopUpPackage) => void; }> = ({ isOpen, onClose, onSelect }) => {
   const packages: TopUpPackage[] = [
-    { id: 'p1', name: 'Starter VOKE', points: 15000, price: 25000 },
-    { id: 'p2', name: 'Basic VOKE', points: 45000, price: 50000 },
-    { id: 'p3', name: 'Elite VOKE', points: 97500, price: 100000, isPopular: true },
+    { id: 'p1', name: 'Starter VOKE', points: 1000, price: 10000 },
+    { id: 'p2', name: 'Popular VOKE', points: 5500, price: 50000, bonus: '+10%', isPopular: true },
+    { id: 'p3', name: 'Pro VOKE', points: 12000, price: 100000, bonus: '+20%' },
+    { id: 'p4', name: 'VIP VOKE', points: 32500, price: 250000, bonus: '+30%' },
   ];
 
   console.log('Rendering TopUpModal. Packages:', packages.length);
