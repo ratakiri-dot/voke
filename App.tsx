@@ -32,7 +32,7 @@ export const VokeLogo = ({ className = "text-2xl", withGradient = true }: { clas
 const App: React.FC = () => {
   console.log('%c VOKE SYSTEM v1.2.2 ACTIVE ', 'background: #2563EB; color: #white; font-weight: bold;');
   const [session, setSession] = useState<any>(null);
-  const [view, setView] = useState<AppView>('landing');
+  const [view, setView] = useState<ViewType>('landing');
   const [user, setUser] = useState<User | null>(null);
   const [allUsers, setAllUsers] = useState<Record<string, User>>({});
 
@@ -191,38 +191,6 @@ const App: React.FC = () => {
       setViewRate(rate);
       handleNotify('Rate diupdate.', 'success');
     }
-  };
-
-  const handleRejectTopUp = async (requestId: string) => {
-    setIsProcessingTx(true);
-    const { error } = await supabase
-      .from('top_up_requests')
-      .update({ status: 'rejected' })
-      .eq('id', requestId);
-
-    if (error) {
-      handleNotify('Gagal menolak permintaan top-up: ' + error.message, 'error');
-    } else {
-      setTopUpRequests(prev => prev.map(req => req.id === requestId ? { ...req, status: 'rejected' } : req));
-      handleNotify('Permintaan top-up ditolak.', 'success');
-    }
-    setIsProcessingTx(false);
-  };
-
-  const handleRejectWithdraw = async (requestId: string) => {
-    setIsProcessingTx(true);
-    const { error } = await supabase
-      .from('withdraw_requests')
-      .update({ status: 'rejected' })
-      .eq('id', requestId);
-
-    if (error) {
-      handleNotify('Gagal menolak permintaan withdraw: ' + error.message, 'error');
-    } else {
-      setWithdrawRequests(prev => prev.map(req => req.id === requestId ? { ...req, status: 'rejected' } : req));
-      handleNotify('Permintaan withdraw ditolak.', 'success');
-    }
-    setIsProcessingTx(false);
   };
 
   const fetchUserProfile = async (userId: string) => {
@@ -1004,20 +972,28 @@ const App: React.FC = () => {
   };
 
   const handleApproveWithdraw = async (id: string) => {
+    setIsProcessingTx(true);
     await supabase.from('transactions').update({ status: 'completed' }).eq('id', id);
     fetchAdminData();
     handleNotify('Penarikan disetujui.', 'success');
+    setIsProcessingTx(false);
   };
 
   const handleRejectTopUp = async (id: string) => {
+    setIsProcessingTx(true);
     await supabase.from('transactions').update({ status: 'rejected' }).eq('id', id);
     fetchAdminData();
     handleNotify('Top up ditolak.', 'info');
+    setIsProcessingTx(false);
   };
 
   const handleRejectWithdraw = async (id: string) => {
+    setIsProcessingTx(true);
     const req = withdrawRequests.find(r => r.id === id);
-    if (!req) return;
+    if (!req) {
+      setIsProcessingTx(false);
+      return;
+    }
 
     await supabase.from('transactions').update({ status: 'rejected' }).eq('id', id);
 
@@ -1029,6 +1005,7 @@ const App: React.FC = () => {
 
     fetchAdminData();
     handleNotify('Penarikan ditolak & poin dikembalikan.', 'info');
+    setIsProcessingTx(false);
   };
 
   const handleApproveUser = async (id: string) => {
@@ -1097,10 +1074,16 @@ const App: React.FC = () => {
       handleNotify('Gagal update poin: ' + updateErr.message, 'error');
       return;
     }
+    // 3. Record internal transaction
+    const { error: txErr } = await supabase.from('transactions').insert({
+      user_id: userId,
+      type: amount >= 0 ? 'topup' : 'withdraw',
+      amount: Math.abs(amount),
+      status: 'completed',
+      metadata: { admin_note: 'Manual adjustment by admin', previous_balance: currentBalance }
+    });
 
     if (txErr) console.warn('Gagal mencatat log transaksi:', txErr.message);
-
-    // 4. Send notification to user
 
     // 4. Send notification to user
     const { error: notifyErr } = await supabase.from('notifications').insert({
