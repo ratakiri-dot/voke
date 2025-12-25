@@ -12,7 +12,7 @@ import { supabase } from './services/supabaseClient';
 type ViewType = 'home' | 'saved' | 'profile' | 'edit-profile' | 'admin' | 'landing' | 'wallet';
 
 const ADMIN_CONTACT = {
-  email: 'loudvoke@gmail.com',
+  email: 'vokehub@gmail.com',
   wa: '085163612553',
   waLink: 'https://wa.me/6285163612553'
 };
@@ -1337,7 +1337,7 @@ const App: React.FC = () => {
           {/* Landing Contact Info */}
           <div className="mt-12 flex flex-col items-center space-y-4 animate-in fade-in slide-in-from-bottom-8 duration-700 delay-300">
             <p className="text-[10px] font-black text-slate-400 uppercase tracking-[0.3em]">Butuh Bantuan?</p>
-            <div className="flex items-center space-x-6">
+            <div className="flex flex-col sm:flex-row items-center gap-4 sm:space-x-6">
               <a href={`mailto:${ADMIN_CONTACT.email}`} className="group flex items-center space-x-2 text-slate-500 hover:text-slate-900 transition-all">
                 <div className="w-8 h-8 bg-white rounded-lg flex items-center justify-center shadow-sm group-hover:shadow-md transition-all">
                   <i className="fas fa-envelope text-[10px]"></i>
@@ -1893,7 +1893,7 @@ const App: React.FC = () => {
         {/* Global Footer Contact */}
         <footer className="mt-20 pt-10 border-t border-slate-100 flex flex-col items-center space-y-6">
           <VokeLogo className="text-2xl opacity-20 grayscale" withGradient={false} />
-          <div className="flex flex-wrap justify-center gap-8">
+          <div className="flex flex-col sm:flex-row flex-wrap justify-center gap-4 sm:gap-8">
             <a href={`mailto:${ADMIN_CONTACT.email}`} className="flex items-center space-x-2 text-slate-400 hover:text-slate-600 transition-colors">
               <i className="fas fa-envelope text-[10px]"></i>
               <span className="text-[9px] font-black uppercase tracking-widest">{ADMIN_CONTACT.email}</span>
