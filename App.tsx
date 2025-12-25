@@ -37,6 +37,7 @@ const App: React.FC = () => {
   const [allUsers, setAllUsers] = useState<Record<string, User>>({});
 
   const [posts, setPosts] = useState<Post[]>([]);
+  const [activePostId, setActivePostId] = useState<string | null>(null);
   const [topUpRequests, setTopUpRequests] = useState<TopUpRequest[]>([]);
   const [withdrawRequests, setWithdrawRequests] = useState<WithdrawRequest[]>([]);
   const [reports, setReports] = useState<ReportRecord[]>([]);
@@ -68,16 +69,22 @@ const App: React.FC = () => {
   const [searchQuery, setSearchQuery] = useState('');
 
   const filteredPosts = useMemo(() => {
-    if (!searchQuery.trim()) return posts;
-    const query = searchQuery.toLowerCase();
-    return posts.filter(post =>
-      post.title.toLowerCase().includes(query) ||
-      (post.author?.name && post.author.name.toLowerCase().includes(query)) ||
-      (post.author?.username && post.author.username.toLowerCase().includes(query)) ||
-      post.content.toLowerCase().includes(query) ||
-      (post.caption && post.caption.toLowerCase().includes(query))
-    );
-  }, [posts, searchQuery]);
+    let result = posts;
+    if (activePostId) {
+      result = posts.filter(p => p.id === activePostId);
+      if (result.length === 0) result = posts;
+    } else if (searchQuery.trim()) {
+      const query = searchQuery.toLowerCase();
+      result = posts.filter(post =>
+        post.title.toLowerCase().includes(query) ||
+        (post.author?.name && post.author.name.toLowerCase().includes(query)) ||
+        (post.author?.username && post.author.username.toLowerCase().includes(query)) ||
+        post.content.toLowerCase().includes(query) ||
+        (post.caption && post.caption.toLowerCase().includes(query))
+      );
+    }
+    return result;
+  }, [posts, searchQuery, activePostId]);
 
   const editorData = useMemo(() => {
     if (!activeDraft) return undefined;
@@ -125,11 +132,18 @@ const App: React.FC = () => {
   }, []);
 
   useEffect(() => {
-    if (user) {
+    if (session) {
       fetchPosts();
       fetchAds();
       fetchSavedPosts(); // Fetch saved posts from database
       fetchAllUsers(); // For Admin Dashboard compatibility
+
+      // Handle direct link to post
+      const params = new URLSearchParams(window.location.search);
+      const postId = params.get('post') || params.get('id');
+      if (postId) {
+        setActivePostId(postId);
+      }
     }
   }, [user]);
 
@@ -1236,19 +1250,28 @@ const App: React.FC = () => {
             <button onClick={() => setView('wallet')} className={`px-6 py-2.5 rounded-2xl text-[10px] font-black uppercase tracking-widest transition-all ${view === 'wallet' ? 'bg-white text-indigo-600 shadow-sm' : 'text-slate-400 hover:text-slate-600'}`}>Dompet</button>
           </div>
 
-          <div className="flex items-center space-x-3">
-            <button onClick={() => setIsWriting(true)} className="w-11 h-11 bg-gradient-to-br from-[#0EA5E9] to-[#2563EB] text-white rounded-2xl flex items-center justify-center shadow-lg shadow-cyan-100 hover:scale-105 active:scale-95 transition-all">
+          <div className="flex items-center space-x-2 md:space-x-3">
+            <button onClick={() => setIsWriting(true)} className="w-10 h-10 md:w-11 md:h-11 bg-gradient-to-br from-[#0EA5E9] to-[#2563EB] text-white rounded-2xl flex items-center justify-center shadow-lg shadow-cyan-100 hover:scale-105 active:scale-95 transition-all">
               <i className="fas fa-plus"></i>
             </button>
+
+            <button
+              onClick={() => handleNotify('Belum ada notifikasi baru.', 'info')}
+              className="w-10 h-10 md:w-11 md:h-11 bg-slate-50 text-slate-400 hover:text-indigo-600 rounded-2xl flex items-center justify-center transition-all relative"
+            >
+              <i className="fas fa-bell"></i>
+              <span className="absolute top-3 right-3 w-2 h-2 bg-indigo-500 rounded-full border-2 border-white"></span>
+            </button>
+
             {user?.isAdmin && (
-              <button onClick={() => setView('admin')} className={`w-11 h-11 rounded-2xl flex items-center justify-center transition-all ${view === 'admin' ? 'bg-slate-900 text-white shadow-md' : 'bg-slate-50 text-slate-400 hover:bg-slate-100'}`}>
+              <button onClick={() => setView('admin')} className={`w-10 h-10 md:w-11 md:h-11 rounded-2xl flex items-center justify-center transition-all ${view === 'admin' ? 'bg-slate-900 text-white shadow-md' : 'bg-slate-50 text-slate-400 hover:bg-slate-100'}`}>
                 <i className="fas fa-shield-halved"></i>
               </button>
             )}
-            <div onClick={() => setView('profile')} className="w-11 h-11 rounded-full border-2 border-white overflow-hidden cursor-pointer shadow-sm hover:ring-4 hover:ring-indigo-500/10 transition-all">
+            <div onClick={() => setView('profile')} className="w-10 h-10 md:w-11 md:h-11 rounded-full border-2 border-white overflow-hidden cursor-pointer shadow-sm hover:ring-4 hover:ring-indigo-500/10 transition-all">
               <img src={user?.avatar} className="w-full h-full object-cover" />
             </div>
-            <button onClick={handleLogout} className="w-11 h-11 bg-slate-50 text-slate-300 hover:text-rose-500 rounded-2xl flex items-center justify-center transition-all">
+            <button onClick={handleLogout} className="hidden sm:flex w-10 h-10 md:w-11 md:h-11 bg-slate-50 text-slate-300 hover:text-rose-500 rounded-2xl items-center justify-center transition-all">
               <i className="fas fa-power-off"></i>
             </button>
           </div>
@@ -1554,6 +1577,26 @@ const App: React.FC = () => {
                   </button>
                 )}
               </div>
+
+              {activePostId && (
+                <div className="flex items-center justify-between bg-[#E0F2FE] p-6 rounded-[2rem] border border-[#BAE6FD] animate-in fade-in slide-in-from-top-4 duration-500">
+                  <div className="flex items-center space-x-3">
+                    <div className="w-8 h-8 bg-[#0EA5E9] rounded-xl flex items-center justify-center text-white text-xs">
+                      <i className="fas fa-link"></i>
+                    </div>
+                    <p className="text-[10px] font-black text-slate-800 uppercase tracking-widest">Melihat Artikel Spesifik</p>
+                  </div>
+                  <button
+                    onClick={() => {
+                      setActivePostId(null);
+                      window.history.replaceState({}, '', window.location.pathname);
+                    }}
+                    className="px-6 py-2 bg-white text-[#0EA5E9] rounded-xl text-[9px] font-black uppercase tracking-widest shadow-sm hover:shadow-md transition-all active:scale-95 border border-[#BAE6FD]/30"
+                  >
+                    Tampilkan Semua
+                  </button>
+                </div>
+              )}
 
               {isLoadingPosts ? (
                 <div className="space-y-8 animate-pulse">

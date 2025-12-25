@@ -284,69 +284,79 @@ export const PostCard: React.FC<PostCardProps> = ({
           )}
         </div>
 
-        <div className="flex items-center justify-between pt-8 border-t border-slate-100">
-          <div className="flex items-center space-x-2 md:space-x-4">
-            <button onClick={() => onLike(post.id)} className={`flex items-center px-4 py-2 rounded-2xl transition-all ${post.isLiked ? 'bg-rose-50 text-rose-500' : 'bg-slate-50 text-slate-400 hover:text-rose-400'}`}>
+        <div className="flex flex-col sm:flex-row sm:items-center justify-between pt-8 border-t border-slate-100 gap-4">
+          <div className="flex items-center space-x-2 overflow-x-auto no-scrollbar pb-2 sm:pb-0">
+            <button onClick={() => onLike(post.id)} className={`flex items-center px-4 py-2.5 rounded-2xl transition-all shrink-0 ${post.isLiked ? 'bg-rose-50 text-rose-500 shadow-sm shadow-rose-100' : 'bg-slate-50 text-slate-400 hover:text-rose-400'}`}>
               <i className={`${post.isLiked ? 'fas' : 'far'} fa-heart text-sm mr-2.5`}></i>
               <span className="text-xs font-black">{post.likes}</span>
             </button>
-            <button onClick={() => setShowComments(!showComments)} className="flex items-center px-4 py-2 bg-slate-50 text-slate-400 hover:text-blue-500 rounded-2xl transition-all">
+            <button onClick={() => setShowComments(!showComments)} className="flex items-center px-4 py-2.5 bg-slate-50 text-slate-400 hover:text-blue-500 rounded-2xl transition-all shrink-0">
               <i className="far fa-comment text-sm mr-2.5"></i>
               <span className="text-xs font-black">{post.comments.length}</span>
             </button>
-            <div className="flex items-center px-4 py-2 bg-slate-50 text-slate-400 rounded-2xl">
+            <div className="flex items-center px-4 py-2.5 bg-slate-50 text-slate-400 rounded-2xl shrink-0">
               <i className="far fa-eye text-sm mr-2.5"></i>
-              <span className="text-xs font-black">{post.views.toLocaleString('id-ID')}</span>
+              <span className="text-xs font-black">{post.views >= 1000 ? `${(post.views / 1000).toFixed(1)}k` : post.views}</span>
             </div>
           </div>
-          <div className="flex space-x-2">
-            {/* GIFT BUTTON - Always Visible */}
-            <button
-              onClick={() => !isOwnPost && setIsGiftOpen(true)}
-              className={`h-11 px-4 rounded-2xl flex items-center justify-center space-x-2 transition-all shadow-sm border ${isOwnPost
-                ? 'bg-gradient-to-r from-amber-100 to-amber-50 text-amber-700 border-amber-200 cursor-default'
-                : 'bg-gradient-to-r from-amber-50 to-yellow-50 text-amber-700 border-amber-200 hover:from-amber-100 hover:to-yellow-100'
-                }`}
-              title={isOwnPost ? `Total hadiah: Rp ${(post.gifts || 0).toLocaleString('id-ID')}` : 'Kirim hadiah'}
-            >
-              <i className="fas fa-gift text-base text-amber-600"></i>
-              <span className="text-sm font-extrabold text-amber-800">
-                {post.gifts >= 1000 ? `${(post.gifts / 1000).toFixed(1)}k` : (post.gifts || 0)}
-              </span>
-            </button>
-            <button
-              onClick={async () => {
-                // Strip HTML tags for clean text share
-                const tempDiv = document.createElement('div');
-                tempDiv.innerHTML = post.content;
-                const cleanText = tempDiv.textContent || tempDiv.innerText || '';
 
-                const shareData = {
-                  title: post.title,
-                  text: cleanText.substring(0, 100) + '...',
-                  url: window.location.href
-                };
+          <div className="flex items-center justify-between sm:justify-end space-x-2">
+            <div className="flex space-x-2">
+              <button
+                onClick={() => !isOwnPost && setIsGiftOpen(true)}
+                className={`h-11 px-4 rounded-2xl flex items-center justify-center space-x-2 transition-all shadow-sm border ${isOwnPost
+                  ? 'bg-gradient-to-r from-amber-100 to-amber-50 text-amber-700 border-amber-200 cursor-default'
+                  : 'bg-gradient-to-r from-amber-50 to-yellow-50 text-amber-700 border-amber-200 hover:from-amber-100 hover:to-yellow-100'
+                  }`}
+                title={isOwnPost ? `Total hadiah: Rp ${(post.gifts || 0).toLocaleString('id-ID')}` : 'Kirim hadiah'}
+              >
+                <i className="fas fa-gift text-base text-amber-600"></i>
+                <span className="text-sm font-extrabold text-amber-800">
+                  {post.gifts >= 1000 ? `${(post.gifts / 1000).toFixed(1)}k` : (post.gifts || 0)}
+                </span>
+              </button>
+            </div>
 
-                if (navigator.share) {
-                  try {
-                    await navigator.share(shareData);
-                    onNotify('Berhasil dibagikan!', 'success');
-                  } catch (err) {
-                    // User cancelled
+            <div className="flex space-x-2">
+              <button
+                onClick={async () => {
+                  const tempDiv = document.createElement('div');
+                  tempDiv.innerHTML = post.content;
+                  const cleanText = tempDiv.textContent || tempDiv.innerText || '';
+                  const shareUrl = `${window.location.origin}${window.location.pathname}?post=${post.id}`;
+
+                  const shareData = {
+                    title: post.title,
+                    text: cleanText.substring(0, 100) + '...',
+                    url: shareUrl
+                  };
+
+                  if (navigator.share) {
+                    try {
+                      await navigator.share(shareData);
+                      onNotify('Berhasil dibagikan!', 'success');
+                    } catch (err) {
+                      // Handled
+                    }
+                  } else {
+                    navigator.clipboard.writeText(shareUrl);
+                    onNotify('Link artikel disalin!', 'success');
                   }
-                } else {
-                  // Fallback: copy to clipboard
-                  navigator.clipboard.writeText(window.location.href);
-                  onNotify('Link disalin ke clipboard!', 'success');
-                }
-              }}
-              className="w-11 h-11 bg-slate-50 text-slate-400 rounded-2xl flex items-center justify-center hover:text-cyan-500 hover:bg-cyan-50 transition-all"
-            >
-              <i className="fas fa-share-nodes text-sm"></i>
-            </button>
-            <button onClick={() => onSaveToggle(post.id)} className={`w-11 h-11 rounded-2xl flex items-center justify-center transition-all ${isSaved ? 'bg-cyan-50 text-cyan-600' : 'bg-slate-50 text-slate-300 hover:text-cyan-400'}`}>
-              <i className={`${isSaved ? 'fas' : 'far'} fa-bookmark text-sm`}></i>
-            </button>
+                }}
+                className="w-11 h-11 bg-slate-50 text-slate-400 rounded-2xl flex items-center justify-center hover:text-cyan-500 hover:bg-cyan-50 transition-all"
+                title="Bagikan artikel"
+              >
+                <i className="fas fa-share-nodes text-sm"></i>
+              </button>
+
+              <button
+                onClick={() => onSaveToggle(post.id)}
+                className={`w-11 h-11 rounded-2xl flex items-center justify-center transition-all ${isSaved ? 'bg-indigo-50 text-indigo-600 shadow-sm shadow-indigo-100' : 'bg-slate-50 text-slate-300 hover:text-indigo-400'}`}
+                title={isSaved ? "Hapus dari simpanan" : "Simpan artikel"}
+              >
+                <i className={`${isSaved ? 'fas' : 'far'} fa-bookmark text-sm`}></i>
+              </button>
+            </div>
           </div>
         </div>
       </div>
