@@ -1462,10 +1462,8 @@ const App: React.FC = () => {
                     onView={(postId) => {
                       const viewedKey = `voke_view_${postId}`;
                       const alreadyViewed = localStorage.getItem(viewedKey);
-                      console.log(`[View Debug] Post ${postId}, alreadyViewed:`, alreadyViewed);
 
                       if (!alreadyViewed) {
-                        console.log('[View Debug] Incrementing view! (New unique view)');
                         localStorage.setItem(`voke_view_${postId}`, 'true');
                         // Update local state
                         setPosts(prev => prev.map(p => p.id === postId ? { ...p, views: p.views + 1 } : p));
@@ -1477,8 +1475,6 @@ const App: React.FC = () => {
                             if (p) supabase.from('posts').update({ views_count: p.views + 1 }).eq('id', postId);
                           }
                         });
-                      } else {
-                        console.log('[View Debug] View blocked by unique check (already viewed).');
                       }
                     }}
                   />
