@@ -352,7 +352,7 @@ export const WithdrawModal: React.FC<{
   balance: number;
   onWithdraw: (amount: number, method: string, account: string, bankName?: string) => void;
 }> = ({ isOpen, onClose, balance, onWithdraw }) => {
-  const MIN_WITHDRAW = 100000;
+  const MIN_WITHDRAW = 5000;
   const adminFee = 6500;
 
   const [method, setMethod] = useState('Bank Transfer');
@@ -390,14 +390,14 @@ export const WithdrawModal: React.FC<{
 
         <div className="space-y-4">
           <div>
-            <label className="block text-[10px] font-black text-gray-400 uppercase tracking-widest mb-2">Nominal Cairkan (Min. 100k)</label>
+            <label className="block text-[10px] font-black text-gray-400 uppercase tracking-widest mb-2">Nominal Cairkan (Min. 5.000)</label>
             <input
               type="number"
               value={withdrawAmount}
               onChange={(e) => setWithdrawAmount(Number(e.target.value))}
               className="w-full p-4 bg-gray-50 border-none rounded-2xl font-black text-lg outline-none focus:ring-2 focus:ring-amber-500"
             />
-            {!canWithdraw && <p className="text-[10px] text-rose-500 font-bold mt-2">Saldo minimal 100.000 poin diperlukan.</p>}
+            {!canWithdraw && <p className="text-[10px] text-rose-500 font-bold mt-2">Saldo minimal 5.000 poin diperlukan.</p>}
           </div>
 
           <div>

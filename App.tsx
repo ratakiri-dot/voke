@@ -1679,6 +1679,10 @@ const App: React.FC = () => {
         balance={totalBalance}
         onWithdraw={async (amount, method, account) => {
           if (!user) return;
+          if (amount < 5000) {
+            handleNotify('Minimal pencairan adalah 5.000 poin.', 'error');
+            return;
+          }
           setIsProcessingTx(true);
           // Create pending transaction
           const { error } = await supabase.from('transactions').insert({
