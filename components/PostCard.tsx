@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import { Post, User, Advertisement } from '../types';
 import { GiftModal, ReportModal, PromoteModal, GiftItem } from './Modals';
 
@@ -20,8 +20,51 @@ interface PostCardProps {
   onTopUpRequest?: () => void;
   onPromoteRequest?: (postId: string, duration: number, cost: number) => void;
   bottomAd?: Advertisement | null;
+  middleAd?: Advertisement | null;
   viewRate?: number;
 }
+
+const ScriptAd: React.FC<{ embedCode: string }> = ({ embedCode }: { embedCode: string }) => {
+  const containerRef = useRef<HTMLDivElement>(null);
+
+  useEffect(() => {
+    if (containerRef.current) {
+      // Clear previous content
+      containerRef.current.innerHTML = '';
+
+      // Create a temporary element to parse the HTML string
+      const div = document.createElement('div');
+      div.innerHTML = embedCode;
+
+      // Convert NodeList to Array to iterate safely
+      const nodes = Array.from(div.childNodes);
+
+      nodes.forEach(node => {
+        if (node.nodeName === 'SCRIPT') {
+          const script = document.createElement('script');
+          const scriptNode = node as HTMLScriptElement;
+
+          // Copy all attributes
+          Array.from(scriptNode.attributes).forEach(attr => {
+            script.setAttribute(attr.name, attr.value);
+          });
+
+          // Copy content if any
+          if (scriptNode.innerHTML) {
+            script.innerHTML = scriptNode.innerHTML;
+          }
+
+          containerRef.current?.appendChild(script);
+        } else {
+          // Clone other nodes (like div, iframe, etc)
+          containerRef.current?.appendChild(node.cloneNode(true));
+        }
+      });
+    }
+  }, [embedCode]);
+
+  return <div ref={containerRef} className="w-full flex justify-center py-4" />;
+};
 
 export const PostCard: React.FC<PostCardProps> = ({
   post, isFollowing, isSaved, onFollowToggle, onLike, onSaveToggle,
@@ -29,6 +72,7 @@ export const PostCard: React.FC<PostCardProps> = ({
   userGiftBalance = 0, onTopUpRequest = () => { },
   onPromoteRequest = (_id: string, _d: number, _c: number) => { },
   bottomAd,
+  middleAd,
   viewRate
 }) => {
   const author = post.author || { name: 'Sistem VOꓘE', avatar: 'https://picsum.photos/seed/me/200', username: '@voke_official' };
@@ -101,10 +145,52 @@ export const PostCard: React.FC<PostCardProps> = ({
 
         {/* 2. Excerpt Section */}
         <div className="relative mb-8">
-          <div
-            className={`text-slate-600 leading-[1.8] text-base sm:text-lg transition-all duration-700 ${!isExpanded ? 'line-clamp-3 overflow-hidden' : ''}`}
-            dangerouslySetInnerHTML={{ __html: post.content }}
-          />
+          {!isExpanded ? (
+            <div
+              className="text-slate-600 leading-[1.8] text-base sm:text-lg line-clamp-3 overflow-hidden"
+              dangerouslySetInnerHTML={{ __html: post.content }}
+            />
+          ) : (
+            <div className="text-slate-600 leading-[1.8] text-base sm:text-lg space-y-4">
+              {(() => {
+                const paragraphs = post.content.split('</p>').filter(p => p.trim());
+                if (paragraphs.length > 2 && middleAd && middleAd.isActive) {
+                  const mid = Math.ceil(paragraphs.length / 2);
+                  const firstHalf = paragraphs.slice(0, mid);
+                  const secondHalf = paragraphs.slice(mid);
+                  return (
+                    <>
+                      <div dangerouslySetInnerHTML={{ __html: firstHalf.join('</p>') + '</p>' }} />
+
+                      {/* Middle Ad */}
+                      <div className="my-8 p-6 bg-slate-50 rounded-3xl border border-slate-100 overflow-hidden">
+                        <span className="text-[8px] font-black text-slate-400 uppercase tracking-widest mb-4 inline-block">Sponsor VOꓘE</span>
+                        {middleAd.embedCode ? (
+                          <ScriptAd embedCode={middleAd.embedCode} />
+                        ) : (
+                          <div className="flex flex-col md:flex-row gap-6 items-center">
+                            {middleAd.imageUrl && (
+                              <img src={middleAd.imageUrl} className="w-24 h-24 object-cover rounded-2xl shrink-0 shadow-sm" alt="" />
+                            )}
+                            <div className="flex-1 text-center md:text-left">
+                              <h4 className="text-sm font-black mb-1 text-slate-800">{middleAd.title || 'Pariwara'}</h4>
+                              <p className="text-[10px] text-slate-500 mb-4 line-clamp-2">{middleAd.description || 'Lihat penawaran menarik dari mitra kami.'}</p>
+                              {middleAd.link && (
+                                <a href={middleAd.link} target="_blank" rel="noopener" className="inline-block px-6 py-2 bg-indigo-600 text-white rounded-xl text-[9px] font-black uppercase tracking-widest hover:bg-indigo-700 transition-all">Pelajari</a>
+                              )}
+                            </div>
+                          </div>
+                        )}
+                      </div>
+
+                      <div dangerouslySetInnerHTML={{ __html: secondHalf.join('</p>') + '</p>' }} />
+                    </>
+                  );
+                }
+                return <div dangerouslySetInnerHTML={{ __html: post.content }} />;
+              })()}
+            </div>
+          )}
           {!isExpanded && (
             <button
               onClick={handleExpand}

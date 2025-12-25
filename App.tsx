@@ -50,6 +50,7 @@ const App: React.FC = () => {
   const [isWriting, setIsWriting] = useState(false);
   const [activeDraft, setActiveDraft] = useState<Post | null>(null);
   const activeTopAd = useMemo(() => ads.find(a => a.isActive && a.position === 'top'), [ads]);
+  const activeMiddleAd = useMemo(() => ads.find(a => a.isActive && a.position === 'middle'), [ads]);
   const activeBottomAd = useMemo(() => ads.find(a => a.isActive && a.position === 'bottom'), [ads]);
   const [drafts, setDrafts] = useState<Post[]>([]);
 
@@ -1386,6 +1387,9 @@ const App: React.FC = () => {
                     onDelete={handleDeletePost}
                     onEdit={handleEdit}
                     currentUserId={user?.id}
+                    middleAd={activeMiddleAd}
+                    bottomAd={activeBottomAd}
+                    viewRate={viewRate}
                   />
                 ))}
               </div>
@@ -1439,7 +1443,7 @@ const App: React.FC = () => {
                   {searchQuery && <button onClick={() => setSearchQuery('')} className="mt-4 text-blue-500 font-black text-[10px] uppercase tracking-widest">Hapus Pencarian</button>}
                 </div>
               ) : (
-                filteredPosts.filter(p => p.userId === user?.id).map(p => <PostCard key={p.id} post={p} isFollowing={false} isSaved={savedPosts.has(p.id)} onFollowToggle={() => { }} onLike={handleLike} onSaveToggle={id => setSavedPosts(prev => { const n = new Set(prev); n.has(id) ? n.delete(id) : n.add(id); return n; })} onAddComment={handleAddComment} onGift={handleGift} onNotify={handleNotify} userGiftBalance={totalBalance} onPromoteRequest={handlePromoteRequest} onDelete={handleDeletePost} onEdit={handleEdit} currentUserId={user?.id} />)
+                filteredPosts.filter(p => p.userId === user?.id).map(p => <PostCard key={p.id} post={p} isFollowing={false} isSaved={savedPosts.has(p.id)} onFollowToggle={() => { }} onLike={handleLike} onSaveToggle={id => setSavedPosts(prev => { const n = new Set(prev); n.has(id) ? n.delete(id) : n.add(id); return n; })} onAddComment={handleAddComment} onGift={handleGift} onNotify={handleNotify} userGiftBalance={totalBalance} onPromoteRequest={handlePromoteRequest} onDelete={handleDeletePost} onEdit={handleEdit} currentUserId={user?.id} middleAd={activeMiddleAd} bottomAd={activeBottomAd} viewRate={viewRate} />)
               )}
             </div>
           </div>
@@ -1593,6 +1597,7 @@ const App: React.FC = () => {
                       onDelete={handleDeletePost}
                       onEdit={handleEdit}
                       currentUserId={user?.id}
+                      middleAd={activeMiddleAd}
                       bottomAd={activeBottomAd}
                       viewRate={viewRate}
                       onView={(postId) => {

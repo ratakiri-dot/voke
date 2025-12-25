@@ -164,12 +164,12 @@ export const AdEditorModal: React.FC<{
         </div>
 
         <div className="space-y-1">
-          <label className="text-[10px] font-black text-slate-400 uppercase tracking-widest ml-1">Embed Code (Opsional)</label>
+          <label className="text-[10px] font-black text-slate-400 uppercase tracking-widest ml-1">Script JS (Opsional)</label>
           <textarea
             value={formData.embedCode || ''}
             onChange={e => setFormData({ ...formData, embedCode: e.target.value })}
             className="w-full p-4 bg-slate-50 border-none rounded-2xl font-mono text-xs min-h-[80px]"
-            placeholder="<iframe src='...'></iframe>"
+            placeholder="<script src='...'></script>"
           />
         </div>
 
@@ -192,7 +192,7 @@ export const AdEditorModal: React.FC<{
             className="w-full p-4 bg-slate-50 border-none rounded-2xl font-bold text-sm"
           >
             <option value="top">Atas (Dashboard)</option>
-            <option value="middle">Tengah (List)</option>
+            <option value="middle">Tengah Artikel (Postingan)</option>
             <option value="bottom">Bawah (Post Card)</option>
           </select>
         </div>
