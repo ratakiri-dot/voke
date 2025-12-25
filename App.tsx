@@ -64,6 +64,19 @@ const App: React.FC = () => {
   const [shownSpotlights, setShownSpotlights] = useState<Set<string>>(new Set());
   const [isInitializing, setIsInitializing] = useState(true);
   const [isLoadingPosts, setIsLoadingPosts] = useState(true);
+  const [searchQuery, setSearchQuery] = useState('');
+
+  const filteredPosts = useMemo(() => {
+    if (!searchQuery.trim()) return posts;
+    const query = searchQuery.toLowerCase();
+    return posts.filter(post =>
+      post.title.toLowerCase().includes(query) ||
+      (post.author?.name && post.author.name.toLowerCase().includes(query)) ||
+      (post.author?.username && post.author.username.toLowerCase().includes(query)) ||
+      post.content.toLowerCase().includes(query) ||
+      (post.caption && post.caption.toLowerCase().includes(query))
+    );
+  }, [posts, searchQuery]);
 
   const editorData = useMemo(() => {
     if (!activeDraft) return undefined;
@@ -1303,18 +1316,33 @@ const App: React.FC = () => {
           </div>
         ) : view === 'saved' ? (
           <div className="space-y-8 animate-in fade-in slide-in-from-bottom-4 duration-500">
-            <div className="flex items-center justify-between mb-8">
+            <div className="flex flex-col sm:flex-row items-center justify-between mb-8 gap-4">
               <h2 className="text-2xl font-black text-slate-800">Simpanan Saya</h2>
-              <button onClick={() => setView('profile')} className="px-6 py-2 bg-slate-100 text-slate-500 rounded-xl text-xs font-black uppercase tracking-widest hover:bg-slate-200 transition-all">Kembali</button>
+              <div className="flex items-center space-x-3 w-full sm:w-auto">
+                <div className="relative flex-grow sm:w-64">
+                  <div className="absolute inset-y-0 left-0 pl-4 flex items-center pointer-events-none">
+                    <i className="fas fa-search text-slate-300 text-xs text-[#2563EB]"></i>
+                  </div>
+                  <input
+                    type="text"
+                    placeholder="Cari simpanan..."
+                    className="w-full bg-slate-50 border border-slate-100 py-2.5 pl-10 pr-4 rounded-xl font-bold text-xs focus:outline-none focus:ring-4 focus:ring-blue-500/5 focus:border-[#2563EB] transition-all shadow-sm"
+                    value={searchQuery}
+                    onChange={(e) => setSearchQuery(e.target.value)}
+                  />
+                </div>
+                <button onClick={() => setView('profile')} className="px-6 py-2.5 bg-slate-100 text-slate-500 rounded-xl text-xs font-black uppercase tracking-widest hover:bg-slate-200 transition-all shrink-0">Kembali</button>
+              </div>
             </div>
-            {posts.filter(p => savedPosts.has(p.id)).length === 0 ? (
+            {filteredPosts.filter(p => savedPosts.has(p.id)).length === 0 ? (
               <div className="text-center py-20 bg-slate-50 rounded-[2.5rem]">
                 <i className="fas fa-bookmark text-4xl text-slate-300 mb-4"></i>
-                <p className="text-slate-400 font-bold">Belum ada postingan yang disimpan.</p>
+                <p className="text-slate-400 font-bold">{searchQuery ? 'Tidak ada simpanan yang cocok.' : 'Belum ada postingan yang disimpan.'}</p>
+                {searchQuery && <button onClick={() => setSearchQuery('')} className="mt-4 text-blue-500 font-black text-[10px] uppercase tracking-widest">Hapus Pencarian</button>}
               </div>
             ) : (
               <div className="space-y-10">
-                {posts.filter(p => savedPosts.has(p.id)).map(post => (
+                {filteredPosts.filter(p => savedPosts.has(p.id)).map(post => (
                   <PostCard
                     key={post.id}
                     post={post}
@@ -1362,7 +1390,31 @@ const App: React.FC = () => {
               </div>
             </div>
             <div className="space-y-8">
-              {posts.filter(p => p.userId === user?.id).map(p => <PostCard key={p.id} post={p} isFollowing={false} isSaved={savedPosts.has(p.id)} onFollowToggle={() => { }} onLike={handleLike} onSaveToggle={id => setSavedPosts(prev => { const n = new Set(prev); n.has(id) ? n.delete(id) : n.add(id); return n; })} onAddComment={handleAddComment} onGift={handleGift} onNotify={handleNotify} userGiftBalance={totalBalance} onDelete={handleDeletePost} onEdit={handleEdit} currentUserId={user?.id} />)}
+              <div className="flex flex-col sm:flex-row items-center justify-between mb-4 gap-4">
+                <h3 className="text-xl font-black text-slate-800 uppercase tracking-widest text-[11px]">Karya Saya</h3>
+                <div className="relative w-full sm:w-64 group">
+                  <div className="absolute inset-y-0 left-0 pl-4 flex items-center pointer-events-none">
+                    <i className="fas fa-search text-slate-300 text-xs text-[#2563EB]"></i>
+                  </div>
+                  <input
+                    type="text"
+                    placeholder="Cari karya saya..."
+                    className="w-full bg-slate-50/50 border border-slate-100 py-3 pl-10 pr-4 rounded-xl font-bold text-xs focus:outline-none focus:ring-4 focus:ring-blue-500/5 focus:border-[#2563EB] transition-all shadow-sm"
+                    value={searchQuery}
+                    onChange={(e) => setSearchQuery(e.target.value)}
+                  />
+                </div>
+              </div>
+
+              {filteredPosts.filter(p => p.userId === user?.id).length === 0 ? (
+                <div className="text-center py-20 bg-slate-50 rounded-[2.5rem] border border-dashed border-slate-200">
+                  <i className="fas fa-feather-alt text-4xl text-slate-200 mb-4"></i>
+                  <p className="text-slate-400 font-bold">{searchQuery ? 'Tidak ada karya yang cocok.' : 'Belum ada karya yang diterbitkan.'}</p>
+                  {searchQuery && <button onClick={() => setSearchQuery('')} className="mt-4 text-blue-500 font-black text-[10px] uppercase tracking-widest">Hapus Pencarian</button>}
+                </div>
+              ) : (
+                filteredPosts.filter(p => p.userId === user?.id).map(p => <PostCard key={p.id} post={p} isFollowing={false} isSaved={savedPosts.has(p.id)} onFollowToggle={() => { }} onLike={handleLike} onSaveToggle={id => setSavedPosts(prev => { const n = new Set(prev); n.has(id) ? n.delete(id) : n.add(id); return n; })} onAddComment={handleAddComment} onGift={handleGift} onNotify={handleNotify} userGiftBalance={totalBalance} onDelete={handleDeletePost} onEdit={handleEdit} currentUserId={user?.id} />)
+              )}
             </div>
           </div>
         ) : view === 'edit-profile' ? (
@@ -1451,6 +1503,28 @@ const App: React.FC = () => {
             )}
 
             <div className="space-y-10">
+              {/* Search Bar - VOꓘE Optimized */}
+              <div className="relative group mx-auto max-w-2xl w-full">
+                <div className="absolute inset-y-0 left-0 pl-6 flex items-center pointer-events-none">
+                  <i className="fas fa-search text-slate-400 group-focus-within:text-[#2563EB] transition-colors"></i>
+                </div>
+                <input
+                  type="text"
+                  placeholder="Cari nama, judul, atau #hashtag..."
+                  className="w-full bg-white border border-slate-100 py-4 pl-14 pr-6 rounded-[2rem] font-bold text-sm focus:outline-none focus:ring-4 focus:ring-blue-500/10 focus:border-[#2563EB] transition-all shadow-sm group-hover:shadow-md"
+                  value={searchQuery}
+                  onChange={(e) => setSearchQuery(e.target.value)}
+                />
+                {searchQuery && (
+                  <button
+                    onClick={() => setSearchQuery('')}
+                    className="absolute inset-y-0 right-0 pr-6 flex items-center text-slate-300 hover:text-slate-500 transition-colors"
+                  >
+                    <i className="fas fa-times-circle"></i>
+                  </button>
+                )}
+              </div>
+
               {isLoadingPosts ? (
                 <div className="space-y-8 animate-pulse">
                   {[1, 2].map(i => (
@@ -1473,41 +1547,49 @@ const App: React.FC = () => {
                   ))}
                 </div>
               ) : (
-                posts.map((post) => (
-                  <PostCard
-                    key={post.id}
-                    post={post} isFollowing={following.has(post.userId)} isSaved={savedPosts.has(post.id)}
-                    onFollowToggle={id => setFollowing(prev => { const n = new Set(prev); n.has(id) ? n.delete(id) : n.add(id); return n; })}
-                    onLike={handleLike}
-                    onSaveToggle={handleSaveToggle}
-                    onAddComment={handleAddComment}
-                    onGift={handleGift} onNotify={handleNotify} userGiftBalance={totalBalance} onTopUpRequest={() => setIsTopUpOpen(true)}
-                    onPromoteRequest={handlePromoteRequest}
-                    onDelete={handleDeletePost}
-                    onEdit={handleEdit}
-                    currentUserId={user?.id}
-                    bottomAd={activeBottomAd}
-                    viewRate={viewRate}
-                    onView={(postId) => {
-                      const viewedKey = `voke_view_${postId}`;
-                      const alreadyViewed = localStorage.getItem(viewedKey);
+                filteredPosts.length === 0 ? (
+                  <div className="text-center py-20 bg-slate-50 rounded-[2.5rem] border border-dashed border-slate-200">
+                    <i className="fas fa-search text-4xl text-slate-200 mb-4"></i>
+                    <p className="text-slate-400 font-bold">Tidak ada hasil ditemukan untuk "{searchQuery}"</p>
+                    <button onClick={() => setSearchQuery('')} className="mt-4 text-blue-500 font-black text-[10px] uppercase tracking-widest">Hapus Pencarian</button>
+                  </div>
+                ) : (
+                  filteredPosts.map((post) => (
+                    <PostCard
+                      key={post.id}
+                      post={post} isFollowing={following.has(post.userId)} isSaved={savedPosts.has(post.id)}
+                      onFollowToggle={id => setFollowing(prev => { const n = new Set(prev); n.has(id) ? n.delete(id) : n.add(id); return n; })}
+                      onLike={handleLike}
+                      onSaveToggle={handleSaveToggle}
+                      onAddComment={handleAddComment}
+                      onGift={handleGift} onNotify={handleNotify} userGiftBalance={totalBalance} onTopUpRequest={() => setIsTopUpOpen(true)}
+                      onPromoteRequest={handlePromoteRequest}
+                      onDelete={handleDeletePost}
+                      onEdit={handleEdit}
+                      currentUserId={user?.id}
+                      bottomAd={activeBottomAd}
+                      viewRate={viewRate}
+                      onView={(postId) => {
+                        const viewedKey = `voke_view_${postId}`;
+                        const alreadyViewed = localStorage.getItem(viewedKey);
 
-                      if (!alreadyViewed) {
-                        localStorage.setItem(`voke_view_${postId}`, 'true');
-                        // Update local state
-                        setPosts(prev => prev.map(p => p.id === postId ? { ...p, views: p.views + 1 } : p));
-                        // Update DB
-                        supabase.rpc('increment_view', { post_id: postId }).then(({ error }) => {
-                          if (error) {
-                            console.warn('RPC increment_view failed', error);
-                            const p = posts.find(x => x.id === postId);
-                            if (p) supabase.from('posts').update({ views_count: p.views + 1 }).eq('id', postId);
-                          }
-                        });
-                      }
-                    }}
-                  />
-                ))
+                        if (!alreadyViewed) {
+                          localStorage.setItem(`voke_view_${postId}`, 'true');
+                          // Update local state
+                          setPosts(prev => prev.map(p => p.id === postId ? { ...p, views: p.views + 1 } : p));
+                          // Update DB
+                          supabase.rpc('increment_view', { post_id: postId }).then(({ error }) => {
+                            if (error) {
+                              console.warn('RPC increment_view failed', error);
+                              const p = posts.find(x => x.id === postId);
+                              if (p) supabase.from('posts').update({ views_count: p.views + 1 }).eq('id', postId);
+                            }
+                          });
+                        }
+                      }}
+                    />
+                  ))
+                )
               )}
             </div>
           </div>
