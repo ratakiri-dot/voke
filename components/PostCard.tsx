@@ -41,8 +41,14 @@ export const PostCard: React.FC<PostCardProps> = ({
   const [commentText, setCommentText] = useState('');
 
   const handleExpand = () => {
+    console.log('[PostCard] handleExpand clicked for post:', post.id);
     setIsExpanded(true);
-    if (onView) onView(post.id);
+    if (onView) {
+      console.log('[PostCard] calling onView prop...');
+      onView(post.id);
+    } else {
+      console.warn('[PostCard] onView prop is missing!');
+    }
   };
 
   const handleSendComment = () => {

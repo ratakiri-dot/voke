@@ -1423,31 +1423,29 @@ const App: React.FC = () => {
             )}
 
             <div className="space-y-10">
-            <div className="space-y-10">
-              <div className="space-y-10">
-                {isLoadingPosts ? (
-                  <div className="space-y-8 animate-pulse">
-                     {[1, 2].map(i => (
-                       <div key={i} className="bg-white rounded-[2.5rem] p-6 sm:p-8 space-y-6">
-                         <div className="flex items-center space-x-4">
-                           <div className="w-12 h-12 bg-slate-100 rounded-full"></div>
-                           <div className="space-y-2">
-                             <div className="h-4 bg-slate-100 rounded w-32"></div>
-                             <div className="h-3 bg-slate-50 rounded w-24"></div>
-                           </div>
-                         </div>
-                         <div className="space-y-4">
-                           <div className="h-6 bg-slate-100 rounded w-3/4"></div>
-                           <div className="space-y-2">
-                             <div className="h-4 bg-slate-50 rounded w-full"></div>
-                             <div className="h-4 bg-slate-50 rounded w-full"></div>
-                           </div>
-                         </div>
-                       </div>
-                     ))}
-                  </div>
-                ) : (
-                  posts.map((post) => (
+              {isLoadingPosts ? (
+                <div className="space-y-8 animate-pulse">
+                  {[1, 2].map(i => (
+                    <div key={i} className="bg-white rounded-[2.5rem] p-6 sm:p-8 space-y-6">
+                      <div className="flex items-center space-x-4">
+                        <div className="w-12 h-12 bg-slate-100 rounded-full"></div>
+                        <div className="space-y-2">
+                          <div className="h-4 bg-slate-100 rounded w-32"></div>
+                          <div className="h-3 bg-slate-50 rounded w-24"></div>
+                        </div>
+                      </div>
+                      <div className="space-y-4">
+                        <div className="h-6 bg-slate-100 rounded w-3/4"></div>
+                        <div className="space-y-2">
+                          <div className="h-4 bg-slate-50 rounded w-full"></div>
+                          <div className="h-4 bg-slate-50 rounded w-full"></div>
+                        </div>
+                      </div>
+                    </div>
+                  ))}
+                </div>
+              ) : (
+                posts.map((post) => (
                   <PostCard
                     key={post.id}
                     post={post} isFollowing={following.has(post.userId)} isSaved={savedPosts.has(post.id)}
@@ -1462,26 +1460,30 @@ const App: React.FC = () => {
                     bottomAd={activeBottomAd}
                     viewRate={viewRate}
                     onView={(postId) => {
-                      const viewedKey = `voke_view_${postId}`;
-                      if (!localStorage.getItem(viewedKey)) {
-                        localStorage.setItem(viewedKey, 'true');
+                      const viewedKey = `voke_view_${postId}_v2`; // Changed key version to force a 'new' view for testing if user wants, or keep original. 
+                      // actually let's just log it.
+                      const existingKey = localStorage.getItem(`voke_view_${postId}`);
+                      console.log(`[View Debug] Post ${postId}, existingKey:`, existingKey);
+
+                      if (!existingKey) {
+                        console.log('[View Debug] Incrementing view!');
+                        localStorage.setItem(`voke_view_${postId}`, 'true');
                         // Update local state
                         setPosts(prev => prev.map(p => p.id === postId ? { ...p, views: p.views + 1 } : p));
                         // Update DB
                         supabase.rpc('increment_view', { post_id: postId }).then(({ error }) => {
                           if (error) {
-                            // Fallback if RPC doesn't exist
                             console.warn('RPC increment_view failed', error);
-                            // Note: This is racy, but basic fallback
                             const p = posts.find(x => x.id === postId);
                             if (p) supabase.from('posts').update({ views_count: p.views + 1 }).eq('id', postId);
                           }
                         });
+                      } else {
+                        console.log('[View Debug] View blocked by unique check (already viewed).');
                       }
                     }}
                   />
                 ))}
-              </div>
             </div>
           </div>
         )}
@@ -1563,14 +1565,14 @@ const App: React.FC = () => {
       />
 
       {isProcessingTx && (
-          <div className="fixed inset-0 bg-white/50 backdrop-blur-sm z-[1000] flex items-center justify-center">
-            <div className="bg-white p-8 rounded-[2.5rem] shadow-2xl flex flex-col items-center space-y-4">
-              <div className="w-12 h-12 border-4 border-indigo-600 border-t-transparent rounded-full animate-spin"></div>
-              <p className="font-black text-[10px] uppercase tracking-widest text-indigo-600">Memproses Permintaan...</p>
-            </div>
+        <div className="fixed inset-0 bg-white/50 backdrop-blur-sm z-[1000] flex items-center justify-center">
+          <div className="bg-white p-8 rounded-[2.5rem] shadow-2xl flex flex-col items-center space-y-4">
+            <div className="w-12 h-12 border-4 border-indigo-600 border-t-transparent rounded-full animate-spin"></div>
+            <p className="font-black text-[10px] uppercase tracking-widest text-indigo-600">Memproses Permintaan...</p>
           </div>
-        )}
-        {activeNotification && <Notification notification={activeNotification} onClose={() => setActiveNotification(null)} />}
+        </div>
+      )}
+      {activeNotification && <Notification notification={activeNotification} onClose={() => setActiveNotification(null)} />}
     </div>
   );
 };
