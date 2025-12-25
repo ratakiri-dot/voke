@@ -1,5 +1,5 @@
 
-import React, { useState, useRef } from 'react';
+import React, { useState, useRef, useEffect } from 'react';
 import { generateAICaption, generateAITitle } from '../services/geminiService';
 
 interface RichEditorProps {
@@ -15,6 +15,15 @@ export const RichEditor: React.FC<RichEditorProps> = ({ onPublish, onSaveDraft, 
   const [caption, setCaption] = useState(initialData?.caption || '');
   const [isAiLoading, setIsAiLoading] = useState(false);
   const editorRef = useRef<HTMLDivElement>(null);
+  const isInitialized = useRef(false);
+
+  // Initialize content once on mount or when initialData changes fundamentally (e.g. switching drafts)
+  useEffect(() => {
+    if (editorRef.current && (!isInitialized.current || initialData?.content !== undefined)) {
+      editorRef.current.innerHTML = initialData?.content || '';
+      isInitialized.current = true;
+    }
+  }, [initialData?.content]);
 
   const execCommand = (command: string, value?: string) => {
     document.execCommand(command, false, value);
@@ -121,7 +130,7 @@ export const RichEditor: React.FC<RichEditorProps> = ({ onPublish, onSaveDraft, 
         <div
           ref={editorRef}
           contentEditable
-          dangerouslySetInnerHTML={{ __html: initialData?.content || '' }}
+          suppressContentEditableWarning={true}
           data-placeholder="Tuliskan ide brilian Anda, jangan biarkan kertas ini kosong..."
           className="rich-editor min-h-[450px] text-xl text-gray-700 outline-none leading-relaxed prose prose-indigo max-w-none focus:ring-0"
         />

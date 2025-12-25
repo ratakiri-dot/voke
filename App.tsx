@@ -65,6 +65,15 @@ const App: React.FC = () => {
   const [isInitializing, setIsInitializing] = useState(true);
   const [isLoadingPosts, setIsLoadingPosts] = useState(true);
 
+  const editorData = useMemo(() => {
+    if (!activeDraft) return undefined;
+    return {
+      title: activeDraft.title,
+      content: activeDraft.content,
+      caption: activeDraft.caption || ''
+    };
+  }, [activeDraft?.id, activeDraft?.title, activeDraft?.content, activeDraft?.caption]);
+
   const [authMode, setAuthMode] = useState<'login' | 'signup'>('login');
   const [loginForm, setLoginForm] = useState({ email: '', password: '' });
   const [signupForm, setSignupForm] = useState({ name: '', username: '', email: '', password: '', bio: '', waNumber: '', address: '', avatar: '' });
@@ -1222,7 +1231,7 @@ const App: React.FC = () => {
             onSaveDraft={(t, c, cap) => handleSaveDraft(t, c, cap)}
             onCancel={() => { setIsWriting(false); setActiveDraft(null); }}
             onNotify={handleNotify}
-            initialData={activeDraft ? { title: activeDraft.title, content: activeDraft.content, caption: activeDraft.caption || '' } : undefined}
+            initialData={editorData}
           />
         ) : view === 'drafts' ? (
           <div className="space-y-8 animate-in fade-in slide-in-from-bottom-4 duration-500">
