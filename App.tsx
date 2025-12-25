@@ -58,8 +58,7 @@ const App: React.FC = () => {
 
   const [isTopUpOpen, setIsTopUpOpen] = useState(false);
   const [isWithdrawOpen, setIsWithdrawOpen] = useState(false);
-  const [isTopUpOpen, setIsTopUpOpen] = useState(false);
-  const [isWithdrawOpen, setIsWithdrawOpen] = useState(false);
+
   const [isProcessingTx, setIsProcessingTx] = useState(false);
   const [activeSpotlight, setActiveSpotlight] = useState<Post | null>(null);
   const [shownSpotlights, setShownSpotlights] = useState<Set<string>>(new Set());
@@ -1472,7 +1471,7 @@ const App: React.FC = () => {
                         supabase.rpc('increment_view', { post_id: postId }).then(({ error }) => {
                           if (error) {
                             // Fallback if RPC doesn't exist
-                            console.warn('RPC increment_view failed, trying update...', error);
+                            console.warn('RPC increment_view failed', error);
                             // Note: This is racy, but basic fallback
                             const p = posts.find(x => x.id === postId);
                             if (p) supabase.from('posts').update({ views_count: p.views + 1 }).eq('id', postId);
