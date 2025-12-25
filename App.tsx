@@ -995,6 +995,41 @@ const App: React.FC = () => {
     handleNotify('Post dihapus.', 'success');
   };
 
+  const handleUpdatePoints = async (userId: string, amount: number) => {
+    // 1. Fetch current balance
+    const { data: userData, error: fetchErr } = await supabase.from('profiles').select('gift_balance').eq('id', userId).single();
+    if (fetchErr) {
+      handleNotify('Gagal mengambil data user: ' + fetchErr.message, 'error');
+      return;
+    }
+
+    const currentBalance = parseFloat(userData.gift_balance.toString()) || 0;
+    const newBalance = currentBalance + amount;
+
+    // 2. Update balance
+    const { error: updateErr } = await supabase.from('profiles').update({ gift_balance: newBalance }).eq('id', userId);
+    if (updateErr) {
+      handleNotify('Gagal update poin: ' + updateErr.message, 'error');
+      return;
+    }
+
+    // 3. Record internal transaction
+    const { error: txErr } = await supabase.from('transactions').insert({
+      user_id: userId,
+      type: amount >= 0 ? 'topup' : 'withdraw',
+      amount: Math.abs(amount),
+      status: 'completed',
+      metadata: { admin_note: 'Manual adjustment by admin', previous_balance: currentBalance }
+    });
+
+    if (txErr) console.warn('Gagal mencatat log transaksi:', txErr.message);
+
+    // 4. Refresh data
+    fetchAllUsers();
+    if (userId === user?.id) fetchUserProfile(userId);
+    handleNotify(`Saldo user berhasil diperbarui. Total sekarang: ${newBalance}`, 'success');
+  };
+
   const handleApprovePromo = async (postId: string) => {
     // 1. Fetch the duration from the latest transaction
     const { data: txs, error: txErr } = await supabase
@@ -1304,6 +1339,7 @@ const App: React.FC = () => {
             onSaveAd={handleSaveAd}
             onDeleteAd={handleDeleteAd}
             onToggleAd={handleToggleAd}
+            onUpdatePoints={handleUpdatePoints}
             onClose={() => setView('home')}
           />
         ) : isWriting ? (

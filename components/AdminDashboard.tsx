@@ -27,6 +27,7 @@ interface AdminDashboardProps {
   onSaveAd: (ad: Advertisement) => void;
   onDeleteAd: (id: string) => void;
   onToggleAd: (id: string) => void;
+  onUpdatePoints: (userId: string, amount: number) => void;
   onClose: () => void;
 }
 
@@ -35,6 +36,7 @@ export const AdminDashboard: React.FC<AdminDashboardProps> = ({
   viewRate, onUpdateViewRate,
   onApproveTopUp, onRejectTopUp, onApproveWithdraw, onRejectWithdraw, onApprovePromo, onRejectPromo, onDismissReport, onDeletePost,
   onApproveUser, onRejectUser, onDeleteUser, onSaveAd, onDeleteAd, onToggleAd,
+  onUpdatePoints,
   onClose
 }) => {
   const [activeTab, setActiveTab] = useState<'users' | 'finance' | 'promo' | 'reports' | 'ads'>('users');
@@ -45,6 +47,10 @@ export const AdminDashboard: React.FC<AdminDashboardProps> = ({
   // Ad Management States
   const [isAdEditorOpen, setIsAdEditorOpen] = useState(false);
   const [adToEdit, setAdToEdit] = useState<Advertisement | null>(null);
+
+  // Point Adjustment State
+  const [pointAdjustAmount, setPointAdjustAmount] = useState('');
+  const [isAdjustingPoints, setIsAdjustingPoints] = useState(false);
 
   const filteredUsers = useMemo(() => {
     return (Object.values(allUsers) as User[]).filter(u =>
@@ -210,19 +216,47 @@ export const AdminDashboard: React.FC<AdminDashboardProps> = ({
               </div>
 
               {/* Admin Actions for User */}
-              <div className="mt-8 flex justify-end space-x-3">
-                <button
-                  onClick={() => {
-                    if (confirm(`Yakin ingin menghapus user ${selectedUser.name}?`)) {
-                      onDeleteUser(selectedUser.id);
-                      setSelectedUser(null);
-                    }
-                  }}
-                  className="px-6 py-3 bg-rose-500 text-white rounded-xl text-[10px] font-black uppercase tracking-widest hover:bg-rose-600 transition-all shadow-lg"
-                >
-                  <i className="fas fa-trash-alt mr-2"></i>
-                  Hapus User
-                </button>
+              <div className="mt-8 pt-8 border-t border-slate-200 grid grid-cols-1 md:grid-cols-2 gap-6">
+                <div className="bg-white p-6 rounded-3xl shadow-sm space-y-4">
+                  <p className="text-[10px] font-black text-slate-300 uppercase tracking-widest">Manajemen Saldo</p>
+                  <div className="flex space-x-2">
+                    <input
+                      type="number"
+                      placeholder="Jumlah poin (misal: 1000)"
+                      value={pointAdjustAmount}
+                      onChange={e => setPointAdjustAmount(e.target.value)}
+                      className="flex-1 bg-slate-50 border-none rounded-xl px-4 py-2 text-xs font-bold focus:ring-2 focus:ring-indigo-100 outline-none"
+                    />
+                    <button
+                      disabled={isAdjustingPoints || !pointAdjustAmount}
+                      onClick={async () => {
+                        setIsAdjustingPoints(true);
+                        await onUpdatePoints(selectedUser.id, parseFloat(pointAdjustAmount));
+                        setPointAdjustAmount('');
+                        setIsAdjustingPoints(false);
+                      }}
+                      className="px-6 py-2 bg-indigo-600 text-white rounded-xl text-[10px] font-black uppercase tracking-widest shadow-md hover:bg-indigo-700 transition-all disabled:opacity-50"
+                    >
+                      {isAdjustingPoints ? 'Proses...' : 'Tambah Poin'}
+                    </button>
+                  </div>
+                  <p className="text-[8px] text-slate-400 italic">Masukkan angka positif untuk menambah, atau negatif untuk mengurangi.</p>
+                </div>
+
+                <div className="flex items-end justify-end space-x-3">
+                  <button
+                    onClick={() => {
+                      if (confirm(`Yakin ingin menghapus user ${selectedUser.name}?`)) {
+                        onDeleteUser(selectedUser.id);
+                        setSelectedUser(null);
+                      }
+                    }}
+                    className="px-6 py-3 bg-rose-50 text-rose-500 rounded-xl text-[10px] font-black uppercase tracking-widest hover:bg-rose-500 hover:text-white transition-all border border-rose-100"
+                  >
+                    <i className="fas fa-trash-alt mr-2"></i>
+                    Hapus User
+                  </button>
+                </div>
               </div>
             </div>
           </div>
