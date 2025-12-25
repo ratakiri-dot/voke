@@ -549,13 +549,19 @@ const App: React.FC = () => {
 
     if (activeDraft) {
       // Update existing draft to published
-      const { error: updateError } = await supabase.from('posts').update({
+      const updateData: any = {
         title,
         content,
         caption,
-        status: 'published',
-        created_at: new Date().toISOString() // Update timestamp to now
-      }).eq('id', activeDraft.id);
+        status: 'published'
+      };
+
+      // Only update created_at if it was a draft (effectively setting the publish date)
+      if (activeDraft.status === 'draft') {
+        updateData.created_at = new Date().toISOString();
+      }
+
+      const { error: updateError } = await supabase.from('posts').update(updateData).eq('id', activeDraft.id);
       error = updateError;
     } else {
       // Insert new post
@@ -625,7 +631,13 @@ const App: React.FC = () => {
     } else {
       handleNotify('Tulisan berhasil dihapus.', 'success');
       fetchPosts();
+      if (view === 'drafts') fetchDrafts();
     }
+  };
+
+  const handleEdit = (post: Post) => {
+    setActiveDraft(post);
+    setIsWriting(true);
   };
 
   const handleLike = async (postId: string) => {
@@ -1312,6 +1324,7 @@ const App: React.FC = () => {
                     onTopUpRequest={() => setIsTopUpOpen(true)}
                     onPromoteRequest={handlePromoteRequest}
                     onDelete={handleDeletePost}
+                    onEdit={handleEdit}
                     currentUserId={user?.id}
                   />
                 ))}
@@ -1343,7 +1356,7 @@ const App: React.FC = () => {
               </div>
             </div>
             <div className="space-y-8">
-              {posts.filter(p => p.userId === user?.id).map(p => <PostCard key={p.id} post={p} isFollowing={false} isSaved={savedPosts.has(p.id)} onFollowToggle={() => { }} onLike={handleLike} onSaveToggle={id => setSavedPosts(prev => { const n = new Set(prev); n.has(id) ? n.delete(id) : n.add(id); return n; })} onAddComment={handleAddComment} onGift={handleGift} onNotify={handleNotify} userGiftBalance={totalBalance} onDelete={handleDeletePost} currentUserId={user?.id} />)}
+              {posts.filter(p => p.userId === user?.id).map(p => <PostCard key={p.id} post={p} isFollowing={false} isSaved={savedPosts.has(p.id)} onFollowToggle={() => { }} onLike={handleLike} onSaveToggle={id => setSavedPosts(prev => { const n = new Set(prev); n.has(id) ? n.delete(id) : n.add(id); return n; })} onAddComment={handleAddComment} onGift={handleGift} onNotify={handleNotify} userGiftBalance={totalBalance} onDelete={handleDeletePost} onEdit={handleEdit} currentUserId={user?.id} />)}
             </div>
           </div>
         ) : view === 'edit-profile' ? (
@@ -1465,6 +1478,7 @@ const App: React.FC = () => {
                     onGift={handleGift} onNotify={handleNotify} userGiftBalance={totalBalance} onTopUpRequest={() => setIsTopUpOpen(true)}
                     onPromoteRequest={handlePromoteRequest}
                     onDelete={handleDeletePost}
+                    onEdit={handleEdit}
                     currentUserId={user?.id}
                     bottomAd={activeBottomAd}
                     viewRate={viewRate}

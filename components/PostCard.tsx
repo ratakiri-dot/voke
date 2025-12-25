@@ -13,6 +13,7 @@ interface PostCardProps {
   onGift: (postId: string, gift: GiftItem) => void;
   onNotify: (msg: string, type: 'success' | 'error' | 'info') => void;
   onView?: (postId: string) => void;
+  onEdit?: (post: Post) => void;
   onDelete?: (postId: string) => void;
   currentUserId?: string;
   userGiftBalance?: number;
@@ -24,7 +25,7 @@ interface PostCardProps {
 
 export const PostCard: React.FC<PostCardProps> = ({
   post, isFollowing, isSaved, onFollowToggle, onLike, onSaveToggle,
-  onAddComment, onGift, onNotify, onView, onDelete, currentUserId,
+  onAddComment, onGift, onNotify, onView, onEdit, onDelete, currentUserId,
   userGiftBalance = 0, onTopUpRequest = () => { },
   onPromoteRequest = (_id: string) => { },
   bottomAd,
@@ -105,6 +106,13 @@ export const PostCard: React.FC<PostCardProps> = ({
               >
                 <i className="fas fa-trash-alt mr-1"></i>
                 <span>Hapus</span>
+              </button>
+              <button
+                onClick={() => onEdit?.(post)}
+                className="flex-1 sm:flex-none flex items-center justify-center px-4 py-3 sm:py-2.5 bg-indigo-50 text-indigo-600 rounded-xl text-[10px] font-black uppercase tracking-widest hover:bg-indigo-100 transition-all border border-indigo-100"
+              >
+                <i className="fas fa-pen-nib mr-1"></i>
+                <span>Edit</span>
               </button>
               <button
                 onClick={() => setIsPromoteOpen(true)}
