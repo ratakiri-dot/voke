@@ -1930,9 +1930,9 @@ const App: React.FC = () => {
                           </div>
                         </div>
                       </div>
-                      <div className="flex overflow-x-auto pb-8 -mx-4 px-4 space-x-6 no-scrollbar scroll-smooth">
+                      <div className="flex overflow-x-auto pb-8 -mx-4 px-4 space-x-6 no-scrollbar scroll-smooth hidden md:flex">
                         {popularPosts.slice(0, 4).map(post => (
-                          <div key={`pop-${post.id}`} className="min-w-[200px] sm:min-w-[400px] transform hover:scale-[1.01] transition-transform duration-300">
+                          <div key={`pop-${post.id}`} className="min-w-[400px] transform hover:scale-[1.01] transition-transform duration-300">
                             <PostCard
                               post={post} isFollowing={following.has(post.userId)} isSaved={savedPosts.has(post.id)}
                               onFollowToggle={id => setFollowing(prev => { const n = new Set(prev); n.has(id) ? n.delete(id) : n.add(id); return n; })}
@@ -1942,6 +1942,28 @@ const App: React.FC = () => {
                               viewRate={viewRate}
                               onView={handleView}
                             />
+                          </div>
+                        ))}
+                      </div>
+
+                      {/* Mobile View: Vertical List */}
+                      <div className="md:hidden space-y-4 px-1">
+                        {popularPosts.slice(0, 10).map((post, index) => (
+                          <div key={`pop-mobile-${post.id}`} className="flex items-start space-x-4 py-3 border-b border-slate-100 last:border-0" onClick={() => setActivePostId(post.id)}>
+                            <div className="flex-shrink-0 w-8 text-2xl font-black text-slate-200 leading-none">
+                              {index + 1}
+                            </div>
+                            <div className="flex-1">
+                              <h4 className="font-black text-slate-800 leading-tight mb-1 line-clamp-2">{post.title}</h4>
+                              <div className="flex items-center text-[10px] font-bold text-slate-400 uppercase tracking-wider">
+                                <span>{post.author?.name || 'User'}</span>
+                                <span className="mx-2">•</span>
+                                <span className="text-indigo-400">{post.views} Views</span>
+                              </div>
+                            </div>
+                            {post.coverImage && (
+                              <img src={post.coverImage} className="w-16 h-12 object-cover rounded-lg bg-slate-100" />
+                            )}
                           </div>
                         ))}
                       </div>
