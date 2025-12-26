@@ -1141,38 +1141,59 @@ const App: React.FC = () => {
     // 2. Deduct points from user
     const { data: userData, error: fetchError } = await supabase.from('profiles').select('gift_balance').eq('id', req.userId).single();
     if (fetchError || !userData) {
-         handleNotify('Gagal mengambil data user: ' + fetchError?.message, 'error');
+         handleNotify('Gagal mengambil data user: ' + (fetchError?.message || 'Data kosong'), 'error');
          setIsProcessingTx(false);
          return;
     }
 
     const newBalance = (userData.gift_balance || 0) - req.amount;
-    const { error: updateError } = await supabase.from('profiles').update({ gift_balance: newBalance }).eq('id', req.userId);
+    
+    // Explicitly select to verify update happened
+    const { data: updateData, error: updateError } = await supabase
+        .from('profiles')
+        .update({ gift_balance: newBalance })
+        .eq('id', req.userId)
+        .select();
     
     if (updateError) {
-         handleNotify('Gagal memotong saldo user: ' + updateError.message, 'error');
+         handleNotify('Database Error: ' + updateError.message, 'error');
          setIsProcessingTx(false);
          return;
+    }
+    
+    if (!updateData || updateData.length === 0) {
+        handleNotify('GAGAL UPDATE: Izin ditolak (RLS). Admin tidak bisa mengubah saldo user lain.', 'error');
+        // We stop here to prevent inconsistent state
+        setIsProcessingTx(false);
+        return;
     }
 
     // 3. Update transaction status
     const { error: txError } = await supabase.from('transactions').update({ status: 'completed' }).eq('id', id);
     if (txError) {
          handleNotify('Gagal update status transaksi: ' + txError.message, 'error');
-         // Critical: Balances were deducted but TX failed. Ideally should rollback.
          setIsProcessingTx(false);
          return;
     }
 
     // 4. Send Notification
-    await supabase.from('notifications').insert({
+    const { data: notifData, error: notifError } = await supabase.from('notifications').insert({
       user_id: req.userId,
       message: `Penarikan dana sebesar ${ req.amount.toLocaleString() } poin telah disetujui.`,
       type: 'success',
       is_read: false
-    });
+    }).select();
+
+    if (notifError) {
+        console.warn('Notification error:', notifError);
+    } else if (!notifData || notifData.length === 0) {
+        console.warn('Notification insert blocked by RLS');
+    }
 
     fetchAdminData();
+    // Force refresh user profile if self (unlikely for withdraw but good practice)
+    if (req.userId === user?.id) fetchUserProfile(user.id);
+    
     handleNotify('Penarikan disetujui & poin dipotong.', 'success');
     setIsProcessingTx(false);
   };
