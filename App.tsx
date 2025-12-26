@@ -17,6 +17,7 @@ const ADMIN_CONTACT = {
   waLink: 'https://wa.me/6285163612553'
 };
 
+
 // Refined Logo Component with Matching Icon
 export const VokeLogo = ({ className = "text-2xl", withGradient = true }: { className?: string, withGradient?: boolean }) => (
   <span className={`voke - logo inline - flex items - center space - x - 2 font - [800] uppercase tracking - tighter ${ className } `}>
