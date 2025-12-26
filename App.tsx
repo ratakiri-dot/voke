@@ -43,6 +43,9 @@ const App: React.FC = () => {
   const [reports, setReports] = useState<ReportRecord[]>([]);
   const [signupRequests, setSignupRequests] = useState<SignUpRequest[]>([]);
   const [ads, setAds] = useState<Advertisement[]>([]);
+  const [paymentTransactions, setPaymentTransactions] = useState<PaymentTransaction[]>([]);
+  const [notifications, setNotifications] = useState<UserNotification[]>([]);
+  const [showNotifications, setShowNotifications] = useState(false);
 
   const [viewRate, setViewRate] = useState<number>(0.01); // 1 view = 0.01 point
   const [following, setFollowing] = useState<Set<string>>(new Set());
@@ -201,7 +204,17 @@ const App: React.FC = () => {
     if (view === 'admin') {
       fetchAllUsers();
     }
-  }, [view]);
+    if (view === 'wallet' && user) {
+        fetchUserTransactions();
+    }
+  }, [view, user]);
+
+  // Fetch notifications periodically or on user change
+  useEffect(() => {
+    if (user) {
+        fetchNotifications();
+    }
+  }, [user]);
 
   // Spotlight Popup Logic
   useEffect(() => {
@@ -299,6 +312,62 @@ const App: React.FC = () => {
         };
       });
       setAllUsers(map);
+    }
+  };
+
+  const fetchUserTransactions = async () => {
+    if (!user) return;
+    const { data } = await supabase
+        .from('transactions')
+        .select('*')
+        .eq('user_id', user.id)
+        .order('created_at', { ascending: false })
+        .limit(20);
+
+    if (data) {
+        setPaymentTransactions(data.map((t: any) => ({
+            id: t.id,
+            userId: t.user_id,
+            type: t.type,
+            amount: t.amount,
+            status: t.status,
+            metadata: t.metadata,
+            createdAt: new Date(t.created_at),
+            relatedEntityId: t.related_entity_id
+        })));
+    }
+  };
+
+
+
+  const fetchNotifications = async () => {
+    if (!user) return;
+    const { data } = await supabase
+      .from('notifications')
+      .select('*')
+      .eq('user_id', user.id)
+      .order('created_at', { ascending: false })
+      .limit(10);
+      
+    if (data) {
+        setNotifications(data.map((n: any) => ({
+            id: n.id,
+            userId: n.user_id, // Map database column to camelCase
+            message: n.message,
+            type: n.type,
+            isRead: n.is_read,
+            relatedEntityId: n.related_entity_id,
+            createdAt: new Date(n.created_at)
+        })));
+    }
+  };
+
+  const markNotificationAsRead = async () => {
+    if (!user) return;
+    const unreadIds = notifications.filter(n => !n.isRead).map(n => n.id);
+    if (unreadIds.length > 0) {
+        await supabase.from('notifications').update({ is_read: true }).in('id', unreadIds);
+        setNotifications(prev => prev.map(n => ({ ...n, isRead: true })));
     }
   };
 
@@ -1070,15 +1139,30 @@ const App: React.FC = () => {
     }
 
     // 2. Deduct points from user
-    const { data: userData } = await supabase.from('profiles').select('gift_balance').eq('id', req.userId).single();
-    if (userData) {
-      const newBalance = (userData.gift_balance || 0) - req.amount;
-      // Prevent negative balance check if needed, but assuming admin overrides
-      await supabase.from('profiles').update({ gift_balance: newBalance }).eq('id', req.userId);
+    const { data: userData, error: fetchError } = await supabase.from('profiles').select('gift_balance').eq('id', req.userId).single();
+    if (fetchError || !userData) {
+         handleNotify('Gagal mengambil data user: ' + fetchError?.message, 'error');
+         setIsProcessingTx(false);
+         return;
+    }
+
+    const newBalance = (userData.gift_balance || 0) - req.amount;
+    const { error: updateError } = await supabase.from('profiles').update({ gift_balance: newBalance }).eq('id', req.userId);
+    
+    if (updateError) {
+         handleNotify('Gagal memotong saldo user: ' + updateError.message, 'error');
+         setIsProcessingTx(false);
+         return;
     }
 
     // 3. Update transaction status
-    await supabase.from('transactions').update({ status: 'completed' }).eq('id', id);
+    const { error: txError } = await supabase.from('transactions').update({ status: 'completed' }).eq('id', id);
+    if (txError) {
+         handleNotify('Gagal update status transaksi: ' + txError.message, 'error');
+         // Critical: Balances were deducted but TX failed. Ideally should rollback.
+         setIsProcessingTx(false);
+         return;
+    }
 
     // 4. Send Notification
     await supabase.from('notifications').insert({
@@ -1089,7 +1173,6 @@ const App: React.FC = () => {
     });
 
     fetchAdminData();
-    // Also refresh all users to update balance view if needed
     handleNotify('Penarikan disetujui & poin dipotong.', 'success');
     setIsProcessingTx(false);
   };
@@ -1203,9 +1286,8 @@ const App: React.FC = () => {
     // 4. Send notification to user
     const { error: notifyErr } = await supabase.from('notifications').insert({
       user_id: userId,
-      type: 'system',
-      title: amount >= 0 ? 'Poin Ditambahkan!' : 'Poin Dikurangi',
-      content: `Admin telah ${ amount >= 0 ? 'menambahkan' : 'mengurangi' } saldo Anda sebesar ${ Math.abs(amount) } poin.Total saldo Anda sekarang adalah ${ newBalance }.`,
+      type: 'info',
+      message: `${ amount >= 0 ? 'Poin Ditambahkan!' : 'Poin Dikurangi' }: Admin telah ${ amount >= 0 ? 'menambahkan' : 'mengurangi' } saldo Anda sebesar ${ Math.abs(amount) } poin.Total saldo Anda sekarang adalah ${ newBalance }.`,
       is_read: false
     });
 
@@ -1573,13 +1655,47 @@ const App: React.FC = () => {
               <i className="fas fa-plus"></i>
             </button>
 
-            <button
-              onClick={() => handleNotify('Belum ada notifikasi baru.', 'info')}
-              className="w-10 h-10 md:w-11 md:h-11 bg-slate-50 text-slate-400 hover:text-indigo-600 rounded-2xl flex items-center justify-center transition-all relative"
-            >
-              <i className="fas fa-bell"></i>
-              <span className="absolute top-3 right-3 w-2 h-2 bg-indigo-500 rounded-full border-2 border-white"></span>
-            </button>
+            <div className="relative">
+              <button
+                onClick={() => {
+                    setShowNotifications(!showNotifications);
+                    if (!showNotifications) markNotificationAsRead();
+                }}
+                className={`w - 10 h - 10 md: w - 11 md: h - 11 rounded - 2xl flex items - center justify - center transition - all relative ${ showNotifications ? 'bg-indigo-50 text-indigo-600' : 'bg-slate-50 text-slate-400 hover:text-indigo-600' } `}
+              >
+                <i className="fas fa-bell"></i>
+                {notifications.some(n => !n.isRead) && (
+                   <span className="absolute top-3 right-3 w-2 h-2 bg-rose-500 rounded-full border-2 border-white animate-pulse"></span>
+                )}
+              </button>
+              
+              {showNotifications && (
+                <div className="absolute top-14 right-0 w-80 bg-white rounded-[2rem] shadow-2xl border border-slate-100 p-4 z-[200] animate-in fade-in slide-in-from-top-2 duration-300">
+                    <div className="flex items-center justify-between mb-4 px-2">
+                        <h4 className="font-black text-slate-800 text-[10px] uppercase tracking-widest">Notifikasi</h4>
+                        <button onClick={() => fetchNotifications()} className="text-[10px] text-indigo-500 font-bold hover:underline">Refresh</button>
+                    </div>
+                    <div className="space-y-2 max-h-64 overflow-y-auto pr-1 custom-scrollbar">
+                        {notifications.length === 0 ? (
+                            <p className="text-center text-slate-400 text-xs py-4">Belum ada notifikasi.</p>
+                        ) : (
+                            notifications.map(n => (
+                                <div key={n.id} className={`p - 3 rounded - xl flex items - start gap - 3 ${ !n.isRead ? 'bg-indigo-50/50' : 'hover:bg-slate-50' } `}>
+                                    <div className={`w - 2 h - 2 rounded - full mt - 1.5 shrink - 0 ${
+  n.type === 'success' ? 'bg-emerald-400' :
+    n.type === 'error' ? 'bg-rose-400' : 'bg-blue-400'
+} `}></div>
+                                    <div>
+                                        <p className="text-xs text-slate-600 font-medium leading-relaxed">{n.message}</p>
+                                        <p className="text-[9px] text-slate-400 font-bold mt-1">{n.createdAt.toLocaleDateString()} • {n.createdAt.toLocaleTimeString([], {hour: '2-digit', minute:'2-digit'})}</p>
+                                    </div>
+                                </div>
+                            ))
+                        )}
+                    </div>
+                </div>
+              )}
+            </div>
 
             {user?.isAdmin && (
               <button onClick={() => setView('admin')} className={`w - 10 h - 10 md: w - 11 md: h - 11 rounded - 2xl flex items - center justify - center transition - all ${ view === 'admin' ? 'bg-slate-900 text-white shadow-md' : 'bg-slate-50 text-slate-400 hover:bg-slate-100' } `}>
@@ -1921,7 +2037,7 @@ const App: React.FC = () => {
                             </p>
                             <p className={`text - [8px] font - black uppercase tracking - widest ${
   tx.status === 'completed' ? 'text-emerald-400' :
-  tx.status === 'pending' ? 'text-amber-400' : 'text-rose-400'
+    tx.status === 'pending' ? 'text-amber-400' : 'text-rose-400'
 } `}>
                               {tx.status === 'completed' ? 'Berhasil' : tx.status === 'pending' ? 'Proses' : 'Gagal'}
                             </p>
