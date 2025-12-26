@@ -2054,7 +2054,7 @@ const App: React.FC = () => {
                           </div>
                           <div className="text-right">
                             <p className={`text - xs font - black ${ tx.type === 'topup' ? 'text-emerald-500' : 'text-rose-500' } `}>
-                              {tx.type === 'topup' ? '+' : '-'}{tx.amount.toLocaleString()}
+                              {tx.type === 'topup' ? '+' : '-'}{tx.amount.toLocaleString()} poin
                             </p>
                             <p className={`text - [8px] font - black uppercase tracking - widest ${
   tx.status === 'completed' ? 'text-emerald-400' :
