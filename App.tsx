@@ -156,7 +156,7 @@ const App: React.FC = () => {
       fetchPosts();
       fetchAds();
       fetchSavedPosts(); // Fetch saved posts from database
-      fetchAllUsers(); // For Admin Dashboard compatibility
+      // fetchAllUsers(); // Optimized: Only fetch when needed (Admin)
 
       // Handle direct link to post
       const params = new URLSearchParams(window.location.search);
@@ -166,6 +166,13 @@ const App: React.FC = () => {
       }
     }
   }, [user]);
+
+  // Fetch all users only when entering admin view
+  useEffect(() => {
+    if (view === 'admin') {
+      fetchAllUsers();
+    }
+  }, [view]);
 
   // Spotlight Popup Logic
   useEffect(() => {
@@ -280,7 +287,8 @@ const App: React.FC = () => {
       `)
       .eq('status', 'published')
       .order('is_promoted', { ascending: false })
-      .order('created_at', { ascending: false });
+      .order('created_at', { ascending: false })
+      .limit(20); // Optimized: Limit rendering to 20 posts
 
     if (error) {
       console.error('Error fetching posts:', error);
@@ -1923,8 +1931,8 @@ const App: React.FC = () => {
                         </div>
                       </div>
                       <div className="flex overflow-x-auto pb-8 -mx-4 px-4 space-x-6 no-scrollbar scroll-smooth">
-                        {popularPosts.map(post => (
-                          <div key={`pop-${post.id}`} className="min-w-[300px] sm:min-w-[400px] transform hover:scale-[1.01] transition-transform duration-300">
+                        {popularPosts.slice(0, 4).map(post => (
+                          <div key={`pop-${post.id}`} className="min-w-[200px] sm:min-w-[400px] transform hover:scale-[1.01] transition-transform duration-300">
                             <PostCard
                               post={post} isFollowing={following.has(post.userId)} isSaved={savedPosts.has(post.id)}
                               onFollowToggle={id => setFollowing(prev => { const n = new Set(prev); n.has(id) ? n.delete(id) : n.add(id); return n; })}
