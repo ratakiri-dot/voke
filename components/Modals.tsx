@@ -1,4 +1,4 @@
-
+﻿
 import React, { useState, useEffect, useRef } from 'react';
 import { Post, Advertisement, AdPosition } from '../types';
 
@@ -10,7 +10,7 @@ interface ModalProps {
 }
 
 const VokeText = () => (
-  <span>VOꓘE</span>
+  <span>VOê“˜E</span>
 );
 
 import ReactDOM from 'react-dom';
@@ -120,7 +120,7 @@ export const AdEditorModal: React.FC<{
   };
 
   return (
-    <Modal isOpen={isOpen} onClose={onClose} title={adToEdit ? "Edit Iklan" : "Tambah Iklan Baru"}>
+    <Modal isOpen={isOpen} onClose={onClose} title={adToEdit ? "Edit Iklan":"Tambah Iklan Baru"}>
       <form onSubmit={handleSubmit} className="space-y-4">
         <div className="space-y-1">
           <label className="text-[10px] font-black text-slate-400 uppercase tracking-widest ml-1">Judul Iklan (Opsional)</label>
@@ -152,7 +152,7 @@ export const AdEditorModal: React.FC<{
               className="flex-1 py-4 bg-slate-100 text-slate-600 rounded-2xl font-black text-[10px] uppercase tracking-widest hover:bg-slate-200 transition-all flex items-center justify-center space-x-2 border border-dashed border-slate-300"
             >
               <i className="fas fa-upload"></i>
-              <span>{formData.imageUrl ? 'Ganti Gambar' : 'Upload Banner'}</span>
+              <span>{formData.imageUrl ? 'Ganti Gambar':'Upload Banner'}</span>
             </button>
             {formData.imageUrl && (
               <div className="w-16 h-16 rounded-xl overflow-hidden border border-slate-100 shrink-0">
@@ -202,7 +202,7 @@ export const AdEditorModal: React.FC<{
           disabled={isUploading}
           className="w-full py-5 bg-indigo-600 text-white rounded-[1.5rem] font-black uppercase tracking-widest shadow-xl hover:bg-indigo-700 transition-all active:scale-95 disabled:opacity-50"
         >
-          {adToEdit ? "Simpan Perubahan" : "Tayangkan Iklan"}
+          {adToEdit ? "Simpan Perubahan":"Tayangkan Iklan"}
         </button>
       </form>
     </Modal>
@@ -217,10 +217,10 @@ export const GiftModal: React.FC<{
   onTopUpRequest: () => void;
 }> = ({ isOpen, onClose, onGift, currentBalance, onTopUpRequest }) => {
   const gifts: GiftItem[] = [
-    { name: 'Bronze', icon: '🥉', price: 10 },
-    { name: 'Silver', icon: '🥈', price: 50 },
-    { name: 'Gold', icon: '🥇', price: 200 },
-    { name: 'Platinum', icon: '💎', price: 1000 },
+    { name: 'Bronze', icon: 'ðŸ¥‰', price: 10 },
+    { name: 'Silver', icon: 'ðŸ¥ˆ', price: 50 },
+    { name: 'Gold', icon: 'ðŸ¥‡', price: 200 },
+    { name: 'Platinum', icon: 'ðŸ’Ž', price: 1000 },
   ];
 
   return (
@@ -247,7 +247,7 @@ export const GiftModal: React.FC<{
                 }}
                 className={`flex flex-col items-center p-5 border-2 rounded-3xl transition-all group relative ${canAfford
                   ? 'border-gray-100 hover:border-indigo-500 hover:bg-indigo-50/50'
-                  : 'border-gray-50 bg-gray-50/50 opacity-60 cursor-not-allowed'
+                 :'border-gray-50 bg-gray-50/50 opacity-60 cursor-not-allowed'
                   }`}
               >
                 <span className="text-4xl mb-3 group-hover:scale-110 transition-transform">{g.icon}</span>
@@ -282,7 +282,7 @@ export const SpotlightModal: React.FC<{
   const getTeaser = (post: Post) => {
     if (post.caption) return post.caption;
     const textOnly = post.content.replace(/<[^>]*>/g, ' ');
-    return textOnly.length > 200 ? textOnly.substring(0, 200) + '...' : textOnly;
+    return textOnly.length > 200 ? textOnly.substring(0, 200) + '...':textOnly;
   };
 
   const teaser = getTeaser(post);
@@ -297,7 +297,7 @@ export const SpotlightModal: React.FC<{
           {/* Spotlight Badge */}
           <div className="inline-flex items-center space-x-2 bg-white/20 backdrop-blur-md px-3.5 py-2 rounded-2xl border border-white/20 mb-8">
             <i className="fas fa-star text-[10px] text-yellow-300"></i>
-            <span className="text-[10px] font-black uppercase tracking-[0.2em]">Pilihan VOꓘE</span>
+            <span className="text-[10px] font-black uppercase tracking-[0.2em]">Pilihan VOê“˜E</span>
           </div>
 
           <h2 className="text-3xl sm:text-4xl font-[900] mb-8 leading-[1.1] tracking-tight">{post.title}</h2>
@@ -317,7 +317,7 @@ export const SpotlightModal: React.FC<{
 
         <div className="p-10 sm:p-14 relative">
           <div className="text-slate-500 text-lg leading-[1.8] font-medium italic mb-2 relative">
-            <span className="absolute -top-4 -left-6 text-slate-100 text-6xl font-serif select-none pointer-events-none">“</span>
+            <span className="absolute -top-4 -left-6 text-slate-100 text-6xl font-serif select-none pointer-events-none">â€œ</span>
             {teaser}
             <span className="inline-block items-center ml-2">
               <span className="w-1.5 h-1.5 bg-indigo-500 rounded-full inline-block animate-bounce"></span>
@@ -362,18 +362,18 @@ export const WithdrawModal: React.FC<{
 
   useEffect(() => {
     if (isOpen) {
-      setWithdrawAmount(balance >= MIN_WITHDRAW ? MIN_WITHDRAW : balance);
+      setWithdrawAmount(balance >= MIN_WITHDRAW ? MIN_WITHDRAW:balance);
     }
   }, [isOpen, balance]);
 
-  const netAmount = Math.max(0, (withdrawAmount * 10) - adminFee);
+  const netAmount = Math.max(0, (withdrawAmount * 10)-adminFee);
   const isValidAmount = withdrawAmount >= MIN_WITHDRAW && withdrawAmount <= balance;
   const canWithdraw = balance >= MIN_WITHDRAW;
 
   const handleConfirm = (e: React.FormEvent) => {
     e.preventDefault();
     if (isValidAmount && account) {
-      onWithdraw(withdrawAmount, method, account, method === 'Bank Transfer' ? bankName : undefined);
+      onWithdraw(withdrawAmount, method, account, method === 'Bank Transfer' ? bankName:undefined);
     }
   };
 
@@ -409,7 +409,7 @@ export const WithdrawModal: React.FC<{
             </select>
             <input
               type="text"
-              placeholder="No. Rekening / No. HP"
+              placeholder="No. Rekening/No. HP"
               value={account}
               onChange={(e) => setAccount(e.target.value)}
               className="w-full p-4 bg-gray-50 border-none rounded-2xl font-bold text-sm outline-none focus:ring-2 focus:ring-amber-500"
@@ -435,7 +435,7 @@ export const WithdrawModal: React.FC<{
             disabled={!canWithdraw || !isValidAmount || !account}
             className={`w-full py-5 rounded-[1.25rem] font-black text-sm uppercase tracking-widest transition-all shadow-xl ${canWithdraw && isValidAmount && account
               ? 'bg-amber-500 text-white hover:bg-amber-600 shadow-amber-100'
-              : 'bg-gray-100 text-gray-300 cursor-not-allowed shadow-none'
+             :'bg-gray-100 text-gray-300 cursor-not-allowed shadow-none'
               }`}
           >
             Cairkan Dana Sekarang
@@ -479,11 +479,11 @@ export const PromoteModal: React.FC<{
               onClick={() => setSelectedPlan(plan)}
               className={`p-4 rounded-3xl border-2 transition-all flex flex-col items-center space-y-2 ${selectedPlan.duration === plan.duration
                 ? 'border-indigo-600 bg-indigo-50 shadow-lg shadow-indigo-100'
-                : 'border-gray-100 bg-gray-50 text-gray-400 hover:border-gray-200'
+               :'border-gray-100 bg-gray-50 text-gray-400 hover:border-gray-200'
                 }`}
             >
-              <span className={`text-[10px] font-black uppercase tracking-widest ${selectedPlan.duration === plan.duration ? 'text-indigo-600' : ''}`}>{plan.label}</span>
-              <span className={`text-sm font-black ${selectedPlan.duration === plan.duration ? 'text-indigo-900' : ''}`}>{plan.points}</span>
+              <span className={`text-[10px] font-black uppercase tracking-widest ${selectedPlan.duration === plan.duration ? 'text-indigo-600':''}`}>{plan.label}</span>
+              <span className={`text-sm font-black ${selectedPlan.duration === plan.duration ? 'text-indigo-900':''}`}>{plan.points}</span>
             </button>
           ))}
         </div>
@@ -492,9 +492,9 @@ export const PromoteModal: React.FC<{
           <button
             onClick={() => { onConfirm(selectedPlan.duration, selectedPlan.cost); onClose(); }}
             disabled={!canAfford}
-            className={`w-full py-5 rounded-[1.25rem] font-black text-sm uppercase tracking-widest transition-all shadow-xl ${canAfford ? 'bg-indigo-600 text-white hover:bg-indigo-700 shadow-indigo-100' : 'bg-gray-100 text-gray-300 cursor-not-allowed'}`}
+            className={`w-full py-5 rounded-[1.25rem] font-black text-sm uppercase tracking-widest transition-all shadow-xl ${canAfford ? 'bg-indigo-600 text-white hover:bg-indigo-700 shadow-indigo-100':'bg-gray-100 text-gray-300 cursor-not-allowed'}`}
           >
-            {canAfford ? 'Konfirmasi Spotlight' : 'Poin Tidak Cukup'}
+            {canAfford ? 'Konfirmasi Spotlight':'Poin Tidak Cukup'}
           </button>
           <button onClick={onClose} className="w-full py-4 text-gray-400 font-black text-xs uppercase tracking-widest">Batal</button>
         </div>
@@ -521,7 +521,7 @@ export const ReportModal: React.FC<{
               key={r}
               type="button"
               onClick={() => setReason(r)}
-              className={`w-full p-4 rounded-2xl text-left text-sm font-bold transition-all border-2 ${reason === r ? 'border-indigo-600 bg-indigo-50 text-indigo-600' : 'border-gray-50 text-gray-400 hover:border-gray-100'
+              className={`w-full p-4 rounded-2xl text-left text-sm font-bold transition-all border-2 ${reason === r ? 'border-indigo-600 bg-indigo-50 text-indigo-600':'border-gray-50 text-gray-400 hover:border-gray-100'
                 }`}
             >
               {r}
@@ -559,7 +559,7 @@ export const TopUpModal: React.FC<{ isOpen: boolean; onClose: () => void; onSele
       <div className="space-y-4 bg-white">
         {/* Added bg-white to ensure visibility */}
         {packages.map((pkg) => (
-          <button key={pkg.id} onClick={() => onSelect(pkg)} className={`w-full relative flex items-center justify-between p-5 rounded-3xl border-2 transition-all overflow-hidden text-left ${pkg.isPopular ? 'border-indigo-600 bg-indigo-50/20' : 'border-gray-100 hover:border-indigo-200'}`}>
+          <button key={pkg.id} onClick={() => onSelect(pkg)} className={`w-full relative flex items-center justify-between p-5 rounded-3xl border-2 transition-all overflow-hidden text-left ${pkg.isPopular ? 'border-indigo-600 bg-indigo-50/20':'border-gray-100 hover:border-indigo-200'}`}>
             <div className="flex-1">
               <h4 className="font-black text-gray-900 text-sm mb-1">{pkg.name}</h4>
               <div className="flex items-center space-x-2">

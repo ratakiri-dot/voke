@@ -1,4 +1,4 @@
-```
+﻿```
 import React, { useState, useMemo, useEffect } from 'react';
 import { Post, User, Notification as NotificationType, Comment, TopUpRequest, ReportRecord, Advertisement, SignUpRequest, WithdrawRequest, PaymentTransaction } from './types';
 import { PostCard } from './components/PostCard';
@@ -21,11 +21,11 @@ const ADMIN_CONTACT = {
 // Refined Logo Component with Matching Icon
 export const VokeLogo = ({ className = "text-2xl", withGradient = true }: { className?: string, withGradient?: boolean }) => (
   <span className={`voke-logo inline-flex items-center space-x-2 font-[800] uppercase tracking-tighter ${className}`}>
-    <span className={`w-[1.2em] h-[1.2em] rounded-[0.45em] flex items-center justify-center shrink-0 shadow-lg shadow-blue-500/20 ${withGradient ? 'bg-gradient-to-br from-[#0EA5E9] to-[#2563EB]' : 'bg-slate-900'}`}>
+    <span className={`w-[1.2em] h-[1.2em] rounded-[0.45em] flex items-center justify-center shrink-0 shadow-lg shadow-blue-500/20 ${withGradient ? 'bg-gradient-to-br from-[#0EA5E9] to-[#2563EB]':'bg-slate-900'}`}>
       <i className="fas fa-feather-alt text-white text-[0.6em]"></i>
     </span>
-    <span className={withGradient ? 'voke-gradient-text' : 'text-slate-900'} style={{ letterSpacing: '-0.06em' }}>
-      VOꓘE
+    <span className={withGradient ? 'voke-gradient-text':'text-slate-900'} style={{ letterSpacing: '-0.06em' }}>
+      VOê“˜E
     </span>
   </span>
 );
@@ -414,13 +414,13 @@ const App: React.FC = () => {
         timestamp: new Date(p.created_at),
         isPromoted: p.is_promoted,
         isEditorPick: p.is_editor_pick,
-        promotedUntil: p.promoted_until ? new Date(p.promoted_until) : undefined,
+        promotedUntil: p.promoted_until ? new Date(p.promoted_until):undefined,
         isPendingPromotion: p.is_pending_promotion,
         author: p.profiles ? {
           name: p.profiles.name,
           username: p.profiles.username,
           avatar: p.profiles.avatar_url
-        } : undefined,
+        }:undefined,
         comments: p.comments.map((c: any) => ({
           id: c.id,
           userId: c.user_id,
@@ -588,7 +588,7 @@ const App: React.FC = () => {
     });
 
     if (error) {
-      handleNotify(error.message === 'Invalid login credentials' ? 'Password salah atau akun tidak ditemukan.' : error.message, 'error');
+      handleNotify(error.message === 'Invalid login credentials' ? 'Password salah atau akun tidak ditemukan.':error.message, 'error');
     } else {
       handleNotify('Login berhasil!', 'success');
     }
@@ -600,7 +600,7 @@ const App: React.FC = () => {
     setIsLoading(true);
 
     try {
-      const formattedUsername = signupForm.username.startsWith('@') ? signupForm.username : `@${ signupForm.username } `;
+      const formattedUsername = signupForm.username.startsWith('@') ? signupForm.username:`@${ signupForm.username } `;
 
       // Check if username already exists
       const { data: existingUser, error: checkError } = await supabase
@@ -823,7 +823,7 @@ const App: React.FC = () => {
         return {
           ...p,
           isLiked: !p.isLiked,
-          likes: p.isLiked ? p.likes-1 : p.likes + 1
+          likes: p.isLiked ? p.likes-1:p.likes + 1
         };
       }
       return p;
@@ -946,9 +946,9 @@ const App: React.FC = () => {
 
         if (receiveErr) {
           console.error('[GIFT] FAILED to update receiver balance:', receiveErr.message, receiveErr);
-          handleNotify('⚠️ Poin GAGAL masuk ke penerima! Error: ' + receiveErr.message + '. Kemungkinan masalah RLS database.', 'error');
+          handleNotify('âš ï¸ Poin GAGAL masuk ke penerima! Error: ' + receiveErr.message + '. Kemungkinan masalah RLS database.', 'error');
         } else {
-          console.log(`[GIFT] Step 3: SUCCESS - Receiver balance updated to ${ newAuthorBalance } `);
+          console.log(`[GIFT] Step 3: SUCCESS-Receiver balance updated to ${ newAuthorBalance } `);
         }
       } else {
         console.error('[GIFT] ERROR: Receiver profile data is null');
@@ -1269,7 +1269,7 @@ const App: React.FC = () => {
     // 3. Record internal transaction
     const { error: txErr } = await supabase.from('transactions').insert({
       user_id: userId,
-      type: amount >= 0 ? 'topup' : 'withdraw',
+      type: amount >= 0 ? 'topup':'withdraw',
       amount: Math.abs(amount),
       status: 'completed',
       metadata: { admin_note: 'Manual adjustment by admin', previous_balance: currentBalance }
@@ -1281,7 +1281,7 @@ const App: React.FC = () => {
     const { error: notifyErr } = await supabase.from('notifications').insert({
       user_id: userId,
       type: 'info',
-      message: `${ amount >= 0 ? 'Poin Ditambahkan!' : 'Poin Dikurangi' }: Admin telah ${ amount >= 0 ? 'menambahkan' : 'mengurangi' } saldo Anda sebesar ${ Math.abs(amount) } poin.Total saldo Anda sekarang adalah ${ newBalance }.`,
+      message: `${ amount >= 0 ? 'Poin Ditambahkan!':'Poin Dikurangi' }: Admin telah ${ amount >= 0 ? 'menambahkan':'mengurangi' } saldo Anda sebesar ${ Math.abs(amount) } poin.Total saldo Anda sekarang adalah ${ newBalance }.`,
       is_read: false
     });
 
@@ -1363,7 +1363,7 @@ const App: React.FC = () => {
       setPosts(prev => prev.map(p =>
         p.id === postId
           ? { ...p, views: (p.views || 0) + 1 }
-          : p
+         :p
       ));
 
     } catch (error) {
@@ -1384,8 +1384,8 @@ const App: React.FC = () => {
     if (error) {
       handleNotify('Gagal mengubah status Editor Pick: ' + error.message, 'error');
     } else {
-      handleNotify(newValue ? 'Ditambahkan ke Pilihan Editor!' : 'Dihapus dari Pilihan Editor', 'success');
-      setPosts(prev => prev.map(p => p.id === postId ? { ...p, isEditorPick: newValue } : p));
+      handleNotify(newValue ? 'Ditambahkan ke Pilihan Editor!':'Dihapus dari Pilihan Editor', 'success');
+      setPosts(prev => prev.map(p => p.id === postId ? { ...p, isEditorPick: newValue }:p));
     }
   };
 
@@ -1462,7 +1462,7 @@ const App: React.FC = () => {
 
     const dbAd = {
       // If it's a new ad (generated with Date.now()), we might want to let DB handle UUID or just us string.
-      // The current ID generation in Modals.tsx uses `ad - ${ Date.now() } ` which is fine if ID column is text.
+      // The current ID generation in Modals.tsx uses `ad-${ Date.now() } ` which is fine if ID column is text.
       // If ID in DB is UUID, this might fail. Let's assume it supports text or we generate UUID if needed.
       // For now, we'll try to save with the ID provided or let Supabase generate if it was proper UUID.
       // But Modals.tsx generates string ID. Let's trust it fits.
@@ -1509,7 +1509,7 @@ const App: React.FC = () => {
     if (error) {
       handleNotify('Gagal update status iklan: ' + error.message, 'error');
     } else {
-      handleNotify(ad.isActive ? 'Iklan dimatikan.' : 'Iklan diaktifkan.', 'success');
+      handleNotify(ad.isActive ? 'Iklan dimatikan.':'Iklan diaktifkan.', 'success');
       fetchAds();
     }
   };
@@ -1544,24 +1544,24 @@ const App: React.FC = () => {
 
           <div className="voke-card p-10 md:p-14 text-left animate-in fade-in zoom-in duration-500">
             <h3 className="text-2xl font-black text-slate-800 mb-8 text-center uppercase tracking-widest">
-              {authMode === 'login' ? 'Masuk' : 'Daftar'}
+              {authMode === 'login' ? 'Masuk':'Daftar'}
             </h3>
 
             {authMode === 'login' ? (
               <form onSubmit={handleLogin} className="space-y-6">
                 <div className="space-y-2">
-                  <label className="text-[10px] font-black text-slate-400 uppercase tracking-widest ml-1">Username / Email</label>
+                  <label className="text-[10px] font-black text-slate-400 uppercase tracking-widest ml-1">Username/Email</label>
                   <input required type="text" value={loginForm.email} onChange={e => setLoginForm({ ...loginForm, email: e.target.value })} className="w-full p-4 bg-slate-50 border border-slate-100 rounded-2xl font-semibold outline-none focus:ring-4 focus:ring-cyan-500/10 transition-all" placeholder="@username atau email@example.com" disabled={isLoading} />
                 </div>
                 <div className="space-y-2">
                   <label className="text-[10px] font-black text-slate-400 uppercase tracking-widest ml-1">Password</label>
-                  <input required type="password" value={loginForm.password} onChange={e => setLoginForm({ ...loginForm, password: e.target.value })} className="w-full p-4 bg-slate-50 border border-slate-100 rounded-2xl font-semibold outline-none focus:ring-4 focus:ring-cyan-500/10 transition-all" placeholder="••••••••" disabled={isLoading} />
+                  <input required type="password" value={loginForm.password} onChange={e => setLoginForm({ ...loginForm, password: e.target.value })} className="w-full p-4 bg-slate-50 border border-slate-100 rounded-2xl font-semibold outline-none focus:ring-4 focus:ring-cyan-500/10 transition-all" placeholder="â€¢â€¢â€¢â€¢â€¢â€¢â€¢â€¢" disabled={isLoading} />
                 </div>
                 <button type="submit" disabled={isLoading} className="w-full py-5 bg-slate-900 text-white rounded-[1.5rem] font-black uppercase tracking-widest shadow-xl hover:bg-black transition-all active:scale-95 disabled:opacity-50 disabled:cursor-not-allowed">
-                  {isLoading ? 'Memproses...' : 'Masuk ke VOꓘE'}
+                  {isLoading ? 'Memproses...':'Masuk ke VOê“˜E'}
                 </button>
               </form>
-            ) : (
+            ):(
               <form onSubmit={handleSignUp} className="space-y-4">
                 <div className="grid grid-cols-2 gap-4">
                   <div className="space-y-1">
@@ -1590,15 +1590,15 @@ const App: React.FC = () => {
                   <input required type="password" value={signupForm.password} onChange={e => setSignupForm({ ...signupForm, password: e.target.value })} className="w-full p-4 bg-slate-50 border-slate-100 border rounded-2xl font-bold text-sm" placeholder="Minimal 6 karakter" disabled={isLoading} />
                 </div>
                 <button type="submit" disabled={isLoading} className="w-full py-5 bg-gradient-to-r from-[#0EA5E9] to-[#2563EB] text-white rounded-[1.5rem] font-black uppercase tracking-widest shadow-xl hover:shadow-2xl hover:scale-[1.02] transition-all active:scale-95 disabled:opacity-50 disabled:cursor-not-allowed">
-                  {isLoading ? 'Mendaftar...' : 'Kirim Pendaftaran'}
+                  {isLoading ? 'Mendaftar...':'Kirim Pendaftaran'}
                 </button>
               </form>
             )}
 
             <p className="mt-10 text-[11px] text-slate-400 font-bold uppercase text-center tracking-widest">
-              {authMode === 'login' ? 'Belum punya akun?' : 'Sudah punya akun?'}
-              <button onClick={() => setAuthMode(authMode === 'login' ? 'signup' : 'login')} className="text-indigo-600 font-black ml-2 hover:underline">
-                {authMode === 'login' ? 'Registrasi' : 'Login'}
+              {authMode === 'login' ? 'Belum punya akun?':'Sudah punya akun?'}
+              <button onClick={() => setAuthMode(authMode === 'login' ? 'signup':'login')} className="text-indigo-600 font-black ml-2 hover:underline">
+                {authMode === 'login' ? 'Registrasi':'Login'}
               </button>
             </p>
           </div>
@@ -1639,9 +1639,9 @@ const App: React.FC = () => {
           </div>
 
           <div className="hidden lg:flex items-center bg-slate-50 p-1.5 rounded-[1.5rem]">
-            <button onClick={() => setView('home')} className={`px - 6 py - 2.5 rounded - 2xl text - [10px] font - black uppercase tracking - widest transition - all ${ view === 'home' ? 'bg-white text-indigo-600 shadow-sm' : 'text-slate-400 hover:text-slate-600' } `}>Beranda</button>
-            <button onClick={() => setView('saved')} className={`px - 6 py - 2.5 rounded - 2xl text - [10px] font - black uppercase tracking - widest transition - all ${ view === 'saved' ? 'bg-white text-indigo-600 shadow-sm' : 'text-slate-400 hover:text-slate-600' } `}>Disimpan</button>
-            <button onClick={() => setView('wallet')} className={`px - 6 py - 2.5 rounded - 2xl text - [10px] font - black uppercase tracking - widest transition - all ${ view === 'wallet' ? 'bg-white text-indigo-600 shadow-sm' : 'text-slate-400 hover:text-slate-600' } `}>Dompet</button>
+            <button onClick={() => setView('home')} className={`px-6 py-2.5 rounded-2xl text-[10px] font-black uppercase tracking-widest transition-all ${ view === 'home' ? 'bg-white text-indigo-600 shadow-sm':'text-slate-400 hover:text-slate-600' } `}>Beranda</button>
+            <button onClick={() => setView('saved')} className={`px-6 py-2.5 rounded-2xl text-[10px] font-black uppercase tracking-widest transition-all ${ view === 'saved' ? 'bg-white text-indigo-600 shadow-sm':'text-slate-400 hover:text-slate-600' } `}>Disimpan</button>
+            <button onClick={() => setView('wallet')} className={`px-6 py-2.5 rounded-2xl text-[10px] font-black uppercase tracking-widest transition-all ${ view === 'wallet' ? 'bg-white text-indigo-600 shadow-sm':'text-slate-400 hover:text-slate-600' } `}>Dompet</button>
           </div>
 
           <div className="flex items-center space-x-2 md:space-x-3">
@@ -1655,7 +1655,7 @@ const App: React.FC = () => {
                     setShowNotifications(!showNotifications);
                     if (!showNotifications) markNotificationAsRead();
                 }}
-                className={`w - 10 h - 10 md: w - 11 md: h - 11 rounded - 2xl flex items - center justify - center transition - all relative ${ showNotifications ? 'bg-indigo-50 text-indigo-600' : 'bg-slate-50 text-slate-400 hover:text-indigo-600' } `}
+                className={`w-10 h-10 md:w-11 md:h-11 rounded-2xl flex items-center justify-center transition-all relative ${ showNotifications ? 'bg-indigo-50 text-indigo-600':'bg-slate-50 text-slate-400 hover:text-indigo-600' } `}
               >
                 <i className="fas fa-bell"></i>
                 {notifications.some(n => !n.isRead) && (
@@ -1672,16 +1672,16 @@ const App: React.FC = () => {
                     <div className="space-y-2 max-h-64 overflow-y-auto pr-1 custom-scrollbar">
                         {notifications.length === 0 ? (
                             <p className="text-center text-slate-400 text-xs py-4">Belum ada notifikasi.</p>
-                        ) : (
+                        ):(
                             notifications.map(n => (
-                                <div key={n.id} className={`p - 3 rounded - xl flex items - start gap - 3 ${ !n.isRead ? 'bg-indigo-50/50' : 'hover:bg-slate-50' } `}>
-                                    <div className={`w - 2 h - 2 rounded - full mt - 1.5 shrink - 0 ${
+                                <div key={n.id} className={`p-3 rounded-xl flex items-start gap-3 ${ !n.isRead ? 'bg-indigo-50/50':'hover:bg-slate-50' } `}>
+                                    <div className={`w-2 h-2 rounded-full mt-1.5 shrink-0 ${
   n.type === 'success' ? 'bg-emerald-400' :
-    n.type === 'error' ? 'bg-rose-400' : 'bg-blue-400'
+    n.type === 'error' ? 'bg-rose-400':'bg-blue-400'
 } `}></div>
                                     <div>
                                         <p className="text-xs text-slate-600 font-medium leading-relaxed">{n.message}</p>
-                                        <p className="text-[9px] text-slate-400 font-bold mt-1">{n.createdAt.toLocaleDateString()} • {n.createdAt.toLocaleTimeString([], {hour: '2-digit', minute:'2-digit'})}</p>
+                                        <p className="text-[9px] text-slate-400 font-bold mt-1">{n.createdAt.toLocaleDateString()} â€¢ {n.createdAt.toLocaleTimeString([], {hour: '2-digit', minute:'2-digit'})}</p>
                                     </div>
                                 </div>
                             ))
@@ -1692,7 +1692,7 @@ const App: React.FC = () => {
             </div>
 
             {user?.isAdmin && (
-              <button onClick={() => setView('admin')} className={`w - 10 h - 10 md: w - 11 md: h - 11 rounded - 2xl flex items - center justify - center transition - all ${ view === 'admin' ? 'bg-slate-900 text-white shadow-md' : 'bg-slate-50 text-slate-400 hover:bg-slate-100' } `}>
+              <button onClick={() => setView('admin')} className={`w-10 h-10 md:w-11 md:h-11 rounded-2xl flex items-center justify-center transition-all ${ view === 'admin' ? 'bg-slate-900 text-white shadow-md':'bg-slate-50 text-slate-400 hover:bg-slate-100' } `}>
                 <i className="fas fa-shield-halved"></i>
               </button>
             )}
@@ -1737,7 +1737,7 @@ const App: React.FC = () => {
             onToggleEditorPick={handleToggleEditorPick}
             onClose={() => setView('home')}
           />
-        ) : isWriting ? (
+        ):isWriting ? (
           <RichEditor
             onPublish={(t, c, cap, img) => handlePublish(t, c, cap, img)}
             onSaveDraft={(t, c, cap, img) => handleSaveDraft(t, c, cap, img)}
@@ -1745,7 +1745,7 @@ const App: React.FC = () => {
             onNotify={handleNotify}
             initialData={editorData}
           />
-        ) : view === 'drafts' ? (
+        ):view === 'drafts' ? (
           <div className="space-y-8 animate-in fade-in slide-in-from-bottom-4 duration-500">
             <div className="flex items-center justify-between mb-8">
               <h2 className="text-2xl font-black text-slate-800">Draf Saya</h2>
@@ -1756,7 +1756,7 @@ const App: React.FC = () => {
                 <i className="fas fa-file-alt text-4xl text-slate-300 mb-4"></i>
                 <p className="text-slate-400 font-bold">Belum ada draf tersimpan.</p>
               </div>
-            ) : (
+            ):(
               <div className="grid grid-cols-1 gap-6">
                 {drafts.map(draft => (
                   <div key={draft.id} className="bg-white p-6 rounded-[2rem] shadow-sm hover:shadow-md transition-all border border-slate-100 flex justify-between items-center group">
@@ -1795,7 +1795,7 @@ const App: React.FC = () => {
               </div>
             )}
           </div>
-        ) : view === 'saved' ? (
+        ):view === 'saved' ? (
           <div className="space-y-8 animate-in fade-in slide-in-from-bottom-4 duration-500">
             <div className="flex flex-col sm:flex-row items-center justify-between mb-8 gap-4">
               <h2 className="text-2xl font-black text-slate-800">Simpanan Saya</h2>
@@ -1818,10 +1818,10 @@ const App: React.FC = () => {
             {filteredPosts.filter(p => savedPosts.has(p.id)).length === 0 ? (
               <div className="text-center py-20 bg-slate-50 rounded-[2.5rem]">
                 <i className="fas fa-bookmark text-4xl text-slate-300 mb-4"></i>
-                <p className="text-slate-400 font-bold">{searchQuery ? 'Tidak ada simpanan yang cocok.' : 'Belum ada postingan yang disimpan.'}</p>
+                <p className="text-slate-400 font-bold">{searchQuery ? 'Tidak ada simpanan yang cocok.':'Belum ada postingan yang disimpan.'}</p>
                 {searchQuery && <button onClick={() => setSearchQuery('')} className="mt-4 text-blue-500 font-black text-[10px] uppercase tracking-widest">Hapus Pencarian</button>}
               </div>
-            ) : (
+            ):(
               <div className="space-y-10">
                 {filteredPosts.filter(p => savedPosts.has(p.id)).map(post => (
                   <PostCard
@@ -1850,7 +1850,7 @@ const App: React.FC = () => {
               </div>
             )}
           </div>
-        ) : view === 'profile' ? (
+        ):view === 'profile' ? (
           <div className="space-y-8 animate-in fade-in slide-in-from-bottom-4 duration-500">
             <div className="voke-card p-12 text-center relative overflow-hidden">
               <div className="absolute top-0 left-0 w-full h-32 bg-cyan-50/50"></div>
@@ -1858,7 +1858,7 @@ const App: React.FC = () => {
                 <img src={user?.avatar} className="w-32 h-32 rounded-[2.5rem] object-cover mx-auto mb-6 border-4 border-white shadow-xl" />
                 <h2 className="text-3xl font-[800] text-slate-900">{user?.name}</h2>
                 <p className="text-indigo-600 font-bold mb-6">{user?.username}</p>
-                <p className="text-slate-500 max-w-md mx-auto mb-10 leading-relaxed text-sm">{user?.bio || 'Kreator di platform VOꓘE.'}</p>
+                <p className="text-slate-500 max-w-md mx-auto mb-10 leading-relaxed text-sm">{user?.bio || 'Kreator di platform VOê“˜E.'}</p>
 
                 <div className="flex justify-center space-x-10 mb-10">
                   <div><p className="text-xl font-black">{posts.filter(p => p.userId === user?.id).length}</p><p className="text-[10px] text-slate-400 uppercase font-black tracking-widest">Karya</p></div>
@@ -1894,21 +1894,21 @@ const App: React.FC = () => {
               {filteredPosts.filter(p => p.userId === user?.id).length === 0 ? (
                 <div className="text-center py-20 bg-slate-50 rounded-[2.5rem] border border-dashed border-slate-200">
                   <i className="fas fa-feather-alt text-4xl text-slate-200 mb-4"></i>
-                  <p className="text-slate-400 font-bold">{searchQuery ? 'Tidak ada karya yang cocok.' : 'Belum ada karya yang diterbitkan.'}</p>
+                  <p className="text-slate-400 font-bold">{searchQuery ? 'Tidak ada karya yang cocok.':'Belum ada karya yang diterbitkan.'}</p>
                   {searchQuery && <button onClick={() => setSearchQuery('')} className="mt-4 text-blue-500 font-black text-[10px] uppercase tracking-widest">Hapus Pencarian</button>}
                 </div>
-              ) : (
-                filteredPosts.filter(p => p.userId === user?.id).map(p => <PostCard key={p.id} post={p} isFollowing={false} isSaved={savedPosts.has(p.id)} onFollowToggle={() => { }} onLike={handleLike} onSaveToggle={id => setSavedPosts(prev => { const n = new Set(prev); n.has(id) ? n.delete(id) : n.add(id); return n; })} onAddComment={handleAddComment} onGift={handleGift} onNotify={handleNotify} userGiftBalance={totalBalance} onPromoteRequest={handlePromoteRequest} onDelete={handleDeletePost} onEdit={handleEdit} currentUserId={user?.id} middleAd={activeMiddleAd} bottomAd={activeBottomAd} viewRate={viewRate} onView={handleView} />)
+              ):(
+                filteredPosts.filter(p => p.userId === user?.id).map(p => <PostCard key={p.id} post={p} isFollowing={false} isSaved={savedPosts.has(p.id)} onFollowToggle={() => { }} onLike={handleLike} onSaveToggle={id => setSavedPosts(prev => { const n = new Set(prev); n.has(id) ? n.delete(id):n.add(id); return n; })} onAddComment={handleAddComment} onGift={handleGift} onNotify={handleNotify} userGiftBalance={totalBalance} onPromoteRequest={handlePromoteRequest} onDelete={handleDeletePost} onEdit={handleEdit} currentUserId={user?.id} middleAd={activeMiddleAd} bottomAd={activeBottomAd} viewRate={viewRate} onView={handleView} />)
               )}
             </div>
           </div>
-        ) : view === 'edit-profile' ? (
+        ):view === 'edit-profile' ? (
           <ProfileEditor
             user={user!}
             onSave={handleUpdateProfile}
             onCancel={() => setView('profile')}
           />
-        ) : view === 'wallet' ? (
+        ):view === 'wallet' ? (
           <div className="space-y-8 animate-in fade-in slide-in-from-bottom-4">
             {/* Header Wallet */}
             <div className="bg-slate-900 rounded-[3rem] p-12 text-white relative overflow-hidden shadow-2xl">
@@ -1996,7 +1996,7 @@ const App: React.FC = () => {
                   I will add a `userTransactions` state to App.tsx to support this properly.
                   BUT, simply replacing this block won't add the state. 
                   
-                  For this step, I will simplify and just show the "Top Up / Withdraw" pending status if any, 
+                  For this step, I will simplify and just show the "Top Up/Withdraw" pending status if any, 
                   and maybe we can add a "Coming Soon" or just basic list if we had the data.
                   
                   Actually, let's add `useEffect` inside this component? No, `App.tsx` is the component.
@@ -2010,7 +2010,7 @@ const App: React.FC = () => {
                       <i className="fas fa-receipt text-3xl text-slate-200 mb-3"></i>
                       <p className="text-slate-400 font-bold text-xs">Belum ada riwayat transaksi.</p>
                     </div>
-                  ) : (
+                  ):(
                     <div className="space-y-3">
                       {paymentTransactions.map(tx => (
                         <div key={tx.id} className="flex items-center justify-between border-b border-slate-50 pb-3 last:border-0 last:pb-0">
@@ -2019,21 +2019,21 @@ const App: React.FC = () => {
                               {tx.type === 'withdraw' ? 'Penarikan Dana' :
                                 tx.type === 'topup' ? 'Top Up Poin' :
                                   tx.type === 'gift_sent' ? 'Apresiasi Terkirim' :
-                                    tx.type === 'promotion_request' ? 'Spotlight' : tx.type}
+                                    tx.type === 'promotion_request' ? 'Spotlight':tx.type}
                             </p>
                             <p className="text-[9px] text-slate-400 font-bold">
-                              {new Date(tx.createdAt).toLocaleDateString()} • {new Date(tx.createdAt).toLocaleTimeString()}
+                              {new Date(tx.createdAt).toLocaleDateString()} â€¢ {new Date(tx.createdAt).toLocaleTimeString()}
                             </p>
                           </div>
                           <div className="text-right">
-                            <p className={`text - xs font - black ${ tx.type === 'topup' ? 'text-emerald-500' : 'text-rose-500' } `}>
-                              {tx.type === 'topup' ? '+' : '-'}{tx.amount.toLocaleString()} poin
+                            <p className={`text-xs font-black ${ tx.type === 'topup' ? 'text-emerald-500':'text-rose-500' } `}>
+                              {tx.type === 'topup' ? '+':'-'}{tx.amount.toLocaleString()} poin
                             </p>
-                            <p className={`text - [8px] font - black uppercase tracking - widest ${
+                            <p className={`text-[8px] font-black uppercase tracking-widest ${
   tx.status === 'completed' ? 'text-emerald-400' :
-    tx.status === 'pending' ? 'text-amber-400' : 'text-rose-400'
+    tx.status === 'pending' ? 'text-amber-400':'text-rose-400'
 } `}>
-                              {tx.status === 'completed' ? 'Berhasil' : tx.status === 'pending' ? 'Proses' : 'Gagal'}
+                              {tx.status === 'completed' ? 'Berhasil':tx.status === 'pending' ? 'Proses':'Gagal'}
                             </p>
                           </div>
                         </div>
@@ -2074,17 +2074,17 @@ const App: React.FC = () => {
               </div>
             </div>
           </div>
-        ) : (
+        ):(
           <div className="space-y-10">
             {activeTopAd && (
               <div className="bg-gradient-to-br from-slate-900 to-indigo-950 rounded-[3rem] p-10 text-white relative shadow-2xl group border border-slate-800">
                 {/* Ad Content */}
                 <div className="relative z-10 flex flex-col md:flex-row items-center gap-10 text-center md:text-left">
                   <div className="flex-1 w-full">
-                    <span className="bg-cyan-500/20 text-cyan-500 text-[8px] font-black px-3 py-1.5 rounded-full uppercase tracking-widest border border-cyan-500/30 mb-4 inline-block">Sponsor VOꓘE</span>
+                    <span className="bg-cyan-500/20 text-cyan-500 text-[8px] font-black px-3 py-1.5 rounded-full uppercase tracking-widest border border-cyan-500/30 mb-4 inline-block">Sponsor VOê“˜E</span>
                     {activeTopAd.embedCode ? (
                       <div className="w-full overflow-hidden rounded-2xl bg-white/5 p-4" dangerouslySetInnerHTML={{ __html: activeTopAd.embedCode }} />
-                    ) : (
+                    ):(
                       <>
                         <h4 className="text-2xl font-black mb-2">{activeTopAd.title || 'Pariwara'}</h4>
                         <p className="text-slate-400 text-sm mb-6">{activeTopAd.description || 'Lihat penawaran menarik kami.'}</p>
@@ -2100,7 +2100,7 @@ const App: React.FC = () => {
             )}
 
             <div className="space-y-10">
-              {/* Search Bar-VOꓘE Optimized */}
+              {/* Search Bar-VOê“˜E Optimized */}
               <div className="relative group mx-auto max-w-2xl w-full">
                 <div className="absolute inset-y-0 left-0 pl-6 flex items-center pointer-events-none">
                   <i className="fas fa-search text-slate-400 group-focus-within:text-[#2563EB] transition-colors"></i>
@@ -2164,7 +2164,7 @@ const App: React.FC = () => {
                       </div>
                       <div className="flex overflow-x-auto pb-8 -mx-4 px-4 space-x-6 no-scrollbar scroll-smooth hidden md:flex">
                         {popularPosts.slice(0, 4).map(post => (
-                          <div key={`pop - ${ post.id } `} className="min-w-[400px] transform hover:scale-[1.01] transition-transform duration-300">
+                          <div key={`pop-${ post.id } `} className="min-w-[400px] transform hover:scale-[1.01] transition-transform duration-300">
                             <PostCard
                               post={post} isFollowing={following.has(post.userId)} isSaved={savedPosts.has(post.id)}
                               onFollowToggle={handleFollow}
@@ -2181,7 +2181,7 @@ const App: React.FC = () => {
                       {/* Mobile View: Vertical List */}
                       <div className="md:hidden space-y-4 px-1">
                         {popularPosts.slice(0, 10).map((post, index) => (
-                          <div key={`pop - mobile - ${ post.id } `} className="flex items-start space-x-4 py-3 border-b border-slate-100 last:border-0" onClick={() => setActivePostId(post.id)}>
+                          <div key={`pop-mobile-${ post.id } `} className="flex items-start space-x-4 py-3 border-b border-slate-100 last:border-0" onClick={() => setActivePostId(post.id)}>
                             <div className="flex-shrink-0 w-8 text-2xl font-black text-slate-200 leading-none">
                               {index + 1}
                             </div>
@@ -2189,7 +2189,7 @@ const App: React.FC = () => {
                               <h4 className="font-black text-slate-800 leading-tight mb-1 line-clamp-2">{post.title}</h4>
                               <div className="flex items-center text-[10px] font-bold text-slate-400 uppercase tracking-wider">
                                 <span>{post.author?.name || 'User'}</span>
-                                <span className="mx-2">•</span>
+                                <span className="mx-2">â€¢</span>
                                 <span className="text-indigo-400">{post.views} Views</span>
                               </div>
                             </div>
@@ -2214,17 +2214,17 @@ const App: React.FC = () => {
                             <h3 className="text-2xl font-[900] text-slate-900 tracking-tight">Pilihan Editor</h3>
                             <p className="text-[10px] font-black text-slate-400 uppercase tracking-[0.2em] mt-1.5 flex items-center">
                               <span className="w-1.5 h-1.5 bg-amber-400 rounded-full mr-2 animate-pulse"></span>
-                              Kurasi Terbaik dari Tim VOꓘE
+                              Kurasi Terbaik dari Tim VOê“˜E
                             </p>
                           </div>
                         </div>
                       </div>
                       <div className="flex overflow-x-auto pb-8 -mx-4 px-4 space-x-6 no-scrollbar scroll-smooth">
                         {editorPicks.map(post => (
-                          <div key={`edit - ${ post.id } `} className="min-w-[300px] sm:min-w-[400px] transform hover:scale-[1.01] transition-transform duration-300">
+                          <div key={`edit-${ post.id } `} className="min-w-[300px] sm:min-w-[400px] transform hover:scale-[1.01] transition-transform duration-300">
                             <PostCard
                               post={post} isFollowing={following.has(post.userId)} isSaved={savedPosts.has(post.id)}
-                              onFollowToggle={id => setFollowing(prev => { const n = new Set(prev); n.has(id) ? n.delete(id) : n.add(id); return n; })}
+                              onFollowToggle={id => setFollowing(prev => { const n = new Set(prev); n.has(id) ? n.delete(id):n.add(id); return n; })}
                               onLike={handleLike} onSaveToggle={handleSaveToggle} onAddComment={handleAddComment}
                               onGift={handleGift} onNotify={handleNotify} userGiftBalance={totalBalance} onTopUpRequest={() => setIsTopUpOpen(true)}
                               onPromoteRequest={handlePromoteRequest} onDelete={handleDeletePost} onEdit={handleEdit} currentUserId={user?.id}
@@ -2270,19 +2270,19 @@ const App: React.FC = () => {
                     </div>
                   ))}
                 </div>
-              ) : (
+              ):(
                 filteredPosts.length === 0 ? (
                   <div className="text-center py-20 bg-slate-50 rounded-[2.5rem] border border-dashed border-slate-200">
                     <i className="fas fa-search text-4xl text-slate-200 mb-4"></i>
                     <p className="text-slate-400 font-bold">Tidak ada hasil ditemukan untuk "{searchQuery}"</p>
                     <button onClick={() => setSearchQuery('')} className="mt-4 text-blue-500 font-black text-[10px] uppercase tracking-widest">Hapus Pencarian</button>
                   </div>
-                ) : (
+                ):(
                   filteredPosts.map((post) => (
                     <PostCard
                       key={post.id}
                       post={post} isFollowing={following.has(post.userId)} isSaved={savedPosts.has(post.id)}
-                      onFollowToggle={id => setFollowing(prev => { const n = new Set(prev); n.has(id) ? n.delete(id) : n.add(id); return n; })}
+                      onFollowToggle={id => setFollowing(prev => { const n = new Set(prev); n.has(id) ? n.delete(id):n.add(id); return n; })}
                       onLike={handleLike}
                       onSaveToggle={handleSaveToggle}
                       onAddComment={handleAddComment}
@@ -2316,7 +2316,7 @@ const App: React.FC = () => {
               <span className="text-[9px] font-black uppercase tracking-widest">{ADMIN_CONTACT.wa}</span>
             </a>
           </div>
-          <p className="text-[8px] font-black text-slate-300 uppercase tracking-[0.4em]">VOꓘE Premium Platform © 2025</p>
+          <p className="text-[8px] font-black text-slate-300 uppercase tracking-[0.4em]">VOê“˜E Premium Platform Â© 2025</p>
         </footer>
       </main>
 
@@ -2370,7 +2370,7 @@ const App: React.FC = () => {
           if (error) {
             handleNotify(`Gagal: ${ error.message } `, 'error');
           } else {
-            handleNotify('Permintaan cair dana dikirim! Konfirmasi ke loudvoke@gmail.com / WA 085163612553', 'success');
+            handleNotify('Permintaan cair dana dikirim! Konfirmasi ke loudvoke@gmail.com/WA 085163612553', 'success');
             setIsWithdrawOpen(false);
           }
         }}
