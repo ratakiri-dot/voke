@@ -1464,7 +1464,7 @@ const App: React.FC = () => {
         </div>
       </nav>
 
-      <main className="max-w-4xl mx-auto px-6 py-12">
+      <main className="max-w-3xl mx-auto px-6 py-12">
         {view === 'admin' ? (
           <AdminDashboard
             topUps={topUpRequests}

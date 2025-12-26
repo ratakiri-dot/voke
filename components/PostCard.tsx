@@ -103,38 +103,38 @@ export const PostCard: React.FC<PostCardProps> = ({
   const isCurrentlyPromoted = post.isPromoted && post.promotedUntil && new Date(post.promotedUntil) > new Date();
 
   return (
-    <div className={`voke-card group overflow-hidden ${isCurrentlyPromoted ? 'ring-2 ring-indigo-500/30' : ''}`}>
+    <div className={`voke-card group overflow-hidden ${isCurrentlyPromoted ? 'ring-1 ring-blue-500/20' : ''}`}>
       {post.coverImage && (
-        <div className="w-full h-48 sm:h-64 overflow-hidden border-b border-slate-50">
+        <div className="w-full aspect-[2/1] overflow-hidden">
           <img
             src={post.coverImage}
             alt={post.title}
-            className="w-full h-full object-cover transition-transform duration-700 group-hover:scale-105"
+            className="w-full h-full object-cover transition-transform duration-500 group-hover:scale-[1.02]"
           />
         </div>
       )}
-      <div className="p-8 md:p-10">
+      <div className="p-6 md:p-10">
         {/* 1. Title Section */}
-        <div className="mb-6">
-          <h3 className="text-2xl sm:text-3xl font-[800] mb-4 text-slate-800 leading-[1.2] tracking-tight group-hover:text-indigo-600 transition-colors">
+        <div className="mb-4">
+          <h3 className="medium-title text-[24px] sm:text-[28px] mb-3 leading-[1.25] group-hover:text-gray-600 transition-colors">
             {post.title}
           </h3>
 
-          <div className="flex flex-wrap items-center gap-3">
+          <div className="flex flex-wrap items-center gap-2">
             {post.caption && (
-              <span className="text-[9px] sm:text-[10px] bg-slate-100 text-slate-500 px-3 sm:px-4 py-1.5 sm:py-2 rounded-xl font-black uppercase tracking-wider">
+              <span className="text-[11px] bg-gray-100 text-gray-600 px-2 py-0.5 rounded font-medium">
                 #{post.caption.replace(/#/g, '')}
               </span>
             )}
 
             {post.giftStats && Object.entries(post.giftStats).length > 0 && (
-              <div className="flex flex-wrap gap-2">
+              <div className="flex flex-wrap gap-1.5">
                 {Object.entries(post.giftStats).map(([name, stat]) => {
                   const giftDetail = stat as { count: number; icon: string };
                   return (
-                    <div key={name} className="flex items-center space-x-2 bg-amber-50 text-amber-600 border border-amber-100/50 px-2.5 py-1 rounded-xl shadow-sm">
-                      <span className="text-xs sm:text-sm">{giftDetail.icon}</span>
-                      <span className="text-[10px] sm:text-[11px] font-black">+{giftDetail.count}</span>
+                    <div key={name} className="flex items-center space-x-1 bg-amber-50 text-amber-700 border border-amber-200/50 px-2 py-0.5 rounded text-xs">
+                      <span>{giftDetail.icon}</span>
+                      <span className="font-semibold">+{giftDetail.count}</span>
                     </div>
                   );
                 })}
@@ -144,14 +144,14 @@ export const PostCard: React.FC<PostCardProps> = ({
         </div>
 
         {/* 2. Excerpt Section */}
-        <div className="relative mb-8">
+        <div className="relative mb-6">
           {!isExpanded ? (
             <div
-              className="text-slate-600 leading-[1.8] text-base sm:text-lg line-clamp-3 overflow-hidden"
+              className="medium-content text-gray-700 line-clamp-3 overflow-hidden"
               dangerouslySetInnerHTML={{ __html: post.content }}
             />
           ) : (
-            <div className="text-slate-600 leading-[1.8] text-base sm:text-lg space-y-4">
+            <div className="medium-content text-gray-700 space-y-4">
               {(() => {
                 // Match ending of paragraphs, divs, or double breaks
                 const parts = post.content.split(/(<\/p>|<\/div>|<br\s*\/?>\s*<br\s*\/?>)/i);
@@ -209,31 +209,31 @@ export const PostCard: React.FC<PostCardProps> = ({
           {!isExpanded && (
             <button
               onClick={handleExpand}
-              className="mt-6 text-indigo-600 font-black text-[10px] sm:text-[11px] uppercase tracking-[0.25em] hover:text-indigo-700 flex items-center space-x-2 group-read-more"
+              className="mt-4 text-gray-700 font-medium text-sm hover:text-black flex items-center space-x-1.5 transition-colors"
             >
-              <span>Ulas Tulisan</span>
-              <i className="fas fa-arrow-right text-[9px] transition-transform group-read-more:translate-x-1"></i>
+              <span>Baca selengkapnya</span>
+              <i className="fas fa-arrow-right text-xs transition-transform hover:translate-x-0.5"></i>
             </button>
           )}
         </div>
 
         {/* 3. Author Profile Section (Content Footer) */}
-        <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-6 p-6 sm:p-0 sm:mt-8 bg-slate-50 sm:bg-transparent rounded-3xl border sm:border-0 border-slate-100 mb-2">
-          <div className="flex items-center space-x-4 min-w-0">
-            <img src={author.avatar} alt={author.name} className="w-12 h-12 sm:w-14 sm:h-14 rounded-2xl object-cover border-4 border-white shadow-md transition-transform group-hover:scale-105 shrink-0" />
+        <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 pt-6 border-t border-gray-100 mt-6">
+          <div className="flex items-center space-x-3 min-w-0">
+            <img src={author.avatar} alt={author.name} className="w-10 h-10 rounded-full object-cover shrink-0" />
             <div className="min-w-0">
               <div className="flex flex-wrap items-center gap-2">
-                <h4 className="font-extrabold text-slate-800 leading-none text-base sm:text-lg truncate">
+                <h4 className="font-medium text-gray-900 leading-none text-sm truncate">
                   {author.name}
                 </h4>
                 {isCurrentlyPromoted && (
-                  <span className="bg-gradient-to-r from-blue-500 to-cyan-500 text-white text-[7px] sm:text-[8px] font-black px-2 py-0.5 sm:px-2.5 sm:py-1 rounded-full uppercase tracking-widest shadow-lg shadow-blue-100 shrink-0">
-                    <i className="fas fa-sparkles mr-1 animate-pulse"></i> Spotlight
+                  <span className="voke-gradient-bg text-white text-[9px] font-semibold px-2 py-0.5 rounded-full shrink-0">
+                    <i className="fas fa-sparkles mr-0.5"></i> Spotlight
                   </span>
                 )}
               </div>
-              <p className="text-[9px] sm:text-[10px] text-slate-400 font-bold uppercase tracking-wider mt-1 sm:mt-1.5 truncate">
-                {author.username} • {new Date(post.timestamp).toLocaleDateString('id-ID', { month: 'short', day: 'numeric' })}
+              <p className="text-xs text-gray-500 mt-0.5 truncate">
+                {author.username} · {new Date(post.timestamp).toLocaleDateString('id-ID', { month: 'short', day: 'numeric' })}
               </p>
             </div>
           </div>
@@ -241,41 +241,41 @@ export const PostCard: React.FC<PostCardProps> = ({
             <div className="flex items-center space-x-2 w-full sm:w-auto">
               <button
                 onClick={() => setIsReportOpen(true)}
-                className="w-10 h-10 bg-white sm:bg-slate-50 text-slate-300 hover:text-rose-500 rounded-xl flex items-center justify-center transition-all shrink-0 border border-slate-100 sm:border-0"
+                className="w-8 h-8 bg-white text-gray-400 hover:text-red-600 rounded flex items-center justify-center transition-colors shrink-0 border border-gray-200"
               >
-                <i className="fas fa-flag text-[10px]"></i>
+                <i className="fas fa-flag text-xs"></i>
               </button>
               <button
                 onClick={() => onFollowToggle(post.userId)}
-                className={`flex-1 sm:flex-none px-6 py-2.5 rounded-xl text-[10px] sm:text-[11px] font-black uppercase tracking-widest transition-all ${isFollowing ? 'bg-slate-200 text-slate-500' : 'bg-slate-900 text-white hover:bg-black shadow-lg shadow-slate-900/10'
+                className={`flex-1 sm:flex-none px-4 py-1.5 rounded text-sm font-medium transition-all ${isFollowing ? 'bg-gray-200 text-gray-700 hover:bg-gray-300' : 'voke-gradient-bg text-white hover:opacity-90'
                   }`}
               >
                 {isFollowing ? 'Mengikuti' : 'Ikuti'}
               </button>
             </div>
           ) : (
-            <div className="flex gap-2 w-full sm:w-auto">
+            <div className="flex gap-1.5 w-full sm:w-auto">
               <button
                 onClick={() => {
                   if (confirm('Yakin ingin menghapus tulisan ini?')) {
                     onDelete?.(post.id);
                   }
                 }}
-                className="flex-1 sm:flex-none flex items-center justify-center px-4 py-2.5 bg-rose-50 text-rose-500 rounded-xl text-[9px] sm:text-[10px] font-black uppercase tracking-widest hover:bg-rose-100 transition-all border border-rose-100"
+                className="flex-1 sm:flex-none flex items-center justify-center px-3 py-1.5 bg-red-50 text-red-600 rounded text-xs font-medium hover:bg-red-100 transition-colors border border-red-200"
               >
                 <i className="fas fa-trash-alt mr-1"></i>
                 <span>Hapus</span>
               </button>
               <button
                 onClick={() => onEdit?.(post)}
-                className="flex-1 sm:flex-none flex items-center justify-center px-4 py-2.5 bg-indigo-50 text-indigo-600 rounded-xl text-[9px] sm:text-[10px] font-black uppercase tracking-widest hover:bg-indigo-100 transition-all border border-indigo-100"
+                className="flex-1 sm:flex-none flex items-center justify-center px-3 py-1.5 bg-blue-50 text-blue-600 rounded text-xs font-medium hover:bg-blue-100 transition-colors border border-blue-200"
               >
                 <i className="fas fa-pen-nib mr-1"></i>
                 <span>Edit</span>
               </button>
               <button
                 onClick={() => setIsPromoteOpen(true)}
-                className="flex-1 sm:flex-none flex items-center justify-center px-4 py-2.5 bg-cyan-50 text-cyan-600 rounded-xl text-[9px] sm:text-[10px] font-black uppercase tracking-widest hover:bg-cyan-100 transition-all border border-cyan-100"
+                className="flex-1 sm:flex-none flex items-center justify-center px-3 py-1.5 bg-cyan-50 text-cyan-600 rounded text-xs font-medium hover:bg-cyan-100 transition-colors border border-cyan-200"
               >
                 <i className="fas fa-rocket mr-1"></i>
                 <span>Spotlight</span>
@@ -284,45 +284,45 @@ export const PostCard: React.FC<PostCardProps> = ({
           )}
         </div>
 
-        <div className="flex flex-col sm:flex-row sm:items-center justify-between pt-8 border-t border-slate-100 gap-3">
+        <div className="flex flex-col sm:flex-row sm:items-center justify-between pt-4 border-t border-gray-100 gap-3">
           {/* Stats Section: Like, Comment, View */}
-          <div className="grid grid-cols-3 gap-2 sm:flex sm:items-center sm:space-x-2 sm:gap-0">
+          <div className="flex items-center space-x-3">
             <button
               onClick={() => onLike(post.id)}
-              className={`h-8 flex items-center justify-center px-3 rounded-xl transition-all ${post.isLiked ? 'bg-rose-50 text-rose-500 shadow-sm shadow-rose-100' : 'bg-slate-50 text-slate-400 hover:text-rose-400'}`}
+              className={`flex items-center space-x-1.5 text-sm transition-colors ${post.isLiked ? 'text-red-600' : 'text-gray-500 hover:text-red-600'}`}
               title="Like"
             >
-              <i className={`${post.isLiked ? 'fas' : 'far'} fa-heart text-xs mr-1.5`}></i>
-              <span className="text-[10px] font-black">{post.likes}</span>
+              <i className={`${post.isLiked ? 'fas' : 'far'} fa-heart`}></i>
+              <span>{post.likes}</span>
             </button>
 
             <button
               onClick={() => setShowComments(!showComments)}
-              className="h-8 flex items-center justify-center px-3 bg-slate-50 text-slate-400 hover:text-blue-500 rounded-xl transition-all"
+              className="flex items-center space-x-1.5 text-sm text-gray-500 hover:text-gray-900 transition-colors"
               title="Komentar"
             >
-              <i className="far fa-comment text-xs mr-1.5"></i>
-              <span className="text-[10px] font-black">{post.comments.length}</span>
+              <i className="far fa-comment"></i>
+              <span>{post.comments.length}</span>
             </button>
 
-            <div className="h-8 flex items-center justify-center px-3 bg-slate-50 text-slate-400 rounded-xl" title="Tayangan">
-              <i className="far fa-eye text-xs mr-1.5"></i>
-              <span className="text-[10px] font-black">{post.views >= 1000 ? `${(post.views / 1000).toFixed(1)}k` : post.views}</span>
+            <div className="flex items-center space-x-1.5 text-sm text-gray-500" title="Tayangan">
+              <i className="far fa-eye"></i>
+              <span>{post.views >= 1000 ? `${(post.views / 1000).toFixed(1)}k` : post.views}</span>
             </div>
           </div>
 
           {/* Actions Section: Gift, Share, Save */}
-          <div className="grid grid-cols-3 gap-2 sm:flex sm:items-center sm:justify-end sm:space-x-2 sm:gap-0">
+          <div className="flex items-center space-x-3">
             <button
               onClick={() => !isOwnPost && setIsGiftOpen(true)}
-              className={`h-8 flex items-center justify-center px-2.5 rounded-xl transition-all shadow-sm border ${isOwnPost
-                ? 'bg-gradient-to-r from-amber-100 to-amber-50 text-amber-700 border-amber-200 cursor-default'
-                : 'bg-gradient-to-r from-amber-50 to-yellow-50 text-amber-700 border-amber-200 hover:from-amber-100 hover:to-yellow-100'
+              className={`flex items-center space-x-1 text-sm transition-colors ${isOwnPost
+                ? 'text-amber-700 cursor-default'
+                : 'text-amber-600 hover:text-amber-700'
                 }`}
               title={isOwnPost ? `Total hadiah: Rp ${(post.gifts || 0).toLocaleString('id-ID')}` : 'Kirim hadiah'}
             >
-              <i className="fas fa-gift text-xs text-amber-600 mr-1.5"></i>
-              <span className="text-[10px] font-extrabold text-amber-800">
+              <i className="fas fa-gift"></i>
+              <span className="font-medium">
                 {post.gifts >= 1000 ? `${(post.gifts / 1000).toFixed(1)}k` : (post.gifts || 0)}
               </span>
             </button>
@@ -352,18 +352,18 @@ export const PostCard: React.FC<PostCardProps> = ({
                   onNotify('Link artikel disalin!', 'success');
                 }
               }}
-              className="h-8 bg-slate-50 text-slate-400 rounded-xl flex items-center justify-center hover:text-cyan-500 hover:bg-cyan-50 transition-all px-3"
+              className="text-gray-500 hover:text-gray-900 text-sm transition-colors"
               title="Bagikan artikel"
             >
-              <i className="fas fa-share-nodes text-xs"></i>
+              <i className="fas fa-share-nodes"></i>
             </button>
 
             <button
               onClick={() => onSaveToggle(post.id)}
-              className={`h-8 rounded-xl flex items-center justify-center transition-all px-3 ${isSaved ? 'bg-indigo-50 text-indigo-600 shadow-sm shadow-indigo-100' : 'bg-slate-50 text-slate-300 hover:text-indigo-400'}`}
+              className={`text-sm transition-colors ${isSaved ? 'text-blue-600' : 'text-gray-500 hover:text-gray-900'}`}
               title={isSaved ? "Hapus dari simpanan" : "Simpan artikel"}
             >
-              <i className={`${isSaved ? 'fas' : 'far'} fa-bookmark text-xs`}></i>
+              <i className={`${isSaved ? 'fas' : 'far'} fa-bookmark`}></i>
             </button>
           </div>
         </div>
