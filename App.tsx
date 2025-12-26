@@ -1158,6 +1158,11 @@ const App: React.FC = () => {
           ? { ...p, unique_views: newUniqueViews }
           : p
       ));
+
+      // Refresh current user profile if they are the author (to show updated balance)
+      if (post.userId === user.id) {
+        fetchUserProfile(user.id);
+      }
     } catch (error) {
       console.error('Error tracking view:', error);
     }

@@ -80,7 +80,7 @@ export const RichEditor: React.FC<RichEditorProps> = ({ onPublish, onSaveDraft, 
             <div className="w-10 h-10 bg-indigo-50 text-indigo-600 rounded-xl flex items-center justify-center">
               <i className="fas fa-pen-nib"></i>
             </div>
-            <h2 className="text-2xl font-black text-gray-800 tracking-tight">VOꓘE up Now!</h2>
+            <h2 className="text-2xl font-black text-gray-800 tracking-tight">Vokeup!</h2>
           </div>
           <button onClick={onCancel} className="w-10 h-10 rounded-full hover:bg-gray-100 flex items-center justify-center text-gray-400 transition-colors">
             <i className="fas fa-times"></i>
