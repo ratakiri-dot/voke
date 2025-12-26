@@ -94,7 +94,7 @@ const App: React.FC = () => {
       .sort((a, b) => {
         const scoreA = (a.likes * 5) + (a.comments.length * 10) + (a.views) + (a.gifts * 2);
         const scoreB = (b.likes * 5) + (b.comments.length * 10) + (b.views) + (b.gifts * 2);
-        return scoreB - scoreA;
+        return scoreB-scoreA;
       })
       .slice(0, 5);
   }, [posts]);
@@ -105,7 +105,7 @@ const App: React.FC = () => {
 
   const newPosts = useMemo(() => {
     return [...posts]
-      .sort((a, b) => b.timestamp.getTime() - a.timestamp.getTime())
+      .sort((a, b) => b.timestamp.getTime()-a.timestamp.getTime())
       .slice(0, 5);
   }, [posts]);
 
@@ -822,7 +822,7 @@ const App: React.FC = () => {
         return {
           ...p,
           isLiked: !p.isLiked,
-          likes: p.isLiked ? p.likes - 1 : p.likes + 1
+          likes: p.isLiked ? p.likes-1 : p.likes + 1
         };
       }
       return p;
@@ -831,7 +831,7 @@ const App: React.FC = () => {
     if (post.isLiked) {
       // Unlike
       await supabase.from('likes').delete().match({ post_id: postId, user_id: user.id });
-      await supabase.from('posts').update({ likes_count: post.likes - 1 }).eq('id', postId);
+      await supabase.from('posts').update({ likes_count: post.likes-1 }).eq('id', postId);
     } else {
       // Like
       await supabase.from('likes').insert({ post_id: postId, user_id: user.id });
@@ -890,7 +890,7 @@ const App: React.FC = () => {
     try {
       const { error: deductErr } = await supabase
         .from('profiles')
-        .update({ gift_balance: user.giftBalance - gift.price })
+        .update({ gift_balance: user.giftBalance-gift.price })
         .eq('id', user.id);
 
       if (deductErr) {
@@ -898,7 +898,7 @@ const App: React.FC = () => {
         handleNotify('Gagal memotong saldo: ' + deductErr.message, 'error');
         return;
       }
-      console.log('[GIFT] Step 1: SUCCESS - Sender balance deducted');
+      console.log('[GIFT] Step 1: SUCCESS-Sender balance deducted');
 
       // 2. Add transaction record
       const { error: txErr } = await supabase.from('transactions').insert({
@@ -924,7 +924,7 @@ const App: React.FC = () => {
         console.error('[GIFT] FAILED Post Update:', postUpdateErr.message, postUpdateErr.details);
         handleNotify('Gagal update post (RLS?): ' + postUpdateErr.message, 'info');
       } else {
-        console.log('[GIFT] Step 2: SUCCESS - Post gifts updated');
+        console.log('[GIFT] Step 2: SUCCESS-Post gifts updated');
       }
 
       // 4. Add to receiver balance 
@@ -971,7 +971,7 @@ const App: React.FC = () => {
     }
 
     // 1. Deduct points
-    const { error: deductErr } = await supabase.from('profiles').update({ gift_balance: user.giftBalance - cost }).eq('id', user.id);
+    const { error: deductErr } = await supabase.from('profiles').update({ gift_balance: user.giftBalance-cost }).eq('id', user.id);
     if (deductErr) {
       handleNotify('Gagal memproses poin: ' + deductErr.message, 'error');
       return;
@@ -1138,65 +1138,37 @@ const App: React.FC = () => {
       return;
     }
 
-    // 2. Deduct points from user
-    const { data: userData, error: fetchError } = await supabase.from('profiles').select('gift_balance').eq('id', req.userId).single();
-    if (fetchError || !userData) {
-         handleNotify('Gagal mengambil data user: ' + (fetchError?.message || 'Data kosong'), 'error');
-         setIsProcessingTx(false);
-         return;
+    // 2. Call database function to approve withdrawal
+    // This bypasses RLS and handles: balance deduction, transaction update, notification
+    const { data, error } = await supabase.rpc('admin_approve_withdrawal', {
+      transaction_id: id,
+      user_id_param: req.userId,
+      amount_param: req.amount
+    });
+
+    if (error) {
+      handleNotify('Database Error: ' + error.message, 'error');
+      setIsProcessingTx(false);
+      return;
     }
 
-    const newBalance = (userData.gift_balance || 0) - req.amount;
+    // Check function result
+    if (!data || !data.success) {
+      handleNotify('Gagal approve: ' + (data?.error || 'Unknown error'), 'error');
+      setIsProcessingTx(false);
+      return;
+    }
+
+    console.log('Withdrawal approved:', data);
     
-    // Explicitly select to verify update happened
-    const { data: updateData, error: updateError } = await supabase
-        .from('profiles')
-        .update({ gift_balance: newBalance })
-        .eq('id', req.userId)
-        .select();
-    
-    if (updateError) {
-         handleNotify('Database Error: ' + updateError.message, 'error');
-         setIsProcessingTx(false);
-         return;
-    }
-    
-    if (!updateData || updateData.length === 0) {
-        handleNotify('GAGAL UPDATE: Izin ditolak (RLS). Admin tidak bisa mengubah saldo user lain.', 'error');
-        // We stop here to prevent inconsistent state
-        setIsProcessingTx(false);
-        return;
-    }
-
-    // 3. Update transaction status
-    const { error: txError } = await supabase.from('transactions').update({ status: 'completed' }).eq('id', id);
-    if (txError) {
-         handleNotify('Gagal update status transaksi: ' + txError.message, 'error');
-         setIsProcessingTx(false);
-         return;
-    }
-
-    // 4. Send Notification
-    const { data: notifData, error: notifError } = await supabase.from('notifications').insert({
-      user_id: req.userId,
-      message: `Penarikan dana sebesar ${ req.amount.toLocaleString() } poin telah disetujui.`,
-      type: 'success',
-      is_read: false
-    }).select();
-
-    if (notifError) {
-        console.warn('Notification error:', notifError);
-    } else if (!notifData || notifData.length === 0) {
-        console.warn('Notification insert blocked by RLS');
-    }
-
     fetchAdminData();
     // Force refresh user profile if self (unlikely for withdraw but good practice)
     if (req.userId === user?.id) fetchUserProfile(user.id);
     
-    handleNotify('Penarikan disetujui & poin dipotong.', 'success');
+    handleNotify(`Penarikan disetujui! Saldo dikurangi dari ${ data.old_balance } ke ${ data.new_balance } poin.`, 'success');
     setIsProcessingTx(false);
   };
+
 
   const handleRejectTopUp = async (id: string) => {
     setIsProcessingTx(true);
@@ -1253,7 +1225,7 @@ const App: React.FC = () => {
     try {
       await supabase.auth.admin.deleteUser(id);
     } catch (authError) {
-      // Ignore auth error - profile is already deleted, user can't login
+      // Ignore auth error-profile is already deleted, user can't login
       console.log('Auth delete skipped (requires service role):', authError);
     }
 
@@ -2127,7 +2099,7 @@ const App: React.FC = () => {
             )}
 
             <div className="space-y-10">
-              {/* Search Bar - VOꓘE Optimized */}
+              {/* Search Bar-VOꓘE Optimized */}
               <div className="relative group mx-auto max-w-2xl w-full">
                 <div className="absolute inset-y-0 left-0 pl-6 flex items-center pointer-events-none">
                   <i className="fas fa-search text-slate-400 group-focus-within:text-[#2563EB] transition-colors"></i>
@@ -2169,7 +2141,7 @@ const App: React.FC = () => {
                 </div>
               )}
 
-              {/* Featured Sections - Popular & Editor Picks */}
+              {/* Featured Sections-Popular & Editor Picks */}
               {!searchQuery && !activePostId && !isLoadingPosts && (
                 <div className="space-y-16 py-4 animate-in fade-in slide-in-from-bottom-4 duration-700">
                   {/* Popular Posts Carousel */}
