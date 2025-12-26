@@ -1137,19 +1137,33 @@ const App: React.FC = () => {
         .eq('id', postId);
 
       // Credit author's gift_balance
-      const { data: authorProfile } = await supabase
+      const { data: authorProfile, error: profileError } = await supabase
         .from('profiles')
         .select('gift_balance')
         .eq('id', post.userId)
         .single();
 
+      if (profileError) {
+        console.error('Error fetching author profile for view payment:', profileError);
+        return;
+      }
+
       if (authorProfile) {
         const currentBalance = parseFloat(authorProfile.gift_balance.toString()) || 0;
         const newBalance = currentBalance + viewRate;
-        await supabase
+
+        console.log(`View payment: Adding ${viewRate} to ${post.userId}'s balance. Old: ${currentBalance}, New: ${newBalance}`);
+
+        const { error: updateError } = await supabase
           .from('profiles')
           .update({ gift_balance: newBalance })
           .eq('id', post.userId);
+
+        if (updateError) {
+          console.error('Error updating gift_balance for view payment:', updateError);
+        } else {
+          console.log('View payment successful!');
+        }
       }
 
       // Update local post state
@@ -1158,11 +1172,6 @@ const App: React.FC = () => {
           ? { ...p, unique_views: newUniqueViews }
           : p
       ));
-
-      // Refresh current user profile if they are the author (to show updated balance)
-      if (post.userId === user.id) {
-        fetchUserProfile(user.id);
-      }
     } catch (error) {
       console.error('Error tracking view:', error);
     }
