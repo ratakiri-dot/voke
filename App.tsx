@@ -1119,10 +1119,9 @@ const handleUpdatePoints = async (userId: string, amount: number) => {
 };
 
 const handleView = async (postId: string) => {
-  // NOTE: Does not require user to be logged in to count view, but requires user to be logged in to track unique view per session??
-  // Actually, let's allow anonymous views for now, but we only pay if we can track uniqueness via localstorage.
-  // The previous implementation required `user` to be logged in. Let's keep it safe for now.
-  // if (!user) return; 
+  // FIX: Don't count author's own views at all
+  const post = posts.find(p => p.id === postId);
+  if (!post || (user && post.userId === user.id)) return;
 
   // Check localStorage for unique view tracking
   const viewKey = `view_${postId}_${user?.id || 'anon'}`;
