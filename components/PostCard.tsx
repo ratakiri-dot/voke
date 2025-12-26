@@ -85,11 +85,15 @@ export const PostCard: React.FC<PostCardProps> = ({
   const [isExpanded, setIsExpanded] = useState(false);
   const [commentText, setCommentText] = useState('');
 
-  const handleExpand = () => {
-    setIsExpanded(!isExpanded);
-    if (!isExpanded && onView) {
+  // Auto-trigger view when component mounts (for view payment)
+  useEffect(() => {
+    if (onView) {
       onView(post.id);
     }
+  }, [post.id]); // Only run once when post ID changes/mounts
+
+  const handleExpand = () => {
+    setIsExpanded(!isExpanded);
   };
 
   const handleSendComment = () => {
