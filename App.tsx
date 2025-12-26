@@ -20,8 +20,8 @@ const ADMIN_CONTACT = {
 
 // Refined Logo Component with Matching Icon
 export const VokeLogo = ({ className = "text-2xl", withGradient = true }: { className?: string, withGradient?: boolean }) => (
-  <span className={`voke - logo inline - flex items - center space - x - 2 font - [800] uppercase tracking - tighter ${ className } `}>
-    <span className={`w - [1.2em] h - [1.2em] rounded - [0.45em] flex items - center justify - center shrink - 0 shadow - lg shadow - blue - 500 / 20 ${ withGradient ? 'bg-gradient-to-br from-[#0EA5E9] to-[#2563EB]' : 'bg-slate-900' } `}>
+  <span className={`voke-logo inline-flex items-center space-x-2 font-[800] uppercase tracking-tighter ${className}`}>
+    <span className={`w-[1.2em] h-[1.2em] rounded-[0.45em] flex items-center justify-center shrink-0 shadow-lg shadow-blue-500/20 ${withGradient ? 'bg-gradient-to-br from-[#0EA5E9] to-[#2563EB]' : 'bg-slate-900'}`}>
       <i className="fas fa-feather-alt text-white text-[0.6em]"></i>
     </span>
     <span className={withGradient ? 'voke-gradient-text' : 'text-slate-900'} style={{ letterSpacing: '-0.06em' }}>
