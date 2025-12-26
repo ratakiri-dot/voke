@@ -284,12 +284,12 @@ export const PostCard: React.FC<PostCardProps> = ({
           )}
         </div>
 
-        <div className="flex flex-col sm:flex-row sm:items-center justify-between pt-4 border-t border-gray-100 gap-3">
+        <div className="flex items-center justify-between pt-4 border-t border-gray-100 gap-2 sm:gap-3">
           {/* Stats Section: Like, Comment, View */}
-          <div className="flex items-center space-x-3">
+          <div className="flex items-center space-x-2 sm:space-x-3">
             <button
               onClick={() => onLike(post.id)}
-              className={`flex items-center space-x-1.5 text-sm transition-colors ${post.isLiked ? 'text-red-600' : 'text-gray-500 hover:text-red-600'}`}
+              className={`flex items-center space-x-1 sm:space-x-1.5 text-xs sm:text-sm transition-colors ${post.isLiked ? 'text-red-600' : 'text-gray-500 hover:text-red-600'}`}
               title="Like"
             >
               <i className={`${post.isLiked ? 'fas' : 'far'} fa-heart`}></i>
@@ -298,24 +298,24 @@ export const PostCard: React.FC<PostCardProps> = ({
 
             <button
               onClick={() => setShowComments(!showComments)}
-              className="flex items-center space-x-1.5 text-sm text-gray-500 hover:text-gray-900 transition-colors"
+              className="flex items-center space-x-1 sm:space-x-1.5 text-xs sm:text-sm text-gray-500 hover:text-gray-900 transition-colors"
               title="Komentar"
             >
               <i className="far fa-comment"></i>
               <span>{post.comments.length}</span>
             </button>
 
-            <div className="flex items-center space-x-1.5 text-sm text-gray-500" title="Tayangan">
+            <div className="flex items-center space-x-1 sm:space-x-1.5 text-xs sm:text-sm text-gray-500" title="Tayangan">
               <i className="far fa-eye"></i>
               <span>{post.views >= 1000 ? `${(post.views / 1000).toFixed(1)}k` : post.views}</span>
             </div>
           </div>
 
           {/* Actions Section: Gift, Share, Save */}
-          <div className="flex items-center space-x-3">
+          <div className="flex items-center space-x-2 sm:space-x-3">
             <button
               onClick={() => !isOwnPost && setIsGiftOpen(true)}
-              className={`flex items-center space-x-1 text-sm transition-colors ${isOwnPost
+              className={`flex items-center space-x-1 text-xs sm:text-sm transition-colors ${isOwnPost
                 ? 'text-amber-700 cursor-default'
                 : 'text-amber-600 hover:text-amber-700'
                 }`}
@@ -352,7 +352,7 @@ export const PostCard: React.FC<PostCardProps> = ({
                   onNotify('Link artikel disalin!', 'success');
                 }
               }}
-              className="text-gray-500 hover:text-gray-900 text-sm transition-colors"
+              className="text-gray-500 hover:text-gray-900 text-xs sm:text-sm transition-colors"
               title="Bagikan artikel"
             >
               <i className="fas fa-share-nodes"></i>
@@ -360,7 +360,7 @@ export const PostCard: React.FC<PostCardProps> = ({
 
             <button
               onClick={() => onSaveToggle(post.id)}
-              className={`text-sm transition-colors ${isSaved ? 'text-blue-600' : 'text-gray-500 hover:text-gray-900'}`}
+              className={`text-xs sm:text-sm transition-colors ${isSaved ? 'text-blue-600' : 'text-gray-500 hover:text-gray-900'}`}
               title={isSaved ? "Hapus dari simpanan" : "Simpan artikel"}
             >
               <i className={`${isSaved ? 'fas' : 'far'} fa-bookmark`}></i>
