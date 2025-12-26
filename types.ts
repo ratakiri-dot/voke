@@ -114,3 +114,24 @@ export interface Advertisement {
   position: AdPosition;
   isActive: boolean;
 }
+
+export interface UserNotification {
+  id: string;
+  userId: string;
+  message: string;
+  type: 'success' | 'error' | 'info';
+  isRead: boolean;
+  relatedEntityId?: string;
+  createdAt: Date;
+}
+
+export interface PaymentTransaction {
+  id: string;
+  userId: string;
+  type: 'topup' | 'withdraw' | 'gift_sent' | 'gift_received' | 'promotion_request';
+  amount: number;
+  status: 'pending' | 'completed' | 'rejected';
+  metadata?: any;
+  createdAt: Date;
+  relatedEntityId?: string;
+}

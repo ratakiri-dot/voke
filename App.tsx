@@ -1,6 +1,6 @@
-
+```
 import React, { useState, useMemo, useEffect } from 'react';
-import { Post, User, Notification as NotificationType, Comment, TopUpRequest, ReportRecord, Advertisement, SignUpRequest, WithdrawRequest } from './types';
+import { Post, User, Notification as NotificationType, Comment, TopUpRequest, ReportRecord, Advertisement, SignUpRequest, WithdrawRequest, PaymentTransaction } from './types';
 import { PostCard } from './components/PostCard';
 import { RichEditor } from './components/RichEditor';
 import { Notification } from './components/Notification';
@@ -19,8 +19,8 @@ const ADMIN_CONTACT = {
 
 // Refined Logo Component with Matching Icon
 export const VokeLogo = ({ className = "text-2xl", withGradient = true }: { className?: string, withGradient?: boolean }) => (
-  <span className={`voke-logo inline-flex items-center space-x-2 font-[800] uppercase tracking-tighter ${className}`}>
-    <span className={`w-[1.2em] h-[1.2em] rounded-[0.45em] flex items-center justify-center shrink-0 shadow-lg shadow-blue-500/20 ${withGradient ? 'bg-gradient-to-br from-[#0EA5E9] to-[#2563EB]' : 'bg-slate-900'}`}>
+  <span className={`voke - logo inline - flex items - center space - x - 2 font - [800] uppercase tracking - tighter ${ className } `}>
+    <span className={`w - [1.2em] h - [1.2em] rounded - [0.45em] flex items - center justify - center shrink - 0 shadow - lg shadow - blue - 500 / 20 ${ withGradient ? 'bg-gradient-to-br from-[#0EA5E9] to-[#2563EB]' : 'bg-slate-900' } `}>
       <i className="fas fa-feather-alt text-white text-[0.6em]"></i>
     </span>
     <span className={withGradient ? 'voke-gradient-text' : 'text-slate-900'} style={{ letterSpacing: '-0.06em' }}>
@@ -119,6 +119,35 @@ const App: React.FC = () => {
   const [authMode, setAuthMode] = useState<'login' | 'signup'>('login');
   const [loginForm, setLoginForm] = useState({ email: '', password: '' });
   const [signupForm, setSignupForm] = useState({ name: '', username: '', email: '', password: '', bio: '', waNumber: '', address: '', avatar: '' });
+
+  const handleFollow = async (targetUserId: string) => {
+    if (!user) return;
+
+    // Optimistic update
+    const isFollowing = following.has(targetUserId);
+    setFollowing(prev => {
+      const next = new Set(prev);
+      if (isFollowing) next.delete(targetUserId);
+      else next.add(targetUserId);
+      return next;
+    });
+
+    if (isFollowing) {
+      // Unfollow
+      await supabase.from('follows').delete().match({ follower_id: user.id, following_id: targetUserId });
+    } else {
+      // Follow
+      await supabase.from('follows').insert({ follower_id: user.id, following_id: targetUserId });
+
+      // Notify Target
+      await supabase.from('notifications').insert({
+        user_id: targetUserId,
+        message: `${ user.name } mulai mengikuti Anda.`,
+        type: 'info',
+        is_read: false
+      });
+    }
+  };
 
   const handleNotify = (message: string, type: 'success' | 'error' | 'info') => {
     const newNotif: NotificationType = { id: Date.now().toString(), message, type, timestamp: new Date() };
@@ -279,11 +308,11 @@ const App: React.FC = () => {
     const { data, error } = await supabase
       .from('posts')
       .select(`
-        *,
-        gifts_received,
-        profiles!user_id (name, username, avatar_url),
-        likes (user_id),
-        comments (id, text, user_id, created_at, profiles(name))
+  *,
+  gifts_received,
+  profiles!user_id(name, username, avatar_url),
+    likes(user_id),
+    comments(id, text, user_id, created_at, profiles(name))
       `)
       .eq('status', 'published')
       .order('is_promoted', { ascending: false })
@@ -501,7 +530,7 @@ const App: React.FC = () => {
     setIsLoading(true);
 
     try {
-      const formattedUsername = signupForm.username.startsWith('@') ? signupForm.username : `@${signupForm.username}`;
+      const formattedUsername = signupForm.username.startsWith('@') ? signupForm.username : `@${ signupForm.username } `;
 
       // Check if username already exists
       const { data: existingUser, error: checkError } = await supabase
@@ -738,6 +767,17 @@ const App: React.FC = () => {
       // Like
       await supabase.from('likes').insert({ post_id: postId, user_id: user.id });
       await supabase.from('posts').update({ likes_count: post.likes + 1 }).eq('id', postId);
+
+      // Notify Author (if not self)
+      if (post.userId !== user.id) {
+        await supabase.from('notifications').insert({
+          user_id: post.userId,
+          message: `${ user.name } menyukai karya Anda: "${post.title}"`,
+          type: 'info',
+          related_entity_id: postId,
+          is_read: false
+        });
+      }
     }
     fetchPosts(); // Refresh to ensure sync
   };
@@ -749,6 +789,19 @@ const App: React.FC = () => {
       user_id: user.id,
       text
     });
+
+    // Notify Author
+    const post = posts.find(p => p.id === postId);
+    if (post && post.userId !== user.id) {
+      await supabase.from('notifications').insert({
+        user_id: post.userId,
+        message: `${ user.name } mengomentari karya Anda: "${post.title}"`,
+        type: 'info',
+        related_entity_id: postId,
+        is_read: false
+      });
+    }
+
     fetchPosts();
   };
 
@@ -796,7 +849,7 @@ const App: React.FC = () => {
         return;
       }
 
-      console.log(`[GIFT] Step 2: Incrementing post gifts for post ${postId}`);
+      console.log(`[GIFT] Step 2: Incrementing post gifts for post ${ postId }`);
       const { error: postUpdateErr } = await supabase.from('posts').update({ gifts_received: (post.gifts || 0) + gift.price }).eq('id', postId);
       if (postUpdateErr) {
         console.error('[GIFT] FAILED Post Update:', postUpdateErr.message, postUpdateErr.details);
@@ -806,7 +859,7 @@ const App: React.FC = () => {
       }
 
       // 4. Add to receiver balance 
-      console.log(`[GIFT] Step 3: Adding ${gift.price} to receiver ${post.userId}`);
+      console.log(`[GIFT] Step 3: Adding ${ gift.price } to receiver ${ post.userId } `);
       const { data: authorData, error: fetchErr } = await supabase.from('profiles').select('gift_balance').eq('id', post.userId).single();
 
       if (fetchErr) {
@@ -816,8 +869,8 @@ const App: React.FC = () => {
         const currentAuthorBalance = parseFloat(authorData.gift_balance.toString()) || 0;
         const newAuthorBalance = currentAuthorBalance + gift.price;
 
-        console.log(`[GIFT] Current receiver balance: ${currentAuthorBalance}`);
-        console.log(`[GIFT] New receiver balance: ${newAuthorBalance}`);
+        console.log(`[GIFT] Current receiver balance: ${ currentAuthorBalance } `);
+        console.log(`[GIFT] New receiver balance: ${ newAuthorBalance } `);
 
         const { error: receiveErr } = await supabase.from('profiles').update({ gift_balance: newAuthorBalance }).eq('id', post.userId);
 
@@ -825,7 +878,7 @@ const App: React.FC = () => {
           console.error('[GIFT] FAILED to update receiver balance:', receiveErr.message, receiveErr);
           handleNotify('⚠️ Poin GAGAL masuk ke penerima! Error: ' + receiveErr.message + '. Kemungkinan masalah RLS database.', 'error');
         } else {
-          console.log(`[GIFT] Step 3: SUCCESS - Receiver balance updated to ${newAuthorBalance}`);
+          console.log(`[GIFT] Step 3: SUCCESS - Receiver balance updated to ${ newAuthorBalance } `);
         }
       } else {
         console.error('[GIFT] ERROR: Receiver profile data is null');
@@ -834,7 +887,7 @@ const App: React.FC = () => {
       // Refresh sender's profile to show updated balance
       fetchUserProfile(user.id);
       fetchPosts();
-      handleNotify(`Apresiasi ${gift.name} terkirim!`, 'success');
+      handleNotify(`Apresiasi ${ gift.name } terkirim!`, 'success');
     } catch (error) {
       console.error('[GIFT] Unexpected error:', error);
       handleNotify('Terjadi kesalahan: ' + error, 'error');
@@ -993,15 +1046,51 @@ const App: React.FC = () => {
       await supabase.from('profiles').update({ gift_balance: userData.gift_balance + req.points }).eq('id', req.userId);
     }
 
+    // Send Notification
+    await supabase.from('notifications').insert({
+      user_id: req.userId,
+      message: `Top Up sebesar ${ req.points.toLocaleString() } poin berhasil!`,
+      type: 'success',
+      is_read: false
+    });
+
     fetchAdminData();
     handleNotify('Top up disetujui.', 'success');
   };
 
   const handleApproveWithdraw = async (id: string) => {
     setIsProcessingTx(true);
+
+    // 1. Get request details
+    const req = withdrawRequests.find(r => r.id === id);
+    if (!req) {
+      handleNotify('Data penarikan tidak ditemukan.', 'error');
+      setIsProcessingTx(false);
+      return;
+    }
+
+    // 2. Deduct points from user
+    const { data: userData } = await supabase.from('profiles').select('gift_balance').eq('id', req.userId).single();
+    if (userData) {
+      const newBalance = (userData.gift_balance || 0) - req.amount;
+      // Prevent negative balance check if needed, but assuming admin overrides
+      await supabase.from('profiles').update({ gift_balance: newBalance }).eq('id', req.userId);
+    }
+
+    // 3. Update transaction status
     await supabase.from('transactions').update({ status: 'completed' }).eq('id', id);
+
+    // 4. Send Notification
+    await supabase.from('notifications').insert({
+      user_id: req.userId,
+      message: `Penarikan dana sebesar ${ req.amount.toLocaleString() } poin telah disetujui.`,
+      type: 'success',
+      is_read: false
+    });
+
     fetchAdminData();
-    handleNotify('Penarikan disetujui.', 'success');
+    // Also refresh all users to update balance view if needed
+    handleNotify('Penarikan disetujui & poin dipotong.', 'success');
     setIsProcessingTx(false);
   };
 
@@ -1116,7 +1205,7 @@ const App: React.FC = () => {
       user_id: userId,
       type: 'system',
       title: amount >= 0 ? 'Poin Ditambahkan!' : 'Poin Dikurangi',
-      content: `Admin telah ${amount >= 0 ? 'menambahkan' : 'mengurangi'} saldo Anda sebesar ${Math.abs(amount)} poin. Total saldo Anda sekarang adalah ${newBalance}.`,
+      content: `Admin telah ${ amount >= 0 ? 'menambahkan' : 'mengurangi' } saldo Anda sebesar ${ Math.abs(amount) } poin.Total saldo Anda sekarang adalah ${ newBalance }.`,
       is_read: false
     });
 
@@ -1125,7 +1214,7 @@ const App: React.FC = () => {
     // 5. Refresh data
     fetchAllUsers();
     if (userId === user?.id) fetchUserProfile(userId);
-    handleNotify(`Saldo user berhasil diperbarui. Total sekarang: ${newBalance}`, 'success');
+    handleNotify(`Saldo user berhasil diperbarui.Total sekarang: ${ newBalance } `, 'success');
   };
 
   const handleView = async (postId: string) => {
@@ -1134,10 +1223,10 @@ const App: React.FC = () => {
     if (!post || (user && post.userId === user.id)) return;
 
     // Check localStorage for unique view tracking
-    const viewKey = `view_${postId}_${user?.id || 'anon'}`;
+    const viewKey = `view_${ postId }_${ user?.id || 'anon' } `;
     const hasViewed = localStorage.getItem(viewKey);
 
-    console.log(`Checking view for ${postId}. User: ${user?.id}, Author: ${post.userId}`);
+    console.log(`Checking view for ${ postId }.User: ${ user?.id }, Author: ${ post.userId } `);
 
     if (hasViewed) {
       console.log('Already viewed via localStorage');
@@ -1189,7 +1278,7 @@ const App: React.FC = () => {
           if (payError) {
             console.error('Failed to pay view revenue:', payError);
           } else {
-            console.log(`Paid ${viewRate} to author ${post.userId} for view.`);
+            console.log(`Paid ${ viewRate } to author ${ post.userId } for view.`);
           }
         }
       }
@@ -1252,7 +1341,7 @@ const App: React.FC = () => {
       console.log('Spotlight approved:', data);
       await fetchPosts();
       await fetchAdminData();
-      handleNotify(`Spotlight diaktifkan selama ${duration} hari.`, 'success');
+      handleNotify(`Spotlight diaktifkan selama ${ duration } hari.`, 'success');
     }
   };
 
@@ -1286,7 +1375,7 @@ const App: React.FC = () => {
       }
       await fetchPosts();
       await fetchAdminData();
-      handleNotify(`Spotlight ditolak & ${cost} poin dikembalikan.`, 'info');
+      handleNotify(`Spotlight ditolak & ${ cost } poin dikembalikan.`, 'info');
     }
   };
 
@@ -1297,7 +1386,7 @@ const App: React.FC = () => {
 
     const dbAd = {
       // If it's a new ad (generated with Date.now()), we might want to let DB handle UUID or just us string.
-      // The current ID generation in Modals.tsx uses `ad-${Date.now()}` which is fine if ID column is text.
+      // The current ID generation in Modals.tsx uses `ad - ${ Date.now() } ` which is fine if ID column is text.
       // If ID in DB is UUID, this might fail. Let's assume it supports text or we generate UUID if needed.
       // For now, we'll try to save with the ID provided or let Supabase generate if it was proper UUID.
       // But Modals.tsx generates string ID. Let's trust it fits.
@@ -1442,7 +1531,7 @@ const App: React.FC = () => {
           <div className="mt-12 flex flex-col items-center space-y-4 animate-in fade-in slide-in-from-bottom-8 duration-700 delay-300">
             <p className="text-[10px] font-black text-slate-400 uppercase tracking-[0.3em]">Butuh Bantuan?</p>
             <div className="flex flex-col sm:flex-row items-center gap-4 sm:space-x-6">
-              <a href={`mailto:${ADMIN_CONTACT.email}`} className="group flex items-center space-x-2 text-slate-500 hover:text-slate-900 transition-all">
+              <a href={`mailto:${ ADMIN_CONTACT.email } `} className="group flex items-center space-x-2 text-slate-500 hover:text-slate-900 transition-all">
                 <div className="w-8 h-8 bg-white rounded-lg flex items-center justify-center shadow-sm group-hover:shadow-md transition-all">
                   <i className="fas fa-envelope text-[10px]"></i>
                 </div>
@@ -1474,9 +1563,9 @@ const App: React.FC = () => {
           </div>
 
           <div className="hidden lg:flex items-center bg-slate-50 p-1.5 rounded-[1.5rem]">
-            <button onClick={() => setView('home')} className={`px-6 py-2.5 rounded-2xl text-[10px] font-black uppercase tracking-widest transition-all ${view === 'home' ? 'bg-white text-indigo-600 shadow-sm' : 'text-slate-400 hover:text-slate-600'}`}>Beranda</button>
-            <button onClick={() => setView('saved')} className={`px-6 py-2.5 rounded-2xl text-[10px] font-black uppercase tracking-widest transition-all ${view === 'saved' ? 'bg-white text-indigo-600 shadow-sm' : 'text-slate-400 hover:text-slate-600'}`}>Disimpan</button>
-            <button onClick={() => setView('wallet')} className={`px-6 py-2.5 rounded-2xl text-[10px] font-black uppercase tracking-widest transition-all ${view === 'wallet' ? 'bg-white text-indigo-600 shadow-sm' : 'text-slate-400 hover:text-slate-600'}`}>Dompet</button>
+            <button onClick={() => setView('home')} className={`px - 6 py - 2.5 rounded - 2xl text - [10px] font - black uppercase tracking - widest transition - all ${ view === 'home' ? 'bg-white text-indigo-600 shadow-sm' : 'text-slate-400 hover:text-slate-600' } `}>Beranda</button>
+            <button onClick={() => setView('saved')} className={`px - 6 py - 2.5 rounded - 2xl text - [10px] font - black uppercase tracking - widest transition - all ${ view === 'saved' ? 'bg-white text-indigo-600 shadow-sm' : 'text-slate-400 hover:text-slate-600' } `}>Disimpan</button>
+            <button onClick={() => setView('wallet')} className={`px - 6 py - 2.5 rounded - 2xl text - [10px] font - black uppercase tracking - widest transition - all ${ view === 'wallet' ? 'bg-white text-indigo-600 shadow-sm' : 'text-slate-400 hover:text-slate-600' } `}>Dompet</button>
           </div>
 
           <div className="flex items-center space-x-2 md:space-x-3">
@@ -1493,7 +1582,7 @@ const App: React.FC = () => {
             </button>
 
             {user?.isAdmin && (
-              <button onClick={() => setView('admin')} className={`w-10 h-10 md:w-11 md:h-11 rounded-2xl flex items-center justify-center transition-all ${view === 'admin' ? 'bg-slate-900 text-white shadow-md' : 'bg-slate-50 text-slate-400 hover:bg-slate-100'}`}>
+              <button onClick={() => setView('admin')} className={`w - 10 h - 10 md: w - 11 md: h - 11 rounded - 2xl flex items - center justify - center transition - all ${ view === 'admin' ? 'bg-slate-900 text-white shadow-md' : 'bg-slate-50 text-slate-400 hover:bg-slate-100' } `}>
                 <i className="fas fa-shield-halved"></i>
               </button>
             )}
@@ -1630,7 +1719,7 @@ const App: React.FC = () => {
                     post={post}
                     isFollowing={following.has(post.userId)}
                     isSaved={savedPosts.has(post.id)}
-                    onFollowToggle={id => setFollowing(prev => { const n = new Set(prev); n.has(id) ? n.delete(id) : n.add(id); return n; })}
+                    onFollowToggle={handleFollow}
                     onLike={handleLike}
                     onSaveToggle={handleSaveToggle}
                     onAddComment={handleAddComment}
@@ -1805,9 +1894,42 @@ const App: React.FC = () => {
                   
                   FOR NOW: I'll implement the UI structure. 
                 */}
-                <div className="bg-white rounded-[2rem] p-6 border border-slate-100 shadow-sm min-h-[200px] flex items-center justify-center flex-col text-center">
-                  <i className="fas fa-receipt text-3xl text-slate-200 mb-3"></i>
-                  <p className="text-slate-400 font-bold text-xs">Riwayat transaksi lengkap akan segera hadir.</p>
+                <div className="bg-white rounded-[2rem] p-6 border border-slate-100 shadow-sm min-h-[200px] flex flex-col space-y-4">
+                  {paymentTransactions.length === 0 ? (
+                    <div className="flex flex-col items-center justify-center py-8">
+                      <i className="fas fa-receipt text-3xl text-slate-200 mb-3"></i>
+                      <p className="text-slate-400 font-bold text-xs">Belum ada riwayat transaksi.</p>
+                    </div>
+                  ) : (
+                    <div className="space-y-3">
+                      {paymentTransactions.map(tx => (
+                        <div key={tx.id} className="flex items-center justify-between border-b border-slate-50 pb-3 last:border-0 last:pb-0">
+                          <div>
+                            <p className="text-xs font-black text-slate-700 capitalize">
+                              {tx.type === 'withdraw' ? 'Penarikan Dana' :
+                                tx.type === 'topup' ? 'Top Up Poin' :
+                                  tx.type === 'gift_sent' ? 'Apresiasi Terkirim' :
+                                    tx.type === 'promotion_request' ? 'Spotlight' : tx.type}
+                            </p>
+                            <p className="text-[9px] text-slate-400 font-bold">
+                              {new Date(tx.createdAt).toLocaleDateString()} • {new Date(tx.createdAt).toLocaleTimeString()}
+                            </p>
+                          </div>
+                          <div className="text-right">
+                            <p className={`text - xs font - black ${ tx.type === 'topup' ? 'text-emerald-500' : 'text-rose-500' } `}>
+                              {tx.type === 'topup' ? '+' : '-'}{tx.amount.toLocaleString()}
+                            </p>
+                            <p className={`text - [8px] font - black uppercase tracking - widest ${
+  tx.status === 'completed' ? 'text-emerald-400' :
+  tx.status === 'pending' ? 'text-amber-400' : 'text-rose-400'
+} `}>
+                              {tx.status === 'completed' ? 'Berhasil' : tx.status === 'pending' ? 'Proses' : 'Gagal'}
+                            </p>
+                          </div>
+                        </div>
+                      ))}
+                    </div>
+                  )}
                 </div>
               </div>
 
@@ -1836,7 +1958,7 @@ const App: React.FC = () => {
                 <a href={ADMIN_CONTACT.waLink} target="_blank" className="px-6 py-3 bg-white text-emerald-600 rounded-xl font-black text-[9px] uppercase tracking-widest shadow-sm border border-slate-100 hover:bg-emerald-50 hover:scale-105 transition-all">
                   <i className="fab fa-whatsapp mr-2"></i> WhatsApp
                 </a>
-                <a href={`mailto:${ADMIN_CONTACT.email}`} className="px-6 py-3 bg-white text-cyan-600 rounded-xl font-black text-[9px] uppercase tracking-widest shadow-sm border border-slate-100 hover:bg-cyan-50 hover:scale-105 transition-all">
+                <a href={`mailto:${ ADMIN_CONTACT.email } `} className="px-6 py-3 bg-white text-cyan-600 rounded-xl font-black text-[9px] uppercase tracking-widest shadow-sm border border-slate-100 hover:bg-cyan-50 hover:scale-105 transition-all">
                   <i className="fas fa-envelope mr-2"></i> Email
                 </a>
               </div>
@@ -1932,10 +2054,10 @@ const App: React.FC = () => {
                       </div>
                       <div className="flex overflow-x-auto pb-8 -mx-4 px-4 space-x-6 no-scrollbar scroll-smooth hidden md:flex">
                         {popularPosts.slice(0, 4).map(post => (
-                          <div key={`pop-${post.id}`} className="min-w-[400px] transform hover:scale-[1.01] transition-transform duration-300">
+                          <div key={`pop - ${ post.id } `} className="min-w-[400px] transform hover:scale-[1.01] transition-transform duration-300">
                             <PostCard
                               post={post} isFollowing={following.has(post.userId)} isSaved={savedPosts.has(post.id)}
-                              onFollowToggle={id => setFollowing(prev => { const n = new Set(prev); n.has(id) ? n.delete(id) : n.add(id); return n; })}
+                              onFollowToggle={handleFollow}
                               onLike={handleLike} onSaveToggle={handleSaveToggle} onAddComment={handleAddComment}
                               onGift={handleGift} onNotify={handleNotify} userGiftBalance={totalBalance} onTopUpRequest={() => setIsTopUpOpen(true)}
                               onPromoteRequest={handlePromoteRequest} onDelete={handleDeletePost} onEdit={handleEdit} currentUserId={user?.id}
@@ -1949,7 +2071,7 @@ const App: React.FC = () => {
                       {/* Mobile View: Vertical List */}
                       <div className="md:hidden space-y-4 px-1">
                         {popularPosts.slice(0, 10).map((post, index) => (
-                          <div key={`pop-mobile-${post.id}`} className="flex items-start space-x-4 py-3 border-b border-slate-100 last:border-0" onClick={() => setActivePostId(post.id)}>
+                          <div key={`pop - mobile - ${ post.id } `} className="flex items-start space-x-4 py-3 border-b border-slate-100 last:border-0" onClick={() => setActivePostId(post.id)}>
                             <div className="flex-shrink-0 w-8 text-2xl font-black text-slate-200 leading-none">
                               {index + 1}
                             </div>
@@ -1989,7 +2111,7 @@ const App: React.FC = () => {
                       </div>
                       <div className="flex overflow-x-auto pb-8 -mx-4 px-4 space-x-6 no-scrollbar scroll-smooth">
                         {editorPicks.map(post => (
-                          <div key={`edit-${post.id}`} className="min-w-[300px] sm:min-w-[400px] transform hover:scale-[1.01] transition-transform duration-300">
+                          <div key={`edit - ${ post.id } `} className="min-w-[300px] sm:min-w-[400px] transform hover:scale-[1.01] transition-transform duration-300">
                             <PostCard
                               post={post} isFollowing={following.has(post.userId)} isSaved={savedPosts.has(post.id)}
                               onFollowToggle={id => setFollowing(prev => { const n = new Set(prev); n.has(id) ? n.delete(id) : n.add(id); return n; })}
@@ -2075,7 +2197,7 @@ const App: React.FC = () => {
         <footer className="mt-20 pt-10 border-t border-slate-100 flex flex-col items-center space-y-6">
           <VokeLogo className="text-2xl opacity-20 grayscale" withGradient={false} />
           <div className="flex flex-col sm:flex-row flex-wrap justify-center gap-4 sm:gap-8">
-            <a href={`mailto:${ADMIN_CONTACT.email}`} className="flex items-center space-x-2 text-slate-400 hover:text-slate-600 transition-colors">
+            <a href={`mailto:${ ADMIN_CONTACT.email } `} className="flex items-center space-x-2 text-slate-400 hover:text-slate-600 transition-colors">
               <i className="fas fa-envelope text-[10px]"></i>
               <span className="text-[9px] font-black uppercase tracking-widest">{ADMIN_CONTACT.email}</span>
             </a>
@@ -2093,7 +2215,7 @@ const App: React.FC = () => {
         onClose={() => setIsTopUpOpen(false)}
         onSelect={async (pkg) => {
           if (!user) return;
-          if (confirm(`Beli paket ${pkg.name} seharga Rp ${pkg.price.toLocaleString('id-ID')}?`)) {
+          if (confirm(`Beli paket ${ pkg.name } seharga Rp ${ pkg.price.toLocaleString('id-ID') }?`)) {
             setIsProcessingTx(true);
             // Create pending transaction
             const { error } = await supabase.from('transactions').insert({
@@ -2106,7 +2228,7 @@ const App: React.FC = () => {
 
             setIsProcessingTx(false);
             if (error) {
-              handleNotify(`Gagal: ${error.message}`, 'error');
+              handleNotify(`Gagal: ${ error.message } `, 'error');
             } else {
               handleNotify('Permintaan dikirim! Mohon transfer & konfirmasi bukti ke email loudvoke@gmail.com atau WA 085163612553', 'success');
               setIsTopUpOpen(false);
@@ -2136,7 +2258,7 @@ const App: React.FC = () => {
 
           setIsProcessingTx(false);
           if (error) {
-            handleNotify(`Gagal: ${error.message}`, 'error');
+            handleNotify(`Gagal: ${ error.message } `, 'error');
           } else {
             handleNotify('Permintaan cair dana dikirim! Konfirmasi ke loudvoke@gmail.com / WA 085163612553', 'success');
             setIsWithdrawOpen(false);
