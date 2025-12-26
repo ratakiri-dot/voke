@@ -1127,17 +1127,23 @@ const handleView = async (postId: string) => {
   const viewKey = `view_${postId}_${user?.id || 'anon'}`;
   const hasViewed = localStorage.getItem(viewKey);
 
-  if (hasViewed) return; // Already viewed and paid
+  console.log(`Checking view for ${postId}. User: ${user?.id}, Author: ${post.userId}`);
+
+  if (hasViewed) {
+    console.log('Already viewed via localStorage');
+    return;
+  }
 
   // Mark as viewed locally immediately
   localStorage.setItem(viewKey, 'true');
 
-  // Get post to find author
-  const post = posts.find(p => p.id === postId);
-  if (!post) return;
-
   // Don't pay for own views (optional logic, but good for economy)
   const isOwnView = user && post.userId === user.id;
+
+  if (isOwnView) {
+    console.log('Skipping payment/count for own view');
+    return;
+  }
 
   try {
     // 1. Increment View Count (RPC is safer for concurrency)
@@ -1700,7 +1706,7 @@ return (
             <div className="relative z-10">
               <p className="text-[10px] font-black uppercase tracking-[0.4em] text-slate-400 mb-2">Total Saldo</p>
               <h2 className="text-6xl font-[800] tracking-tighter mb-10">
-                {totalBalance.toLocaleString('id-ID')} <span className="text-lg font-medium opacity-50 ml-2">Poin</span>
+                {totalBalance.toLocaleString('id-ID', { minimumFractionDigits: 2, maximumFractionDigits: 2 })} <span className="text-lg font-medium opacity-50 ml-2">Poin</span>
               </h2>
               <div className="flex gap-4">
                 <button onClick={() => setIsTopUpOpen(true)} className="px-10 py-4 bg-white text-slate-900 rounded-2xl font-black text-xs uppercase tracking-widest hover:bg-slate-50 transition-all shadow-xl">Isi Poin</button>
@@ -1749,8 +1755,7 @@ return (
                 <p className="text-[10px] font-black uppercase tracking-widest text-cyan-800/60 mb-1">Dari Penonton</p>
                 <h3 className="text-3xl font-[900] text-cyan-900">
                   {/* Calculate rough estimate of view income: Total Views * Current Rate */}
-                  {/* Note: This is an estimate if rate changes historically, but best we can do without detailed ledgers for every view */}
-                  {(posts.filter(p => p.userId === user?.id).reduce((sum, p) => sum + (p.views || 0), 0) * viewRate).toFixed(2)}
+                  {(posts.filter(p => p.userId === user?.id).reduce((sum, p) => sum + (p.views || 0), 0) * viewRate).toLocaleString('id-ID', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
                 </h3>
               </div>
             </div>

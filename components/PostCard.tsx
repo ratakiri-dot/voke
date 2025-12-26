@@ -87,10 +87,14 @@ export const PostCard: React.FC<PostCardProps> = ({
 
   // Auto-trigger view when component mounts (for view payment)
   useEffect(() => {
-    if (onView) {
+    // FIX: Client-side check to prevent self-views
+    if (onView && currentUserId && currentUserId !== post.userId) {
+      onView(post.id);
+    } else if (onView && !currentUserId) {
+      // Allow anonymous views (optional, strict mode: remove this else block)
       onView(post.id);
     }
-  }, [post.id]); // Only run once when post ID changes/mounts
+  }, [post.id, currentUserId, post.userId, onView]);
 
   const handleExpand = () => {
     setIsExpanded(!isExpanded);
